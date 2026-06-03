@@ -5,11 +5,9 @@ function getClient() {
 }
 
 export const TONE_LABELS = [
-  { key: "EMPATHIQUE", color: "#ec4899", bg: "rgba(236,72,153,0.12)", border: "rgba(236,72,153,0.3)", desc: "Chaleur & validation émotionnelle" },
-  { key: "DIRECT", color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.3)", desc: "Court, clair, sans fioriture" },
-  { key: "DÉTAILLÉ", color: "#3b82f6", bg: "rgba(59,130,246,0.12)", border: "rgba(59,130,246,0.3)", desc: "Point par point, contexte complet" },
-  { key: "SOLUTION", color: "#22c55e", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.3)", desc: "Résolution concrète, forward-first" },
-  { key: "PROFESSIONNEL", color: "#a78bfa", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.3)", desc: "Mesuré, image marque impeccable" },
+  { key: "EMPATHIQUE", color: "#EA4335", bg: "#FCE8E6", border: "rgba(234,67,53,0.3)", icon: "💛", desc: "Chaleur & validation émotionnelle" },
+  { key: "SOLUTION",   color: "#34A853", bg: "#E6F4EA", border: "rgba(52,168,83,0.3)",  icon: "🎯", desc: "Résolution concrète, tourné vers l'avenir" },
+  { key: "PRO",        color: "#1A73E8", bg: "#E8F0FE", border: "rgba(26,115,232,0.3)", icon: "🏆", desc: "Mesuré, image de marque impeccable" },
 ];
 
 const CORE_RULES = `
@@ -107,39 +105,37 @@ export async function generateResponseSuggestions(
 
   const message = await getClient().messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 2500,
+    max_tokens: 1500,
     system: `Tu es un expert en psychologie de la relation client et gestion de e-réputation pour ${businessName}.
 
 ${CORE_RULES}
 
-Tu vas générer 5 réponses radicalement distinctes — même fond, 5 approches psychologiques différentes:
+Tu vas générer 3 réponses radicalement distinctes — même fond, 3 approches psychologiques différentes:
 
 1. EMPATHIQUE: Chaleur maximale. Validation émotionnelle profonde. Ton proche, presque intime mais respectueux. Le client doit se sentir vraiment entendu.
-2. DIRECT: Court et percutant. Maximum 2-3 phrases. Action immédiate. Pas de fioritures sentimentales. Efficace et humain quand même.
-3. DÉTAILLÉ: Répond à chaque point soulevé dans l'avis. Donne du contexte. Explique sans s'excuser platement. Prouve l'écoute active.
-4. SOLUTION: 100% tourné vers la résolution et l'avenir. Propose une étape concrète dès la 2ème phrase. Forward-looking. Ne reste pas dans le passé.
-5. PROFESSIONNEL: Ton mesuré et élégant. Formel mais pas froid. Image de marque premium. Dignité et assurance calme.
+2. SOLUTION: 100% tourné vers la résolution et l'avenir. Propose une étape concrète dès la 2ème phrase. Forward-looking. Ne reste pas dans le passé.
+3. PRO: Ton mesuré et élégant. Formel mais pas froid. Image de marque premium. Dignité et assurance calme.
 
 RÈGLES POUR CHAQUE RÉPONSE:
 • Commence par: "${firstName},"
 • Contient 1 détail spécifique de l'avis
 • En mode: ${context}
-• Vraiment différente des 4 autres par le TON et le CONTENU
+• Vraiment différente des 2 autres par le TON et le CONTENU
 • Sous 150 mots maximum
 • Signée d'un prénom humain différent pour chaque suggestion
 
-Retourne UNIQUEMENT un tableau JSON valide de 5 strings. Aucun texte avant ou après.`,
+Retourne UNIQUEMENT un tableau JSON valide de 3 strings. Aucun texte avant ou après.`,
     messages: [
       {
         role: "user",
-        content: `Génère 5 réponses distinctes pour cet avis ${rating}/5 de ${firstName}:
+        content: `Génère 3 réponses distinctes pour cet avis ${rating}/5 de ${firstName}:
 
 "${reviewText}"
 
 Établissement: ${businessName}
 Contexte: ${context}
 
-Format attendu: ["réponse EMPATHIQUE", "réponse DIRECTE", "réponse DÉTAILLÉE", "réponse SOLUTION", "réponse PROFESSIONNELLE"]`,
+Format attendu: ["réponse EMPATHIQUE", "réponse SOLUTION", "réponse PRO"]`,
       },
     ],
   });
@@ -152,8 +148,8 @@ Format attendu: ["réponse EMPATHIQUE", "réponse DIRECTE", "réponse DÉTAILLÉ
   if (!jsonMatch) throw new Error("Could not parse suggestions JSON");
 
   const suggestions = JSON.parse(jsonMatch[0]) as string[];
-  if (!Array.isArray(suggestions) || suggestions.length !== 5) {
-    throw new Error("Expected exactly 5 suggestions");
+  if (!Array.isArray(suggestions) || suggestions.length !== 3) {
+    throw new Error("Expected exactly 3 suggestions");
   }
 
   return suggestions;

@@ -3,14 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Review, PendingResponse } from "@/db/schema";
-
-const TONE_LABELS = [
-  { key: "EMPATHIQUE", color: "#ec4899", bg: "rgba(236,72,153,0.12)", border: "rgba(236,72,153,0.3)", icon: "💜", desc: "Chaleur & validation émotionnelle" },
-  { key: "DIRECT", color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.3)", icon: "⚡", desc: "Court, percutant, sans fioriture" },
-  { key: "DÉTAILLÉ", color: "#3b82f6", bg: "rgba(59,130,246,0.12)", border: "rgba(59,130,246,0.3)", icon: "📋", desc: "Point par point, contexte complet" },
-  { key: "SOLUTION", color: "#22c55e", bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.3)", icon: "🎯", desc: "Résolution concrète, forward-first" },
-  { key: "PROFESSIONNEL", color: "#a78bfa", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.3)", icon: "🏆", desc: "Mesuré, image de marque premium" },
-];
+import { TONE_LABELS } from "@/lib/claude";
 
 type PendingItem = {
   pending: PendingResponse;
@@ -195,7 +188,7 @@ function PendingCard({ item }: { item: PendingItem }) {
               letterSpacing: "0.9px",
             }}
           >
-            5 réponses IA — clique pour sélectionner
+            3 réponses IA — clique pour sélectionner
           </p>
           <span style={{ fontSize: "11px", color: "rgba(248,248,255,0.2)" }}>
             {selected !== null ? `Sélection: ${TONE_LABELS[selected].key}` : custom ? "Réponse personnalisée" : "Aucune sélection"}

@@ -35,18 +35,25 @@ export default async function ReviewsPage({
     conditions.push(eq(reviews.rating, parseInt(params.rating)));
   }
 
-  const query = db
-    .select({
-      review: reviews,
-      businessName: businesses.name,
-    })
-    .from(reviews)
-    .leftJoin(businesses, eq(reviews.businessId, businesses.id))
-    .orderBy(desc(reviews.publishedAt))
-    .limit(100);
+  let results: { review: typeof reviews.$inferSelect; businessName: string | null }[] = [];
 
-  const results =
-    conditions.length > 0 ? await query.where(and(...conditions)) : await query;
+  try {
+    const query = db
+      .select({
+        review: reviews,
+        businessName: businesses.name,
+      })
+      .from(reviews)
+      .leftJoin(businesses, eq(reviews.businessId, businesses.id))
+      .orderBy(desc(reviews.publishedAt))
+      .limit(100);
+
+    results =
+      conditions.length > 0 ? await query.where(and(...conditions)) : await query;
+  } catch (err) {
+    console.error("Reviews query error:", err);
+    results = [];
+  }
 
   return (
     <ReviewsClient

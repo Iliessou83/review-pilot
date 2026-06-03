@@ -12,17 +12,22 @@ export default async function PendingPage() {
   if (!session) redirect("/");
 
   // Fetch all pending reviews with their suggestions
-  const pendingItems = await db
-    .select({
-      pending: pendingResponses,
-      review: reviews,
-      businessName: businesses.name,
-    })
-    .from(pendingResponses)
-    .innerJoin(reviews, eq(pendingResponses.reviewId, reviews.id))
-    .leftJoin(businesses, eq(reviews.businessId, businesses.id))
-    .where(eq(pendingResponses.status, "pending"))
-    .orderBy(pendingResponses.notifiedAt);
+  try {
+    const pendingItems = await db
+      .select({
+        pending: pendingResponses,
+        review: reviews,
+        businessName: businesses.name,
+      })
+      .from(pendingResponses)
+      .innerJoin(reviews, eq(pendingResponses.reviewId, reviews.id))
+      .leftJoin(businesses, eq(reviews.businessId, businesses.id))
+      .where(eq(pendingResponses.status, "pending"))
+      .orderBy(pendingResponses.notifiedAt);
 
-  return <PendingClient items={pendingItems} />;
+    return <PendingClient items={pendingItems} />;
+  } catch (err) {
+    console.error("Pending query error:", err);
+    return <PendingClient items={[]} />;
+  }
 }
