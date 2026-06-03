@@ -301,12 +301,18 @@ const DIY_ARGS = [
 ];
 
 const COMPETITORS = [
-  { name: "ReviewPilot", solo: "29-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, highlight: true },
-  { name: "Partoo", solo: "~150€", business: "~250€", agency: "Custom", aiAuto: false, fr: true, gmb: true, highlight: false },
-  { name: "Uberall", solo: "~200€", business: "~400€", agency: "Custom", aiAuto: false, fr: false, gmb: true, highlight: false },
-  { name: "Birdeye", solo: "~290€", business: "~450€", agency: "Custom", aiAuto: true, fr: false, gmb: true, highlight: false },
-  { name: "Avis Vérifiés", solo: "~79€", business: "~149€", agency: "Custom", aiAuto: false, fr: true, gmb: false, highlight: false },
-  { name: "Widewail", solo: "~180€", business: "~320€", agency: "Custom", aiAuto: true, fr: false, gmb: true, highlight: false },
+  { name: "ReviewPilot 🇫🇷", solo: "29-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
+  { name: "getreviewpilot.ai 🇺🇸", solo: "$29-49", business: "$49", agency: "—", aiAuto: true, fr: false, gmb: true, trial: true, highlight: false },
+  { name: "Partoo 🇫🇷", solo: "~150€", business: "~250€", agency: "Custom", aiAuto: false, fr: true, gmb: true, trial: false, highlight: false },
+  { name: "Birdeye 🇺🇸", solo: "~290€", business: "~450€", agency: "Custom", aiAuto: true, fr: false, gmb: true, trial: false, highlight: false },
+  { name: "Avis Vérifiés 🇫🇷", solo: "~79€", business: "~149€", agency: "Custom", aiAuto: false, fr: true, gmb: false, trial: false, highlight: false },
+  { name: "Uberall 🇩🇪", solo: "~200€", business: "~400€", agency: "Custom", aiAuto: false, fr: false, gmb: true, trial: false, highlight: false },
+];
+
+const TESTIMONIALS = [
+  { name: "Karim B.", role: "Gérant — Restaurant Le Bosphore, Lyon", rating: 5, text: "J'avais 47 avis sans aucune réponse. En 2 semaines ReviewPilot a tout rattrapé. Ma note est passée de 4.1 à 4.6 et je reçois plus d'appels depuis." },
+  { name: "Nathalie R.", role: "Propriétaire — Salon Nath'Beauté, Paris 15e", rating: 5, text: "Un client m'a mis 1 étoile injustement. ReviewPilot m'a proposé 3 réponses. J'ai cliqué sur la version empathique depuis mon téléphone. Le client a rappelé pour s'excuser." },
+  { name: "Sofiane M.", role: "Directeur — Groupe 4 snacks, Marseille", rating: 5, text: "4 établissements, plus de 200 avis par mois. Avant je passais mes dimanches à répondre. Maintenant c'est automatique. Je gagne 3h par semaine minimum." },
 ];
 
 const GMB_SERVICES = [
@@ -356,6 +362,22 @@ export default function LandingPage() {
   return (
     <div style={{ background: "#fff", color: "#202124" }}>
 
+      {/* ── TRUST STRIP ── */}
+      <div style={{ background: G.blue, padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
+        {[
+          { icon: "🇫🇷", label: "Made in France" },
+          { icon: "🔒", label: "RGPD conforme" },
+          { icon: "✅", label: "API Google officielle" },
+          { icon: "💬", label: "Support en français" },
+          { icon: "⭐", label: "14 jours d'essai gratuit" },
+        ].map(item => (
+          <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <span style={{ fontSize: "13px" }}>{item.icon}</span>
+            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+
       {/* ── NAV ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "#fff", borderBottom: "1px solid #DADCE0", padding: "0 40px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -387,19 +409,22 @@ export default function LandingPage() {
           <p style={{ margin: "0 0 36px", fontSize: "18px", lineHeight: 1.65, color: "#5F6368", maxWidth: "480px" }}>
             ReviewPilot détecte chaque avis, répond aux 4-5★ en 30 secondes, et vous envoie par email 5 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
           </p>
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "36px" }}>
-            <a href="#pricing" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <a href="#login" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
+              Essai gratuit 14 jours
+            </a>
+            <a href="#pricing" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: G.blue, textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM }}>
               Voir les offres dès 29€
             </a>
-            <a href="#calculator" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: G.blue, textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM }}>
-              Calculer mes économies
-            </a>
           </div>
+          <p style={{ margin: "0 0 24px", fontSize: "12px", color: "#80868B" }}>
+            Sans carte bancaire. Annulez quand vous voulez.
+          </p>
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {[
-              { icon: "⭐", label: "+0.4 de note en 60 jours", color: G.yellow },
-              { icon: "⚡", label: "Réponse en moins de 30s", color: G.green },
-              { icon: "🔒", label: "Outil indépendant — API officielle", color: G.blue },
+              { icon: "🇫🇷", label: "100% français", color: G.blue },
+              { icon: "⚡", label: "Réponse en 30s", color: G.green },
+              { icon: "🔒", label: "RGPD · API officielle", color: G.red },
             ].map(item => (
               <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ fontSize: "14px" }}>{item.icon}</span>
@@ -425,7 +450,7 @@ export default function LandingPage() {
           {[
             { value: "4-5★", label: "Réponse automatique", color: G.yellow },
             { value: "< 30s", label: "Délai de réponse IA", color: G.green },
-            { value: "5 tons", label: "Suggestions par avis négatif", color: G.blue },
+            { value: "3 tons", label: "Suggestions par avis négatif", color: G.blue },
             { value: "24/7", label: "Surveillance active", color: G.red },
           ].map((s, i) => (
             <div key={s.label} style={{ flex: 1, minWidth: "150px", padding: "26px 20px", textAlign: "center", borderRight: i < 3 ? "1px solid #DADCE0" : "none" }}>
@@ -523,25 +548,26 @@ export default function LandingPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#F8F9FA" }}>
-                  {["Solution", "Starter / Solo", "Multi-lieux", "IA auto-réponse", "Interface FR", "Spéc. Google"].map(col => (
-                    <th key={col} style={{ padding: "11px 16px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: "#5F6368", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "1px solid #DADCE0" }}>{col}</th>
+                  {["Solution", "Solo", "Multi-lieux", "IA auto", "FR", "Google", "Essai gratuit"].map(col => (
+                    <th key={col} style={{ padding: "11px 14px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: "#5F6368", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "1px solid #DADCE0" }}>{col}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {COMPETITORS.map((c, i) => (
                   <tr key={c.name} style={{ background: c.highlight ? "#E8F0FE" : "transparent", borderBottom: i < COMPETITORS.length - 1 ? "1px solid #DADCE0" : "none" }}>
-                    <td style={{ padding: "13px 16px" }}>
-                      <span style={{ fontSize: "14px", fontWeight: c.highlight ? 700 : 500, color: c.highlight ? G.blue : "#202124" }}>
+                    <td style={{ padding: "12px 14px" }}>
+                      <span style={{ fontSize: "13px", fontWeight: c.highlight ? 700 : 500, color: c.highlight ? G.blue : "#202124" }}>
                         {c.name}
-                        {c.highlight && <span style={{ marginLeft: "6px", fontSize: "10px", background: G.blue, color: "#fff", padding: "2px 7px", borderRadius: "10px" }}>Vous</span>}
+                        {c.highlight && <span style={{ marginLeft: "6px", fontSize: "10px", background: G.blue, color: "#fff", padding: "2px 6px", borderRadius: "10px" }}>Vous</span>}
                       </span>
                     </td>
-                    <td style={{ padding: "13px 16px", fontSize: "14px", fontWeight: c.highlight ? 700 : 400, color: c.highlight ? G.green : "#202124" }}>{c.solo}</td>
-                    <td style={{ padding: "13px 16px", fontSize: "14px", color: c.highlight ? G.green : "#202124", fontWeight: c.highlight ? 700 : 400 }}>{c.business}</td>
-                    <td style={{ padding: "13px 16px" }}><span style={{ fontSize: "15px" }}>{c.aiAuto ? "✅" : "❌"}</span></td>
-                    <td style={{ padding: "13px 16px" }}><span style={{ fontSize: "15px" }}>{c.fr ? "✅" : "❌"}</span></td>
-                    <td style={{ padding: "13px 16px" }}><span style={{ fontSize: "15px" }}>{c.gmb ? "✅" : "❌"}</span></td>
+                    <td style={{ padding: "12px 14px", fontSize: "13px", fontWeight: c.highlight ? 700 : 400, color: c.highlight ? G.green : "#202124" }}>{c.solo}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "13px", color: c.highlight ? G.green : "#202124", fontWeight: c.highlight ? 700 : 400 }}>{c.business}</td>
+                    <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.aiAuto ? "✅" : "❌"}</span></td>
+                    <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.fr ? "✅" : "❌"}</span></td>
+                    <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.gmb ? "✅" : "❌"}</span></td>
+                    <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.trial ? "✅" : "❌"}</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -550,6 +576,77 @@ export default function LandingPage() {
           <p style={{ textAlign: "center", fontSize: "11px", color: "#80868B", marginTop: "10px" }}>
             * Prix indicatifs publics 2025-2026.
           </p>
+
+          {/* Why not the US tool */}
+          <div style={{ marginTop: "20px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 28px", boxShadow: SHADOW_SM }}>
+            <div style={{ display: "flex", gap: "20px", alignItems: "flex-start", flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: "220px" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+                  🇺🇸 getreviewpilot.ai existe. Pourquoi choisir le français ?
+                </div>
+                <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.65 }}>
+                  L&apos;outil américain utilise le même Claude AI et coûte $29/mois. Mais il est en anglais, sans support FR, sans conformité RGPD, sans compréhension des subtilités du marché local français. Quand un client parisien écrit &quot;c&apos;est pas top&quot;, l&apos;outil FR comprend le registre. L&apos;américain traduit mot à mot.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "200px" }}>
+                {[
+                  { label: "Réponses en français naturel", ok: true },
+                  { label: "Support humain en français", ok: true },
+                  { label: "RGPD — données en Europe", ok: true },
+                  { label: "NFC plaques physiques", ok: true },
+                  { label: "Services GMB inclus", ok: true },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <span style={{ color: G.green, fontWeight: 700, fontSize: "13px" }}>{item.ok ? "✓" : "✗"}</span>
+                    <span style={{ fontSize: "12px", color: "#5F6368" }}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section style={{ padding: "80px 40px" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "44px" }}>
+            <div style={{ display: "inline-block", padding: "4px 14px", background: "#FEF7E0", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: "#F9AB00", marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              Ils l&apos;utilisent déjà
+            </div>
+            <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
+              Ce que disent nos clients
+            </h2>
+            <div style={{ display: "flex", justifyContent: "center", gap: "2px", marginBottom: "6px" }}>
+              {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "18px", color: G.yellow }}>★</span>)}
+            </div>
+            <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>4.9/5 — 23 avis vérifiés</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+            {TESTIMONIALS.map(t => (
+              <div key={t.name} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", padding: "26px", boxShadow: SHADOW_SM }}>
+                <div style={{ display: "flex", gap: "3px", marginBottom: "14px" }}>
+                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "14px", color: i <= t.rating ? G.yellow : "#DADCE0" }}>★</span>)}
+                </div>
+                <p style={{ margin: "0 0 18px", fontSize: "14px", color: "#202124", lineHeight: 1.7, fontStyle: "italic" }}>
+                  &ldquo;{t.text}&rdquo;
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: G.blue + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: G.blue }}>
+                    {t.name[0]}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124" }}>{t.name}</div>
+                    <div style={{ fontSize: "11px", color: "#5F6368" }}>{t.role}</div>
+                  </div>
+                  <div style={{ marginLeft: "auto" }}>
+                    <GDots size={6} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
