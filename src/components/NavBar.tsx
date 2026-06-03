@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/businesses", label: "Businesses" },
-  { href: "/reviews", label: "Reviews" },
-  { href: "/pending", label: "Pending" },
+  { href: "/dashboard", label: "Tableau de bord", icon: "📊" },
+  { href: "/businesses", label: "Établissements", icon: "🏢" },
+  { href: "/reviews", label: "Avis", icon: "⭐" },
+  { href: "/pending", label: "En attente", icon: "⏳" },
 ];
 
 export default function NavBar() {
@@ -20,50 +22,30 @@ export default function NavBar() {
   }
 
   return (
-    <nav
-      style={{
-        background: "#111118",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 24px",
-          height: "60px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+    <nav style={{
+      background: "#fff",
+      borderBottom: "1px solid #DADCE0",
+      position: "sticky",
+      top: 0,
+      zIndex: 50,
+    }}>
+      <div style={{
+        maxWidth: "1200px",
+        margin: "0 auto",
+        padding: "0 24px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div
-            style={{
-              width: "30px",
-              height: "30px",
-              background: "linear-gradient(135deg, #6c47ff, #9d7dff)",
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "14px",
-            }}
-          >
-            ✦
+          <div style={{ display: "flex", gap: "3px" }}>
+            {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+              <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />
+            ))}
           </div>
-          <span
-            style={{
-              fontSize: "17px",
-              fontWeight: 700,
-              color: "#f8f8ff",
-              letterSpacing: "-0.3px",
-            }}
-          >
+          <span style={{ fontSize: "17px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px" }}>
             ReviewPilot
           </span>
         </div>
@@ -73,21 +55,20 @@ export default function NavBar() {
           {NAV_LINKS.map((link) => {
             const active = pathname === link.href || pathname.startsWith(link.href + "/");
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: active ? 600 : 400,
-                  color: active ? "#f8f8ff" : "rgba(248,248,255,0.5)",
-                  background: active ? "rgba(108,71,255,0.2)" : "transparent",
-                  textDecoration: "none",
-                  transition: "all 0.15s",
-                  border: active ? "1px solid rgba(108,71,255,0.3)" : "1px solid transparent",
-                }}
-              >
+              <Link key={link.href} href={link.href} style={{
+                padding: "6px 14px",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: active ? 600 : 400,
+                color: active ? G.blue : "#5F6368",
+                background: active ? "#E8F0FE" : "transparent",
+                textDecoration: "none",
+                transition: "all 0.15s",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}>
+                <span style={{ fontSize: "13px" }}>{link.icon}</span>
                 {link.label}
               </Link>
             );
@@ -98,25 +79,26 @@ export default function NavBar() {
         <button
           onClick={handleLogout}
           style={{
-            padding: "6px 14px",
+            padding: "7px 16px",
             background: "transparent",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid #DADCE0",
             borderRadius: "6px",
-            color: "rgba(248,248,255,0.45)",
+            color: "#5F6368",
             fontSize: "13px",
             cursor: "pointer",
+            fontFamily: "inherit",
             transition: "all 0.15s",
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.borderColor = "rgba(239,68,68,0.4)";
-            (e.target as HTMLButtonElement).style.color = "#f87171";
+            (e.currentTarget).style.borderColor = "#EA4335";
+            (e.currentTarget).style.color = "#EA4335";
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.1)";
-            (e.target as HTMLButtonElement).style.color = "rgba(248,248,255,0.45)";
+            (e.currentTarget).style.borderColor = "#DADCE0";
+            (e.currentTarget).style.color = "#5F6368";
           }}
         >
-          Sign out
+          Déconnexion
         </button>
       </div>
     </nav>

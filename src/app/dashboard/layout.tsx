@@ -13,7 +13,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0f" }}>
+    <div style={{ minHeight: "100vh", background: "#F8F9FA" }}>
       <NavBar />
       <main
         style={{
