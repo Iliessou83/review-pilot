@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
+import ChatBot from "@/components/ChatBot";
 
 export default async function DashboardLayout({
   children,
@@ -24,6 +25,7 @@ export default async function DashboardLayout({
       >
         {children}
       </main>
+      <ChatBot />
     </div>
   );
 }

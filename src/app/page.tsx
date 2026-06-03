@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ChatBot from "@/components/ChatBot";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW_SM = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
@@ -855,6 +856,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <ChatBot />
 
       {/* ── FOOTER ── */}
       <footer style={{ background: "#fff", borderTop: "1px solid #DADCE0", padding: "28px 40px" }}>
