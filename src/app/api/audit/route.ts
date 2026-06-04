@@ -30,6 +30,20 @@ async function searchGooglePlace(name: string, city: string) {
   }
 }
 
+async function getPlaceById(placeId: string) {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.GCP_API_KEY;
+  if (!apiKey || placeId === "url_provided") return null;
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,formatted_address,photos,website,international_phone_number,business_status,types&key=${apiKey}`
+    );
+    const data = await res.json();
+    return data.result || null;
+  } catch {
+    return null;
+  }
+}
+
 function computeScore(place: Record<string, unknown> | null, name: string): {
   score: number;
   found: boolean;
@@ -88,18 +102,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Tous les champs sont requis." }, { status: 400 });
     }
 
-    // Use placeId directly if provided, else search
+    // Use placeId directly if provided, else search by name
     let place = null;
-    if (placeId) {
-      const apiKey = process.env.GCP_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
-      if (apiKey) {
-        const detailRes = await fetch(
-          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,formatted_address,opening_hours,photos,website,international_phone_number,business_status,types&key=${apiKey}`
-        );
-        const d = await detailRes.json();
-        place = d.result || null;
-      }
-    } else {
+    if (placeId && placeId !== "url_provided") {
+      place = await getPlaceById(placeId);
+    } else if (!placeId) {
       place = await searchGooglePlace(name, city);
     }
     const { score, found, insights } = computeScore(place as Record<string, unknown> | null, name);

@@ -46,6 +46,24 @@ export default function AuditPage() {
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!name || !city) return;
+
+    // If user pasted a Google Maps URL, skip search and go straight to email
+    const mapsUrlMatch = name.match(/place_id=([^&]+)/) || name.match(/maps\.google\.[a-z.]+\/maps\/place\/([^/]+)/) || name.match(/g\.page\/([^?]+)/);
+    if (name.startsWith("http") || name.includes("google.com/maps") || name.includes("g.co/kgs") || name.includes("goo.gl/maps")) {
+      const placeIdFromUrl = name.match(/place\/[^/]+\/([^/?]+)/)?.[1] || name.match(/!1s([^!]+)/)?.[1];
+      const fakeCandidate: Candidate = {
+        place_id: placeIdFromUrl || "url_provided",
+        name: "Votre établissement (depuis lien Google)",
+        address: "Lien Google Maps détecté",
+        rating: null,
+        reviewCount: 0,
+        type: "",
+      };
+      setCandidates([fakeCandidate]);
+      setStep("choose");
+      return;
+    }
+
     setSearching(true);
     setError("");
     try {
@@ -172,12 +190,14 @@ export default function AuditPage() {
                 <div>
                   <label style={{ fontSize: "13px", fontWeight: 600, color: "#202124", display: "block", marginBottom: "6px" }}>Nom de votre établissement *</label>
                   <input value={name} onChange={e => setName(e.target.value)} required
-                    placeholder="Le Fenix, Salon Nath, Garage Dupont..."
+                    placeholder="Le Fenix — ou collez votre lien Google Maps"
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = G.blue}
                     onBlur={e => e.target.style.borderColor = "#DADCE0"}
                   />
-                  <p style={{ fontSize: "11px", color: "#80868B", margin: "4px 0 0" }}>Écrivez le nom tel qu&apos;il apparaît sur votre enseigne. Pas besoin d&apos;ajouter le type (boucherie, restaurant...)</p>
+                  <p style={{ fontSize: "11px", color: "#80868B", margin: "4px 0 0" }}>
+                    💡 <strong>Astuce :</strong> Collez directement votre lien Google Maps pour un résultat immédiat et précis.
+                  </p>
                 </div>
                 <div>
                   <label style={{ fontSize: "13px", fontWeight: 600, color: "#202124", display: "block", marginBottom: "6px" }}>Ville *</label>
