@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/businesses", label: "Établissements", icon: "🏢" },
   { href: "/reviews", label: "Avis", icon: "⭐" },
   { href: "/pending", label: "En attente", icon: "⏳" },
+  { href: "/dashboard/settings", label: "Paramètres", icon: "⚙️" },
 ];
 
 export default function NavBar() {

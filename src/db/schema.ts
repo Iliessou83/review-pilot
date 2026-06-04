@@ -15,7 +15,13 @@ export const businesses = pgTable("businesses", {
   platformId: text("platform_id").notNull(),
   platformToken: text("platform_token").notNull(),
   autoReply5Star: boolean("auto_reply_5_star").default(true).notNull(),
+  autoReplyNegative: boolean("auto_reply_negative").default(false).notNull(),
+  businessType: text("business_type").default("restaurant"),
+  compensationEnabled: boolean("compensation_enabled").default(false).notNull(),
+  compensationText: text("compensation_text"),
   ownerEmail: text("owner_email").notNull(),
+  referralCode: text("referral_code"),
+  referredBy: text("referred_by"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

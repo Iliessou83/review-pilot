@@ -367,7 +367,7 @@ export default function LandingPage() {
           <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", background: "#E8F0FE", color: G.blue, borderRadius: "12px" }}>by Caela</span>
         </div>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-          {[["#services", "Services GMB"], ["#nfc", "Plaques NFC"], ["#pricing", "Tarifs"]].map(([href, label]) => (
+          {[["#services", "Services GMB"], ["#nfc", "Plaques NFC"], ["#pricing", "Tarifs"], ["/audit", "Audit gratuit 🔍"]].map(([href, label]) => (
             <a key={href} href={href} style={{ padding: "8px 14px", fontSize: "14px", fontWeight: 500, color: "#5F6368", textDecoration: "none", borderRadius: "24px" }}>{label}</a>
           ))}
           <a href="#login" style={{ padding: "9px 20px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", marginLeft: "8px" }}>

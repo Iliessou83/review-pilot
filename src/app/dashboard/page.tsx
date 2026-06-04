@@ -161,6 +161,41 @@ export default async function DashboardPage() {
         ))}
       </div>
 
+      {/* Health score */}
+      {(() => {
+        const ratingScore = Math.round((parseFloat(stats.avgRating) / 5) * 40);
+        const responseScore = stats.totalReviews > 0 ? Math.round((stats.autoResponded / stats.totalReviews) * 35) : 0;
+        const volumeScore = Math.min(stats.totalReviews, 25);
+        const health = ratingScore + responseScore + volumeScore;
+        const healthColor = health >= 75 ? G.green : health >= 50 ? G.yellow : G.red;
+        const healthLabel = health >= 75 ? "Excellente réputation" : health >= 50 ? "Réputation correcte" : "Réputation à améliorer";
+        return (
+          <div style={{ background: "#fff", border: `1px solid ${healthColor}30`, borderRadius: "12px", padding: "18px 24px", boxShadow: SHADOW, marginBottom: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "50%", border: `4px solid ${healthColor}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ fontSize: "20px", fontWeight: 800, color: healthColor, lineHeight: 1 }}>{health}</span>
+              <span style={{ fontSize: "9px", color: healthColor, fontWeight: 600 }}>/100</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "15px", fontWeight: 700, color: "#202124", marginBottom: "4px" }}>Score de santé : {healthLabel}</div>
+              <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                {[
+                  { label: "Note Google", score: ratingScore, max: 40 },
+                  { label: "Taux de réponse", score: responseScore, max: 35 },
+                  { label: "Volume d'avis", score: volumeScore, max: 25 },
+                ].map(s => (
+                  <div key={s.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{ width: "80px", height: "4px", background: "#F8F9FA", borderRadius: "2px", overflow: "hidden" }}>
+                      <div style={{ width: `${Math.round(s.score / s.max * 100)}%`, height: "100%", background: healthColor, borderRadius: "2px" }} />
+                    </div>
+                    <span style={{ fontSize: "11px", color: "#80868B" }}>{s.label} ({s.score}/{s.max})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* History + evolution row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
 

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /businesses
+Disallow: /reviews
+Disallow: /pending
+Disallow: /api/
+
+Sitemap: https://caela-reputation.fr/sitemap.xml
