@@ -79,7 +79,7 @@ export default function QuickReplySuccessPage() {
         </a>
 
         <p style={{ margin: "28px 0 0", fontSize: "10px", color: "#80868B" }}>
-          ReviewPilot est un outil indépendant, non affilié à Google LLC.
+          Caela Réputation est un outil indépendant, non affilié à Google LLC.
         </p>
       </div>
     </div>

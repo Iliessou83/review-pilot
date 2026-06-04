@@ -16,7 +16,7 @@ const SUGGESTED = [
 export default function ChatBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Bonjour 👋 Je suis Pilot, l'assistant ReviewPilot. Comment puis-je vous aider ?" },
+    { role: "assistant", content: "Bonjour 👋 Je suis Pilot, l'assistant Caela Réputation. Comment puis-je vous aider ?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -187,7 +187,7 @@ export default function ChatBot() {
           {/* Footer */}
           <div style={{ padding: "8px 14px", background: "#F8F9FA", borderTop: "1px solid #DADCE0", textAlign: "center" }}>
             <span style={{ fontSize: "10px", color: "#80868B" }}>
-              Propulsé par ReviewPilot ·{" "}
+              Propulsé par Caela Réputation ·{" "}
               <a href="mailto:contact@caela.fr" style={{ color: G.blue, textDecoration: "none" }}>contact@caela.fr</a>
             </span>
           </div>

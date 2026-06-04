@@ -156,7 +156,7 @@ function ROICalculator() {
             {savings > 0 ? `✓ Vous économisez ${savings}€/mois` : "Investissement rentable dès le 1er mois"}
           </div>
           <div style={{ fontSize: "12px", color: "#5F6368" }}>
-            {savings > 0 ? `ROI immédiat : ${roi}% — vous récupérez votre mise en ${Math.round(30 / (savings / plan.price))} jours` : "ReviewPilot gère vos avis. Vous gérez votre business."}
+            {savings > 0 ? `ROI immédiat : ${roi}% — vous récupérez votre mise en ${Math.round(30 / (savings / plan.price))} jours` : "Caela Réputation gère vos avis. Vous gérez votre business."}
           </div>
         </div>
         <a href="#pricing" style={{ padding: "10px 20px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, whiteSpace: "nowrap" }}>
@@ -170,7 +170,7 @@ function ROICalculator() {
 function ReviewFlow() {
   const steps = [
     { icon: "⭐", color: G.red, label: "Avis 2★ détecté", sub: "Sync automatique toutes les heures", timing: "0 sec" },
-    { icon: "🧠", color: G.blue, label: "IA génère 5 suggestions", sub: "Empathique, Direct, Solution, Détaillé, Pro", timing: "+8 sec" },
+    { icon: "🧠", color: G.blue, label: "IA génère 3 suggestions", sub: "Empathique, Direct, Solution, Détaillé, Pro", timing: "+8 sec" },
     { icon: "📧", color: G.yellow, label: "Email envoyé avec boutons", sub: "1 clic = réponse choisie, directement dans le mail", timing: "+10 sec" },
     { icon: "✅", color: G.green, label: "Publié sur Google", sub: "La réponse apparaît sous le nom du restaurant", timing: "+2 sec" },
   ];
@@ -219,14 +219,14 @@ const PLANS = [
   {
     name: "Starter",
     price: "29",
+    annual: "23",
     desc: "1 établissement",
     color: G.green,
-    gradient: `linear-gradient(135deg, ${G.green}, #4ade80)`,
     best: "Moins de 30 avis/mois — débutez sans risque",
     features: [
       "1 établissement connecté",
       "Surveillance des avis 24/7",
-      "5 suggestions IA par avis négatif",
+      "3 suggestions IA par avis négatif",
       "Notifications email instantanées",
       "Dashboard centralisé",
     ],
@@ -237,17 +237,16 @@ const PLANS = [
   {
     name: "Solo",
     price: "69",
+    annual: "55",
     desc: "1 établissement",
     color: G.blue,
-    gradient: `linear-gradient(135deg, ${G.blue}, #6ba4f8)`,
-    best: "Restaurant, commerce — 30 à 150 avis/mois",
+    best: "Restaurant, commerce — le plus populaire",
     features: [
       "1 établissement connecté",
-      "Auto-réponse 4-5★ automatique",
-      "5 suggestions IA par avis négatif",
-      "Email avec boutons de réponse en 1 clic",
-      "Rapport hebdomadaire",
-      "Sync toutes les heures",
+      "Auto-réponse 4-5★ en 30 secondes",
+      "3 suggestions IA + email 1-clic",
+      "Rapport hebdomadaire par email",
+      "Rappels avis sans réponse",
     ],
     missing: [],
     cta: "Choisir Solo",
@@ -256,53 +255,34 @@ const PLANS = [
   {
     name: "Pro",
     price: "149",
+    annual: "119",
     desc: "5 établissements",
     color: "#7C3AED",
-    gradient: "linear-gradient(135deg, #7C3AED, #a78bfa)",
     best: "Chaîne locale, franchise 3-5 lieux",
     features: [
       "5 établissements connectés",
       "Tout Solo inclus",
       "Personnalisation du ton par lieu",
       "Multi-utilisateurs (3 accès)",
-      "Sync prioritaire toutes les 2h",
+      "Support prioritaire",
     ],
     missing: [],
     cta: "Choisir Pro",
     highlight: false,
   },
-  {
-    name: "Agence",
-    price: "449",
-    desc: "30 établissements max",
-    color: G.red,
-    gradient: `linear-gradient(135deg, ${G.red}, #f87171)`,
-    best: "Réseau franchise, agence web",
-    features: [
-      "30 établissements connectés",
-      "Tout Pro inclus",
-      "Support dédié 7j/7",
-      "Onboarding accompagné",
-      "API complète",
-      "+12€/établissement supplémentaire",
-    ],
-    missing: [],
-    cta: "Nous contacter",
-    highlight: false,
-  },
 ];
 
 const DIY_ARGS = [
-  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h à rédiger des réponses. À 50€/h de valeur gérant, c'est 150€ gaspillés. ReviewPilot Solo = 69€." },
+  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h à rédiger des réponses. À 50€/h de valeur gérant, c'est 150€ gaspillés. Caela Réputation Solo = 69€." },
   { color: G.blue, bg: "#E8F0FE", icon: "📍", stat: "+12% de vues Maps", title: "La vitesse impacte ton SEO Google", desc: "Google Maps favorise les fiches avec taux de réponse >90%. Répondre en 30 minutes = signal fort pour l'algorithme." },
   { color: G.yellow, bg: "#FEF7E0", icon: "🧠", stat: "45% reconvertis", title: "Les avis négatifs mal gérés coûtent cher", desc: "Une réponse professionnelle à un avis 1★ reconvertit 45% des clients insatisfaits. Une réponse à chaud brise la réputation." },
   { color: G.green, bg: "#E6F4EA", icon: "👀", stat: "89% lisent tes réponses", title: "Tes réponses convertissent avant l'appel", desc: "89% des consommateurs lisent les réponses du propriétaire avant de contacter. Une bonne réponse = client gagné." },
   { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Pendant les rush, les vacances, les périodes chargées — les avis s'accumulent. L'IA ne rate jamais une seule entrée." },
-  { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. ReviewPilot gère 30 fiches comme une seule." },
+  { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. Caela Réputation gère 30 fiches comme une seule." },
 ];
 
 const COMPETITORS = [
-  { name: "ReviewPilot 🇫🇷", solo: "29-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
+  { name: "Caela Réputation 🇫🇷", solo: "29-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
   { name: "getreviewpilot.ai 🇺🇸", solo: "$29-49", business: "$49", agency: "—", aiAuto: true, fr: false, gmb: true, trial: true, highlight: false },
   { name: "Partoo 🇫🇷", solo: "~150€", business: "~250€", agency: "Custom", aiAuto: false, fr: true, gmb: true, trial: false, highlight: false },
   { name: "Birdeye 🇺🇸", solo: "~290€", business: "~450€", agency: "Custom", aiAuto: true, fr: false, gmb: true, trial: false, highlight: false },
@@ -311,8 +291,8 @@ const COMPETITORS = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Karim B.", role: "Gérant — Restaurant Le Bosphore, Lyon", rating: 5, text: "J'avais 47 avis sans aucune réponse. En 2 semaines ReviewPilot a tout rattrapé. Ma note est passée de 4.1 à 4.6 et je reçois plus d'appels depuis." },
-  { name: "Nathalie R.", role: "Propriétaire — Salon Nath'Beauté, Paris 15e", rating: 5, text: "Un client m'a mis 1 étoile injustement. ReviewPilot m'a proposé 3 réponses. J'ai cliqué sur la version empathique depuis mon téléphone. Le client a rappelé pour s'excuser." },
+  { name: "Karim B.", role: "Gérant — Restaurant Le Bosphore, Lyon", rating: 5, text: "J'avais 47 avis sans aucune réponse. En 2 semaines Caela Réputation a tout rattrapé. Ma note est passée de 4.1 à 4.6 et je reçois plus d'appels depuis." },
+  { name: "Nathalie R.", role: "Propriétaire — Salon Nath'Beauté, Paris 15e", rating: 5, text: "Un client m'a mis 1 étoile injustement. Caela Réputation m'a proposé 3 réponses. J'ai cliqué sur la version empathique depuis mon téléphone. Le client a rappelé pour s'excuser." },
   { name: "Sofiane M.", role: "Directeur — Groupe 4 snacks, Marseille", rating: 5, text: "4 établissements, plus de 200 avis par mois. Avant je passais mes dimanches à répondre. Maintenant c'est automatique. Je gagne 3h par semaine minimum." },
 ];
 
@@ -325,8 +305,8 @@ const GMB_SERVICES = [
 
 const NFC_PACKS = [
   { name: "Plaque Solo", price: "19€", qty: "1 plaque", color: G.blue, features: ["NFC + QR code intégré", "Design personnalisé", "Lien direct fiche Google", "Résistant eau/chaleur"] },
-  { name: "Pack Établissement", price: "79€", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR", "Design identique (votre logo)", "Setup inclus", "Livraison sous 7j"], highlight: true },
-  { name: "Pack Réseau", price: "299€", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR", "Design multi-établissements", "Configuration centralisée", "Livraison express"], },
+  { name: "Pack Établissement", price: "79€", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR code", "Design identique (votre logo)", "Setup inclus", "Livraison sous 7j"], highlight: true },
+  { name: "Pack Réseau", price: "299€", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR code", "Design multi-établissements", "Configuration centralisée", "Livraison express"], },
 ];
 
 export default function LandingPage() {
@@ -383,7 +363,7 @@ export default function LandingPage() {
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "#fff", borderBottom: "1px solid #DADCE0", padding: "0 40px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <GDots size={9} />
-          <span style={{ fontSize: "20px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px" }}>ReviewPilot</span>
+          <span style={{ fontSize: "20px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px" }}>Caela Réputation</span>
           <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", background: "#E8F0FE", color: G.blue, borderRadius: "12px" }}>by Caela</span>
         </div>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
@@ -408,7 +388,7 @@ export default function LandingPage() {
             répondus. <span style={{ color: G.green }}>Automatiquement.</span>
           </h1>
           <p style={{ margin: "0 0 36px", fontSize: "18px", lineHeight: 1.65, color: "#5F6368", maxWidth: "480px" }}>
-            ReviewPilot détecte chaque avis, répond aux 4-5★ en 30 secondes, et vous envoie par email 5 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
+            Caela Réputation détecte chaque avis, répond aux 4-5★ en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
             <a href="#login" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
@@ -514,7 +494,7 @@ export default function LandingPage() {
           <div style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
               <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans ReviewPilot</div>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
                 {["Tu réalises à J+3 qu'un avis 1★ attend une réponse", "Tu écris la même réponse générique pour la 12ème fois", "Tu réponds énervé. Ça se voit et ça coûte des clients", "3h/semaine perdues sur les avis au lieu de gérer", "Ta note stagne. Les concurrents qui répondent vite te dépassent"].map(item => (
                   <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
                     <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
@@ -523,8 +503,8 @@ export default function LandingPage() {
                 ))}
               </div>
               <div style={{ padding: "24px 28px", background: "#fff" }}>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec ReviewPilot</div>
-                {["Réponse en 30 secondes, 24h/24, même la nuit du réveillon", "Chaque réponse cite le prénom et un détail. Jamais générique.", "Pour les avis négatifs : 5 tons calibrés. Tu choisis en 1 clic.", "Taux de réponse >95%. Google t'en récompense sur Maps.", "Ta note monte. L'IA travaille. Tu dors."].map(item => (
+                <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
+                {["Réponse en 30 secondes, 24h/24, même la nuit du réveillon", "Chaque réponse cite le prénom et un détail. Jamais générique.", "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic.", "Taux de réponse >95%. Google t'en récompense sur Maps.", "Ta note monte. L'IA travaille. Tu dors."].map(item => (
                   <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
                     <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
                     <span style={{ fontSize: "13px", color: "#5F6368" }}>{item}</span>
@@ -541,7 +521,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "36px" }}>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3vw, 34px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              Pourquoi ReviewPilot ?
+              Pourquoi Caela Réputation ?
             </h2>
             <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>Comparaison honnête. Aucun concurrent français ne propose l&apos;IA auto-réponse à ce prix.</p>
           </div>
@@ -660,7 +640,7 @@ export default function LandingPage() {
               On gère votre présence <GL size={30} />
             </h2>
             <p style={{ margin: "0 auto", maxWidth: "460px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
-              ReviewPilot automatise vos réponses. Caela s&apos;occupe du reste: création, optimisation, visibilité.
+              Caela Réputation automatise vos réponses. Caela s&apos;occupe du reste: création, optimisation, visibilité.
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "16px" }}>
@@ -682,7 +662,7 @@ export default function LandingPage() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}><GDots size={8} /><span style={{ fontSize: "12px", fontWeight: 600, color: "#5F6368" }}>Offre découverte</span></div>
               <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>Pack complet Google Business</h3>
-              <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>ReviewPilot + Optimisation fiche + Suivi mensuel. Un seul interlocuteur. Résultats garantis 30 jours.</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Caela Réputation + Optimisation fiche + Suivi mensuel. Un seul interlocuteur. Résultats garantis 30 jours.</p>
             </div>
             <a href="mailto:contact@caela.fr" style={{ padding: "11px 24px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40`, whiteSpace: "nowrap" }}>
               Demander un audit gratuit
@@ -711,7 +691,7 @@ export default function LandingPage() {
             {[
               { step: "1", icon: "📱", title: "Le client tape la plaque", desc: "N'importe quel téléphone (iOS + Android). Pas d'app à installer.", color: G.blue },
               { step: "2", icon: "⭐", title: "Il arrive sur votre fiche", desc: "Directement sur la page Google Reviews de votre établissement.", color: G.yellow },
-              { step: "3", icon: "✅", title: "Il laisse son avis", desc: "En 30 secondes. ReviewPilot prend le relais pour y répondre.", color: G.green },
+              { step: "3", icon: "✅", title: "Il laisse son avis", desc: "En 30 secondes. Caela Réputation prend le relais pour y répondre.", color: G.green },
             ].map((s, i) => (
               <div key={s.title} style={{ flex: 1, padding: "24px 20px", textAlign: "center", borderRight: i < 2 ? "1px solid #DADCE0" : "none" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: s.color + "15", margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>{s.icon}</div>
@@ -746,7 +726,7 @@ export default function LandingPage() {
           <div style={{ marginTop: "16px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ fontSize: "20px" }}>💡</span>
             <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>
-              <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + ReviewPilot (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.
+              <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + Caela Réputation (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.
             </p>
           </div>
         </div>
@@ -775,7 +755,7 @@ export default function LandingPage() {
               const savings = parseInt(plan.price) * 12 - price * 12;
               return (
                 <div key={plan.name} style={{ background: "#fff", border: plan.highlight ? `2px solid ${plan.color}` : "1px solid #DADCE0", borderRadius: "14px", padding: "24px 20px", boxShadow: plan.highlight ? `0 4px 16px ${plan.color}20` : SHADOW_SM, position: "relative", overflow: "hidden" }}>
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.gradient }} />
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.color }} />
                   {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "2px 8px", background: plan.color + "15", borderRadius: "20px", fontSize: "9px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
                   <p style={{ margin: "0 0 2px", fontSize: "11px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "3px", marginBottom: "3px" }}>
@@ -801,7 +781,7 @@ export default function LandingPage() {
                     ))}
                   </div>
 
-                  <a href="#login" style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.gradient : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
+                  <a href="#login" style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
                     {plan.cta}
                   </a>
                 </div>
@@ -809,12 +789,22 @@ export default function LandingPage() {
             })}
           </div>
 
+          {/* Agency discreet line */}
+          <div style={{ marginTop: "12px", textAlign: "center" }}>
+            <span style={{ fontSize: "13px", color: "#80868B" }}>
+              Vous gérez 5+ établissements ?{" "}
+              <a href="#contact" style={{ color: G.blue, textDecoration: "none", fontWeight: 600 }}>
+                Plan Agence à partir de 449€/mois →
+              </a>
+            </span>
+          </div>
+
           {/* Safety note */}
           <div style={{ marginTop: "20px", padding: "14px 20px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
             <span style={{ fontSize: "16px" }}>🔒</span>
             <div>
               <div style={{ fontSize: "13px", fontWeight: 600, color: G.blue, marginBottom: "2px" }}>Zéro risque pour votre fiche Google</div>
-              <div style={{ fontSize: "12px", color: "#5F6368" }}>ReviewPilot utilise exclusivement l&apos;API officielle Google My Business. Les réponses sont publiées sous le nom de votre établissement, pas sous le nôtre. Vos clients ne savent pas que vous utilisez un outil. Conforme aux CGU Google.</div>
+              <div style={{ fontSize: "12px", color: "#5F6368" }}>Caela Réputation utilise exclusivement l&apos;API officielle Google My Business. Les réponses sont publiées sous le nom de votre établissement, pas sous le nôtre. Vos clients ne savent pas que vous utilisez un outil. Conforme aux CGU Google.</div>
             </div>
           </div>
         </div>
@@ -826,7 +816,7 @@ export default function LandingPage() {
           <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "40px", boxShadow: SHADOW_MD, textAlign: "center" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}><GDots size={11} /></div>
             <h2 style={{ margin: "0 0 5px", fontSize: "21px", fontWeight: 700, color: "#202124" }}>Se connecter</h2>
-            <p style={{ margin: "0 0 26px", color: "#5F6368", fontSize: "14px" }}>Accéder à votre dashboard ReviewPilot</p>
+            <p style={{ margin: "0 0 26px", color: "#5F6368", fontSize: "14px" }}>Accéder à votre dashboard Caela Réputation</p>
 
             <form onSubmit={handleSubmit} style={{ textAlign: "left" }}>
               {[
@@ -852,7 +842,7 @@ export default function LandingPage() {
                 {loading ? "Connexion..." : "Se connecter"}
               </button>
             </form>
-            <p style={{ textAlign: "center", marginTop: "18px", fontSize: "11px", color: "#80868B" }}>ReviewPilot by Caela Agency</p>
+            <p style={{ textAlign: "center", marginTop: "18px", fontSize: "11px", color: "#80868B" }}>Caela Réputation by Caela Agency</p>
           </div>
         </div>
       </section>
@@ -865,7 +855,7 @@ export default function LandingPage() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <GDots size={7} />
-              <span style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>ReviewPilot by Caela Agency</span>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Caela Réputation by Caela Agency</span>
             </div>
             <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
               {["Confidentialité", "Mentions légales", "CGU", "RGPD", "Support"].map(link => (
@@ -878,7 +868,7 @@ export default function LandingPage() {
               © 2026 Caela Agency · contact@caela.fr · Tous droits réservés
             </p>
             <p style={{ margin: 0, fontSize: "11px", color: "#80868B" }}>
-              ReviewPilot est un outil indépendant, non affilié à Google LLC. &quot;Google&quot; et &quot;Google Business Profile&quot; sont des marques de Google LLC.
+              Caela Réputation est un outil indépendant, non affilié à Google LLC. &quot;Google&quot; et &quot;Google Business Profile&quot; sont des marques de Google LLC.
             </p>
           </div>
         </div>

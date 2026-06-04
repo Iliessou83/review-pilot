@@ -36,7 +36,7 @@ function buildNotificationEmail(
   const token2Url = `${appUrl}/api/quick-reply?t=${tokens[2]}`;
 
   return {
-    from: "ReviewPilot <notifications@caela.fr>",
+    from: "Caela Réputation <notifications@caela.fr>",
     to: ownerEmail,
     subject: `Avis ${rating}★ pour ${businessName} — action requise`,
     html: `
@@ -48,7 +48,7 @@ function buildNotificationEmail(
       <div style="width:8px;height:8px;border-radius:50%;background:#FBBC04;"></div>
       <div style="width:8px;height:8px;border-radius:50%;background:#34A853;"></div>
     </div>
-    <span style="color:#fff;font-size:18px;font-weight:700;">ReviewPilot</span>
+    <span style="color:#fff;font-size:18px;font-weight:700;">Caela Réputation</span>
     <span style="color:rgba(255,255,255,0.7);font-size:13px;margin-left:4px;">par Caela</span>
   </div>
 
@@ -102,7 +102,7 @@ function buildNotificationEmail(
   <!-- Footer -->
   <div style="padding:20px 28px;border-top:1px solid #DADCE0;margin-top:20px;text-align:center;">
     <a href="${pendingUrl}" style="color:#1A73E8;font-size:13px;font-weight:500;">Gérer depuis le dashboard →</a>
-    <p style="margin:12px 0 0;font-size:10px;color:#80868B;">ReviewPilot est un outil indépendant, non affilié à Google LLC.</p>
+    <p style="margin:12px 0 0;font-size:10px;color:#80868B;">Caela Réputation est un outil indépendant, non affilié à Google LLC.</p>
   </div>
 </div>
     `,

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ReviewPilot — Gestion d'avis Google automatisée",
+  title: "Caela Réputation — Gestion d'avis Google automatisée",
   description: "IA spécialisée fiches Google Business. Réponses automatiques, optimisation de fiche, référencement local.",
 };
 

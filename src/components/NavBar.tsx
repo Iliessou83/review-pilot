@@ -46,7 +46,7 @@ export default function NavBar() {
             ))}
           </div>
           <span style={{ fontSize: "17px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px" }}>
-            ReviewPilot
+            Caela Réputation
           </span>
         </div>
 

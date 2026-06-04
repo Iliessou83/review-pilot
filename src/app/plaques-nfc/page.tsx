@@ -191,7 +191,7 @@ export default function PlaquesNFCPage() {
             <div style={{ display: "flex", gap: "3px" }}>
               {[G.blue, G.red, G.yellow, G.green].map((c, i) => <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />)}
             </div>
-            <span style={{ fontWeight: 700, fontSize: "15px", color: "#202124" }}>ReviewPilot</span>
+            <span style={{ fontWeight: 700, fontSize: "15px", color: "#202124" }}>Caela Réputation</span>
           </a>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <a href="/" style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>← Retour au site</a>
@@ -377,7 +377,7 @@ export default function PlaquesNFCPage() {
                 </div>
                 {t.id === "acrylic" && (
                   <div style={{ padding: "12px 16px", background: "#E8F0FE", borderRadius: "10px", fontSize: "13px", color: G.blue, fontWeight: 600 }}>
-                    ✅ C&apos;est ce qu&apos;on utilise pour toutes nos plaques ReviewPilot.
+                    ✅ C&apos;est ce qu&apos;on utilise pour toutes nos plaques Caela Réputation.
                   </div>
                 )}
               </div>
@@ -455,10 +455,10 @@ export default function PlaquesNFCPage() {
         <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
           <GDots size={10} />
           <h2 style={{ fontSize: "clamp(20px, 3vw, 32px)", fontWeight: 800, margin: "20px 0 16px", color: "#202124" }}>
-            Encore plus fort avec ReviewPilot
+            Encore plus fort avec Caela Réputation
           </h2>
           <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.7, margin: "0 0 32px" }}>
-            La plaque NFC amène le client sur Google. ReviewPilot répond automatiquement en 30 secondes aux bons avis, et vous notifie avec 3 suggestions de réponse pour les avis négatifs.
+            La plaque NFC amène le client sur Google. Caela Réputation répond automatiquement en 30 secondes aux bons avis, et vous notifie avec 3 suggestions de réponse pour les avis négatifs.
           </p>
           <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
             <div style={{ background: "#fff", borderRadius: "12px", padding: "16px 24px", border: "1px solid #DADCE0", boxShadow: SHADOW_SM, fontSize: "14px", color: "#202124" }}>
@@ -466,11 +466,11 @@ export default function PlaquesNFCPage() {
             </div>
             <div style={{ fontSize: "20px", display: "flex", alignItems: "center", color: "#DADCE0" }}>→</div>
             <div style={{ background: "#fff", borderRadius: "12px", padding: "16px 24px", border: "1px solid #DADCE0", boxShadow: SHADOW_SM, fontSize: "14px", color: "#202124" }}>
-              ⭐⭐⭐⭐⭐ ReviewPilot répond en 30 sec
+              ⭐⭐⭐⭐⭐ Caela Réputation répond en 30 sec
             </div>
           </div>
           <a href="/" style={{ display: "inline-block", padding: "14px 32px", background: G.blue, color: "#fff", borderRadius: "10px", textDecoration: "none", fontWeight: 700, fontSize: "15px", boxShadow: `0 4px 16px ${G.blue}40` }}>
-            Voir les offres ReviewPilot →
+            Voir les offres Caela Réputation →
           </a>
         </div>
       </section>
@@ -624,8 +624,8 @@ export default function PlaquesNFCPage() {
       {/* FOOTER */}
       <footer style={{ borderTop: "1px solid #DADCE0", padding: "24px", textAlign: "center", background: "#fff" }}>
         <p style={{ fontSize: "12px", color: "#80868B", margin: 0 }}>
-          © 2026 ReviewPilot by Caela Agency · <a href="mailto:contact@caela.fr" style={{ color: G.blue, textDecoration: "none" }}>contact@caela.fr</a>
-          {" · "}ReviewPilot est un outil indépendant, non affilié à Google LLC.
+          © 2026 Caela Réputation by Caela Agency · <a href="mailto:contact@caela.fr" style={{ color: G.blue, textDecoration: "none" }}>contact@caela.fr</a>
+          {" · "}Caela Réputation est un outil indépendant, non affilié à Google LLC.
         </p>
       </footer>
 
