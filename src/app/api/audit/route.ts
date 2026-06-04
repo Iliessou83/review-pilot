@@ -82,14 +82,26 @@ function computeScore(place: Record<string, unknown> | null, name: string): {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, city, email } = await request.json() as { name: string; city: string; email: string };
+    const { name, city, email, placeId } = await request.json() as { name: string; city: string; email: string; placeId?: string };
 
     if (!name || !city || !email) {
       return NextResponse.json({ error: "Tous les champs sont requis." }, { status: 400 });
     }
 
-    // Search Google Places
-    const place = await searchGooglePlace(name, city);
+    // Use placeId directly if provided, else search
+    let place = null;
+    if (placeId) {
+      const apiKey = process.env.GCP_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
+      if (apiKey) {
+        const detailRes = await fetch(
+          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,formatted_address,opening_hours,photos,website,international_phone_number,business_status,types&key=${apiKey}`
+        );
+        const d = await detailRes.json();
+        place = d.result || null;
+      }
+    } else {
+      place = await searchGooglePlace(name, city);
+    }
     const { score, found, insights } = computeScore(place as Record<string, unknown> | null, name);
 
     // Generate priorities + recommendation with Claude
