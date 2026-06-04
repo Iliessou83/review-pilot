@@ -394,8 +394,8 @@ export default function LandingPage() {
             <a href="#login" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
               Essai gratuit 14 jours
             </a>
-            <a href="#pricing" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: G.blue, textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM }}>
-              Voir les offres dès 29€
+            <a href="/audit" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
+              <span style={{ fontSize: "16px" }}>🔍</span> Audit gratuit de ta fiche
             </a>
           </div>
           <p style={{ margin: "0 0 24px", fontSize: "12px", color: "#80868B" }}>
