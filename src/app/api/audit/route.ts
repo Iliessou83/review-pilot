@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
 
-const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const claude = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
 const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
 
 async function searchGooglePlace(name: string, city: string) {
@@ -131,6 +133,7 @@ Génère exactement ce JSON (sans markdown):
     let recommendation = "";
 
     try {
+      if (!claude) throw new Error("No API key");
       const aiRes = await claude.messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 400,

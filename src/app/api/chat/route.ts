@@ -3,7 +3,9 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
 
 const SYSTEM = `Tu es l'assistant de Caela Réputation, un outil français de gestion d'avis Google Business alimenté par l'IA. Tu t'appelles "Pilot" et tu parles uniquement en français, de manière chaleureuse, directe et professionnelle.
 
@@ -83,6 +85,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No messages" }, { status: 400 });
     }
 
+    if (!client) return NextResponse.json({ reply: "Service temporairement indisponible. Contactez-nous à contact@caela.fr" });
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 300,
