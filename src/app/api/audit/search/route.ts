@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, city } = await request.json() as { name: string; city: string };
+    const { name, city, address } = await request.json() as { name: string; city: string; address?: string };
     if (!name || !city) return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
 
     const apiKey = process.env.GCP_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ candidates: [] });
     }
 
-    const query = encodeURIComponent(`${name} ${city}`);
+    // Address + name = most precise query
+    const query = encodeURIComponent(address ? `${name} ${address} ${city}` : `${name} ${city}`);
     const res = await fetch(
       `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=place_id,name,formatted_address,rating,user_ratings_total,photos,business_status,types&language=fr&key=${apiKey}`
     );

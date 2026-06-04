@@ -35,6 +35,7 @@ export default function AuditPage() {
   const [step, setStep] = useState<Step>("form");
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
   const [email, setEmail] = useState("");
   const [searching, setSearching] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -70,7 +71,7 @@ export default function AuditPage() {
       const res = await fetch("/api/audit/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, city }),
+        body: JSON.stringify({ name, city, address }),
       });
       const data = await res.json();
       setCandidates(data.candidates || []);
@@ -199,14 +200,25 @@ export default function AuditPage() {
                     💡 <strong>Astuce :</strong> Collez directement votre lien Google Maps pour un résultat immédiat et précis.
                   </p>
                 </div>
-                <div>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "#202124", display: "block", marginBottom: "6px" }}>Ville *</label>
-                  <input value={city} onChange={e => setCity(e.target.value)} required
-                    placeholder="Lyon, Paris, Marseille..."
-                    style={inputStyle}
-                    onFocus={e => e.target.style.borderColor = G.blue}
-                    onBlur={e => e.target.style.borderColor = "#DADCE0"}
-                  />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label style={{ fontSize: "13px", fontWeight: 600, color: "#202124", display: "block", marginBottom: "6px" }}>Adresse</label>
+                    <input value={address} onChange={e => setAddress(e.target.value)}
+                      placeholder="12 rue de la Paix"
+                      style={inputStyle}
+                      onFocus={e => e.target.style.borderColor = G.blue}
+                      onBlur={e => e.target.style.borderColor = "#DADCE0"}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "13px", fontWeight: 600, color: "#202124", display: "block", marginBottom: "6px" }}>Ville *</label>
+                    <input value={city} onChange={e => setCity(e.target.value)} required
+                      placeholder="Lyon, Paris..."
+                      style={inputStyle}
+                      onFocus={e => e.target.style.borderColor = G.blue}
+                      onBlur={e => e.target.style.borderColor = "#DADCE0"}
+                    />
+                  </div>
                 </div>
                 {error && <div style={{ padding: "10px 14px", background: "#FCE8E6", borderRadius: "8px", fontSize: "13px", color: G.red }}>{error}</div>}
                 <button type="submit" disabled={searching} style={btnStyle(searching ? "#DADCE0" : G.blue)}>
