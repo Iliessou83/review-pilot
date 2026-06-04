@@ -231,7 +231,7 @@ const PLANS = [
       "Dashboard centralisé",
     ],
     missing: ["Auto-réponse automatique"],
-    cta: "Commencer gratuitement",
+    cta: "Essai 14 jours sans CB",
     highlight: false,
   },
   {
