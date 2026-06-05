@@ -4,12 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { db } from "@/lib/db";
 import { reviews, pendingResponses } from "@/db/schema";
+import { getJwtSecret } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-
-const SECRET = () =>
-  new TextEncoder().encode(
-    process.env.JWT_SECRET || "reviewpilot-secret-key-min-32-chars-2026"
-  );
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("t");
@@ -18,11 +14,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { payload } = await jwtVerify(token, SECRET());
-    const { pendingId, choice } = payload as {
-      pendingId: number;
-      choice: number;
-    };
+    const { payload } = await jwtVerify(token, getJwtSecret());
+
+    const pendingId = typeof payload.pendingId === "number" ? payload.pendingId : null;
+    const choice = typeof payload.choice === "number" ? payload.choice : null;
+    if (pendingId === null || choice === null || choice < 0 || choice > 2) {
+      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
+    }
 
     const [pending] = await db
       .select()
@@ -32,6 +30,11 @@ export async function GET(request: NextRequest) {
 
     if (!pending) {
       return NextResponse.redirect(new URL("/quick-reply/error", request.url));
+    }
+
+    // Idempotent: link already used — redirect to success without re-posting
+    if (pending.status === "sent") {
+      return NextResponse.redirect(new URL("/quick-reply/success", request.url));
     }
 
     const suggestions = pending.suggestions as string[];

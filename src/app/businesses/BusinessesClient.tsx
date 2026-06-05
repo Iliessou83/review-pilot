@@ -73,9 +73,16 @@ export default function BusinessesClient({ businesses }: { businesses: BusinessW
 
   async function handleSync(id: number) {
     setSyncingId(id);
+    setError("");
     try {
-      await fetch(`/api/reviews/sync?businessId=${id}`, { method: "POST" });
+      const res = await fetch(`/api/reviews/sync?businessId=${id}`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setError(data.error || `Erreur ${res.status} lors de la synchronisation`);
+      }
       router.refresh();
+    } catch {
+      setError("Erreur réseau lors de la synchronisation.");
     } finally {
       setSyncingId(null);
     }
@@ -83,8 +90,17 @@ export default function BusinessesClient({ businesses }: { businesses: BusinessW
 
   async function handleDelete(id: number) {
     if (!confirm("Supprimer cet établissement et tous ses avis ?")) return;
-    await fetch(`/api/businesses?id=${id}`, { method: "DELETE" });
-    router.refresh();
+    try {
+      const res = await fetch(`/api/businesses?id=${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setError(data.error || "Erreur lors de la suppression.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError("Erreur réseau lors de la suppression.");
+    }
   }
 
   return (

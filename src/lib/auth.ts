@@ -2,28 +2,27 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
+// Hardcoded admin accounts — acceptable for a private mono-tenant system.
+// Hashes are bcrypt cost 10. Rotate passwords via bcrypt CLI if compromised.
+// To add a user: bcrypt.hashSync("password", 10) and add the entry here.
 const USERS: Record<string, string> = {
   "admin@caela.fr": "$2a$10$Hlqh2ODkxUVWDP8fVYYg7eZTJ9pFLRSCbMzzfwOAS0R/Wg1k.ZoDO",
   "esperenza@caela.fr": "$2a$10$qlUiW288a9CuOIpkdsJ/ou.2GX8ZmRbk1hcETNYU.kJidTGlWkTkC",
 };
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "reviewpilot-secret-key-min-32-chars-2026"
-);
+export function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET environment variable is not set");
+  return new TextEncoder().encode(secret);
+}
 
-export async function verifyPassword(
-  plain: string,
-  hash: string
-): Promise<boolean> {
+export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
   const bcrypt = await import("bcryptjs");
   return bcrypt.compare(plain, hash);
 }
 
-export async function validateCredentials(
-  email: string,
-  password: string
-): Promise<boolean> {
-  const hash = USERS[email];
+export async function validateCredentials(email: string, password: string): Promise<boolean> {
+  const hash = USERS[email.toLowerCase()];
   if (!hash) return false;
   return verifyPassword(password, hash);
 }
@@ -32,16 +31,16 @@ export async function createToken(email: string): Promise<string> {
   return new SignJWT({ email, role: "admin" })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(JWT_SECRET);
+    .setExpirationTime("24h")
+    .sign(getJwtSecret());
 }
 
-export async function verifyToken(
-  token: string
-): Promise<{ email: string; role: string } | null> {
+export async function verifyToken(token: string): Promise<{ email: string; role: string } | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as { email: string; role: string };
+    const { payload } = await jwtVerify(token, getJwtSecret());
+    // Validate required fields
+    if (typeof payload.email !== "string" || typeof payload.role !== "string") return null;
+    return { email: payload.email, role: payload.role };
   } catch {
     return null;
   }

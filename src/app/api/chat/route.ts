@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const client = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -43,7 +44,6 @@ PLAQUES NFC:
 - Plaque Solo: 19€ (1 plaque NFC + QR code)
 - Pack Établissement: 79€ (5 plaques)
 - Pack Réseau: 299€ (25 plaques)
-Les plaques permettent aux clients de taper leur téléphone et d'arriver directement sur la fiche Google pour laisser un avis.
 
 AVANTAGES CLÉ vs concurrents:
 - Seul outil 100% français spécialisé Google Business avec IA auto-réponse
@@ -54,43 +54,72 @@ AVANTAGES CLÉ vs concurrents:
 
 QUESTIONS FRÉQUENTES:
 Q: "Est-ce que ça abîme ma fiche Google?"
-R: Non. On utilise l'API officielle Google My Business. Google voit la réponse comme si le propriétaire l'avait écrite.
+R: Non. On utilise l'API officielle Google My Business.
 
 Q: "Sous quel nom les réponses sont publiées?"
-R: Sous le nom de votre établissement, pas Caela Réputation. Vos clients ne savent pas que vous utilisez un outil.
+R: Sous le nom de votre établissement, pas Caela Réputation.
 
 Q: "C'est légal d'utiliser un outil IA pour répondre aux avis?"
-R: Oui, totalement. Google autorise l'utilisation d'outils tiers via son API officielle. Nous sommes conformes à leurs CGU.
+R: Oui, totalement. Google autorise les outils tiers via son API officielle.
 
 Q: "Combien de temps pour être opérationnel?"
-R: Après inscription, la connexion de votre fiche Google prend 10-15 minutes avec notre onboarding guidé.
-
-Q: "Puis-je offrir une réduction en échange d'un avis?"
-R: Non, c'est interdit par les CGU Google et peut entraîner la suspension de votre fiche. Ne faites jamais ça.
+R: 10-15 minutes avec notre onboarding guidé.
 
 RÈGLES DE TON:
 - Réponds en 2-4 phrases maximum par message
 - Phrases courtes. Voix active.
 - Si quelqu'un veut s'inscrire, dis-leur de cliquer sur "Essai gratuit 14 jours" en haut de page
-- Si la question sort de ton domaine (Caela Réputation), redirige vers contact@caela.fr
+- Si la question sort de ton domaine, redirige vers contact@caela.fr
 - Ne mentionne jamais que tu es Claude ou un LLM — tu es "Pilot, l'assistant Caela Réputation"`;
 
 export async function POST(request: NextRequest) {
-  try {
-    const { messages } = await request.json() as {
-      messages: { role: "user" | "assistant"; content: string }[];
-    };
+  // 20 messages per minute per IP
+  const ip = getClientIp(request);
+  if (!rateLimit(`chat:${ip}`, 20, 60 * 1000)) {
+    return NextResponse.json({ reply: "Trop de messages. Patientez une minute." });
+  }
 
-    if (!messages?.length) {
+  try {
+    // Guard against oversized bodies
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > 20_000) {
+      return NextResponse.json({ reply: "Message trop long." });
+    }
+
+    let body: { messages?: unknown };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ reply: "Requête invalide." });
+    }
+
+    const messages = body.messages;
+    if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "No messages" }, { status: 400 });
     }
 
+    // Validate message shape
+    const sanitized = messages
+      .slice(-8)
+      .filter((m): m is { role: "user" | "assistant"; content: string } =>
+        m != null &&
+        typeof m === "object" &&
+        (m.role === "user" || m.role === "assistant") &&
+        typeof m.content === "string" &&
+        m.content.length <= 2000
+      );
+
+    if (sanitized.length === 0) {
+      return NextResponse.json({ error: "No valid messages" }, { status: 400 });
+    }
+
     if (!client) return NextResponse.json({ reply: "Service temporairement indisponible. Contactez-nous à contact@caela.fr" });
+
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 300,
       system: SYSTEM,
-      messages: messages.slice(-8),
+      messages: sanitized,
     });
 
     const text = response.content[0]?.type === "text" ? response.content[0].text : "";

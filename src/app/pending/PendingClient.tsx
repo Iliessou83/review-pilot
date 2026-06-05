@@ -70,17 +70,22 @@ function PendingCard({ item }: { item: PendingItem }) {
 
     setPosting(true);
     try {
-      await fetch(`/api/reviews/${item.review.id}/respond`, {
+      const res = await fetch(`/api/reviews/${item.review.id}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ responseText: activeText }),
       });
 
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(data.error || `Erreur ${res.status}`);
+      }
+
       setPosted(true);
       setTimeout(() => router.refresh(), 1200);
     } catch (err) {
       console.error(err);
-      alert("Échec de l'envoi. Réessaie.");
+      alert(err instanceof Error ? err.message : "Échec de l'envoi. Réessaie.");
     } finally {
       setPosting(false);
     }

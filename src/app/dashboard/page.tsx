@@ -50,9 +50,11 @@ async function getStats() {
     { label: monthNames[now.getMonth()], count: thisMonth[0]?.count || 0, avg: parseFloat(String(thisMonthAvg[0]?.avg || "0")) },
   ];
 
-  const evolution = thisMonth[0]?.count - (lastMonth[0]?.count || 0);
-  const evolutionPct = lastMonth[0]?.count > 0
-    ? Math.round(((thisMonth[0]?.count - lastMonth[0]?.count) / lastMonth[0]?.count) * 100)
+  const thisMonthCount = thisMonth[0]?.count ?? 0;
+  const lastMonthCount = lastMonth[0]?.count ?? 0;
+  const evolution = thisMonthCount - lastMonthCount;
+  const evolutionPct = lastMonthCount > 0
+    ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100)
     : 0;
 
   return {

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const claude = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -331,46 +332,52 @@ function buildEmailHtml(p: {
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  // 3 audits per hour per IP (each audit = up to 2 API calls + 1 email)
+  const ip = getClientIp(request);
+  if (!rateLimit(`audit:${ip}`, 3, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Trop de demandes. Réessayez dans une heure." }, { status: 429 });
+  }
+
   try {
-    const body = await request.json() as {
-      platform?: string;
-      // Google
-      name?: string; city?: string; email: string; placeId?: string;
-      // Trustpilot
-      domain?: string;
-    };
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
+    }
 
-    const { email } = body;
-    if (!email) return NextResponse.json({ error: "Email requis." }, { status: 400 });
+    const email = typeof body.email === "string" ? body.email.trim() : "";
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Email invalide." }, { status: 400 });
+    }
 
-    const platform = body.platform || "google";
+    const platform = typeof body.platform === "string" ? body.platform : "google";
 
     let score = 0, found = false, businessName = "", rating = 0, reviewCount = 0;
     let insights: { label: string; status: "good" | "warn" | "bad"; detail: string }[] = [];
 
     if (platform === "trustpilot") {
-      const domain = (body.domain || "")
+      const rawDomain = typeof body.domain === "string" ? body.domain : "";
+      const domain = rawDomain
         .replace(/^https?:\/\//i, "")
         .replace(/^(fr\.|www\.)?trustpilot\.com\/review\//i, "")
         .replace(/\/$/, "")
         .split("?")[0]
-        .split("/")[0];
+        .split("/")[0]
+        .slice(0, 253);
 
       if (!domain) return NextResponse.json({ error: "Domaine requis." }, { status: 400 });
 
       const biz = await fetchTrustpilotBusiness(domain);
 
       if (biz) {
-        // Real API data
         const result = computeTrustpilotScore(biz);
         score = result.score; found = result.found; businessName = result.businessName || domain;
         rating = result.rating; reviewCount = result.reviewCount; insights = result.insights;
       } else {
-        // No API key yet — Claude generates a realistic simulated audit
         const sim = await simulateTrustpilotAudit(domain);
         score = sim.score; found = sim.found; businessName = sim.businessName;
         rating = sim.rating; reviewCount = sim.reviewCount; insights = sim.insights;
-        // Return directly — priorities & recommendation already generated
         const scoreColorSim = score >= 75 ? "#34A853" : score >= 50 ? "#FBBC04" : "#EA4335";
         try {
           await resend.emails.send({
@@ -386,7 +393,9 @@ export async function POST(request: NextRequest) {
       }
 
     } else {
-      const { name, city, placeId } = body;
+      const name = typeof body.name === "string" ? body.name.trim().slice(0, 200) : "";
+      const city = typeof body.city === "string" ? body.city.trim().slice(0, 100) : "";
+      const placeId = typeof body.placeId === "string" ? body.placeId : null;
       if (!name || !city) return NextResponse.json({ error: "Nom et ville requis." }, { status: 400 });
 
       let place = null;
@@ -402,7 +411,7 @@ export async function POST(request: NextRequest) {
       reviewCount = found ? (place as Record<string, unknown>)?.user_ratings_total as number || 0 : 0;
     }
 
-    const location = platform === "google" ? (body.city || "") : "";
+    const location = platform === "google" ? (typeof body.city === "string" ? body.city : "") : "";
     const { priorities, recommendation } = await generateAIPriorities(platform, businessName, location, found, score, insights);
 
     const scoreColor = score >= 75 ? "#34A853" : score >= 50 ? "#FBBC04" : "#EA4335";

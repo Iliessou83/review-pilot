@@ -12,8 +12,8 @@ function getDb(): Db {
   if (!url) throw new Error("DATABASE_URL not set");
   const pool = new Pool({
     connectionString: url,
-    ssl: { rejectUnauthorized: false },
-    max: 1,
+    ssl: { rejectUnauthorized: false }, // Required by Neon/Supabase managed TLS
+    max: 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   });
