@@ -1,5 +1,5 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "@/db/schema";
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
@@ -10,14 +10,17 @@ function getDb(): Db {
   if (_db) return _db;
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL not set");
-  const pool = new Pool({
-    connectionString: url,
-    ssl: { rejectUnauthorized: false }, // Required by Neon/Supabase managed TLS
-    max: 5,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+
+  // Use postgres driver — better for serverless (Supabase pooler compatible)
+  // For Supabase: use the Transaction pooler URL (port 6543) to avoid IPv6/TCP issues on Vercel
+  const client = postgres(url, {
+    prepare: false,   // required for PgBouncer/Supabase pooler in transaction mode
+    ssl: "require",
+    max: 1,           // serverless: 1 connection per function instance
+    idle_timeout: 20,
+    connect_timeout: 10,
   });
-  _db = drizzle(pool, { schema });
+  _db = drizzle(client, { schema });
   return _db;
 }
 
