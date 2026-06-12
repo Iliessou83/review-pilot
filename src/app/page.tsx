@@ -858,8 +858,14 @@ export default function LandingPage() {
               <span style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Caela Réputation by Caela Agency</span>
             </div>
             <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-              {["Confidentialité", "Mentions légales", "CGU", "RGPD", "Support"].map(link => (
-                <a key={link} href="#" style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>{link}</a>
+              {[
+                { label: "Confidentialité", href: "/politique-de-confidentialite" },
+                { label: "Mentions légales", href: "/mentions-legales" },
+                { label: "CGV / CGU", href: "/cgv" },
+                { label: "Cookies", href: "/politique-de-cookies" },
+                { label: "Support", href: "mailto:contact@caela.fr" },
+              ].map(link => (
+                <a key={link.label} href={link.href} style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>{link.label}</a>
               ))}
             </div>
           </div>

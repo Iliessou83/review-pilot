@@ -10,5 +10,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/plaques-nfc`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/parrainage`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/cgv`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/mentions-legales`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/politique-de-confidentialite`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
+    { url: `${base}/politique-de-cookies`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
   ];
 }
