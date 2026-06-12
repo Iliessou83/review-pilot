@@ -83,6 +83,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
+    return await runSync();
+  } catch (err) {
+    console.error("Cron sync fatal error:", err);
+    return NextResponse.json({ error: "Internal error", detail: err instanceof Error ? err.message : String(err) }, { status: 500 });
+  }
+}
+
+async function runSync() {
   const allBusinesses = await db.select().from(businesses);
   const results: Record<string, { synced: number; processed: number; errors: string[] }> = {};
 
