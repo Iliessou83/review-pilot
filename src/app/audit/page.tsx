@@ -26,6 +26,7 @@ type AuditResult = {
   priorities: string[];
   recommendation: string;
   platform: Platform;
+  simulated?: boolean;
 };
 
 type Step = "form" | "choose" | "email" | "result";
@@ -425,13 +426,21 @@ export default function AuditPage() {
                 {result.platform === "trustpilot" ? "⭐ Trustpilot" : "📍 Google Business Profile"}
               </div>
 
+              {result.simulated && (
+                <div style={{ background: "#FEF7E0", border: "1px solid #FBBC04", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontSize: "12px", color: "#7A5900", lineHeight: 1.5 }}>
+                  <strong>⚠️ Estimation simulée.</strong> Aucun profil n&apos;a été trouvé pour ce domaine. Les chiffres ci-dessous sont une projection indicative pour un commerce typique du secteur, pas vos données réelles.
+                </div>
+              )}
+
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
                 <div>
                   <h2 style={{ margin: "0 0 4px", fontSize: "20px", fontWeight: 800, color: "#202124" }}>{result.businessName}</h2>
                   {result.found && (
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       <Stars n={result.rating} color={result.platform === "trustpilot" ? G.tp : G.yellow} />
-                      <span style={{ fontSize: "13px", color: "#5F6368" }}>{result.rating?.toFixed(1)} · {result.reviewCount} avis</span>
+                      <span style={{ fontSize: "13px", color: "#5F6368" }}>
+                        {result.simulated ? "~" : ""}{result.rating?.toFixed(1)} · {result.simulated ? "~" : ""}{result.reviewCount} avis{result.simulated ? " (estimation)" : ""}
+                      </span>
                     </div>
                   )}
                 </div>

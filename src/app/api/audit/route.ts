@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { escapeHtml } from "@/lib/escape-html";
 
 const claude = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -279,7 +280,7 @@ function buildEmailHtml(p: {
   platform: string; businessName: string; location: string;
   score: number; scoreColor: string; found: boolean; rating: number; reviewCount: number;
   insights: { label: string; status: string; detail: string }[];
-  priorities: string[]; recommendation: string;
+  priorities: string[]; recommendation: string; simulated?: boolean;
 }): string {
   const accentColor = p.platform === "trustpilot" ? "#00B67A" : "#1A73E8";
   const platformLabel = p.platform === "trustpilot" ? "Trustpilot" : "Google Business Profile";
@@ -288,17 +289,21 @@ function buildEmailHtml(p: {
       <div style="background:${accentColor};padding:28px 32px;border-radius:16px 16px 0 0;">
         <p style="margin:0 0 8px;font-size:12px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${platformLabel}</p>
         <h1 style="margin:0;font-size:22px;font-weight:800;color:#fff;">Audit de votre réputation en ligne</h1>
-        <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.8);">${p.businessName}${p.location ? ` · ${p.location}` : ""}</p>
+        <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.8);">${escapeHtml(p.businessName)}${p.location ? ` · ${escapeHtml(p.location)}` : ""}</p>
       </div>
       <div style="padding:28px 32px;">
+        ${p.simulated ? `
+        <div style="background:#FEF7E0;border:1px solid #FBBC04;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#7A5900;line-height:1.5;">
+          <strong>⚠️ Estimation simulée.</strong> Aucun profil ${platformLabel} n'a été trouvé pour ce domaine. Les chiffres ci-dessous sont une projection indicative pour un commerce typique de votre secteur, pas vos données réelles.
+        </div>` : ""}
         <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;padding:20px;background:#F8F9FA;border-radius:12px;">
           <div style="width:80px;height:80px;border-radius:50%;border:4px solid ${p.scoreColor};display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
             <span style="font-size:26px;font-weight:800;color:${p.scoreColor};line-height:1;">${p.score}</span>
             <span style="font-size:11px;color:${p.scoreColor};font-weight:600;">/100</span>
           </div>
           <div>
-            <div style="font-size:18px;font-weight:800;color:#202124;">${p.score >= 75 ? "Bonne réputation" : p.score >= 50 ? "À améliorer" : "Urgent — action requise"}</div>
-            <div style="font-size:13px;color:#5F6368;margin-top:4px;">${p.found ? `${p.rating} ★ · ${p.reviewCount} avis` : "Profil non trouvé"}</div>
+            <div style="font-size:18px;font-weight:800;color:#202124;">${p.simulated ? "Estimation indicative" : p.score >= 75 ? "Bonne réputation" : p.score >= 50 ? "À améliorer" : "Urgent — action requise"}</div>
+            <div style="font-size:13px;color:#5F6368;margin-top:4px;">${p.simulated ? `~${p.rating} ★ · ~${p.reviewCount} avis (estimation)` : p.found ? `${p.rating} ★ · ${p.reviewCount} avis` : "Profil non trouvé"}</div>
           </div>
         </div>
         <h3 style="font-size:15px;font-weight:700;color:#202124;margin:0 0 12px;">Points analysés :</h3>
@@ -306,17 +311,17 @@ function buildEmailHtml(p: {
           <div style="display:flex;gap:10px;padding:10px 14px;margin-bottom:8px;background:${ins.status==="good"?"#E6F4EA":ins.status==="warn"?"#FEF7E0":"#FCE8E6"};border-radius:8px;">
             <span>${ins.status==="good"?"✅":ins.status==="warn"?"⚠️":"❌"}</span>
             <div>
-              <div style="font-size:13px;font-weight:600;color:#202124;">${ins.label}</div>
-              <div style="font-size:12px;color:#5F6368;">${ins.detail}</div>
+              <div style="font-size:13px;font-weight:600;color:#202124;">${escapeHtml(ins.label)}</div>
+              <div style="font-size:12px;color:#5F6368;">${escapeHtml(ins.detail)}</div>
             </div>
           </div>
         `).join("")}
         <div style="background:#F8F9FA;border-radius:12px;padding:18px;margin:20px 0;">
           <div style="font-size:14px;font-weight:700;color:#202124;margin-bottom:10px;">3 actions prioritaires :</div>
-          ${p.priorities.map((pr, i) => `<div style="font-size:13px;color:#5F6368;margin-bottom:6px;"><strong style="color:${accentColor};">${i+1}.</strong> ${pr}</div>`).join("")}
+          ${p.priorities.map((pr, i) => `<div style="font-size:13px;color:#5F6368;margin-bottom:6px;"><strong style="color:${accentColor};">${i+1}.</strong> ${escapeHtml(pr)}</div>`).join("")}
         </div>
         <div style="background:${p.platform==="trustpilot"?"#F0FDF8":"#E8F0FE"};border-radius:10px;padding:16px;margin-bottom:24px;font-size:13px;color:${accentColor};line-height:1.6;">
-          ${p.recommendation}
+          ${escapeHtml(p.recommendation)}
         </div>
         <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://caela-reputation.vercel.app"}/#login" style="display:block;text-align:center;padding:14px;background:${accentColor};color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
           Corriger ça avec Caela Réputation — Essai 14 jours →
@@ -384,12 +389,12 @@ export async function POST(request: NextRequest) {
             from: "Caela Réputation <noreply@caela.fr>",
             to: email,
             subject: `📊 Audit Trustpilot — ${businessName} : ${score}/100`,
-            html: buildEmailHtml({ platform: "trustpilot", businessName, location: "", score, scoreColor: scoreColorSim, found, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation }),
+            html: buildEmailHtml({ platform: "trustpilot", businessName, location: "", score, scoreColor: scoreColorSim, found, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation, simulated: true }),
           });
         } catch (emailErr) {
           console.error("Email send error:", emailErr);
         }
-        return NextResponse.json({ score, found, businessName, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation });
+        return NextResponse.json({ score, found, businessName, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation, simulated: true });
       }
 
     } else {

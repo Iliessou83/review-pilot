@@ -231,7 +231,7 @@ const PLANS = [
       "Dashboard centralisé",
     ],
     missing: ["Auto-réponse automatique"],
-    cta: "Essai 14 jours sans CB",
+    cta: "Démarrer l'essai 14 jours",
     highlight: false,
   },
   {
@@ -399,7 +399,7 @@ export default function LandingPage() {
             </a>
           </div>
           <p style={{ margin: "0 0 24px", fontSize: "12px", color: "#80868B" }}>
-            Sans carte bancaire. Annulez quand vous voulez.
+            14 jours pour tester. Carte requise, rappel 3 jours avant le premier prélèvement. Résiliation en 2 clics.
           </p>
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {[
@@ -593,15 +593,12 @@ export default function LandingPage() {
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#FEF7E0", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: "#F9AB00", marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-              Ils l&apos;utilisent déjà
+              Exemples de réponses
             </div>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              Ce que disent nos clients
+              Le type de réponses générées
             </h2>
-            <div style={{ display: "flex", justifyContent: "center", gap: "2px", marginBottom: "6px" }}>
-              {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "18px", color: G.yellow }}>★</span>)}
-            </div>
-            <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>4.9/5 — 23 avis vérifiés</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>Scénarios illustratifs. Caela Réputation est en lancement.</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
@@ -787,6 +784,16 @@ export default function LandingPage() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Mention légale de facturation (art. L221-5 Code conso) — anti dark pattern */}
+          <div style={{ marginTop: "20px", maxWidth: "720px", margin: "20px auto 0", textAlign: "center" }}>
+            <p style={{ fontSize: "12px", lineHeight: 1.6, color: "#80868B", margin: 0 }}>
+              Essai gratuit de 14 jours, <strong>carte bancaire requise</strong>. À la fin de l&apos;essai,
+              votre abonnement démarre automatiquement au tarif affiché, <strong>sauf résiliation avant la fin de l&apos;essai</strong>.
+              Résiliable à tout moment en ligne en 2 clics. Un email de rappel vous est envoyé 3 jours avant le premier prélèvement.
+              Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
+            </p>
           </div>
 
           {/* Agency discreet line */}

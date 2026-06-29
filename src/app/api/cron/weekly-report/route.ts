@@ -5,8 +5,9 @@ import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq, gte } from "drizzle-orm";
 import { Resend } from "resend";
+import { escapeHtml } from "@/lib/escape-html";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
+const resend = new Resend(process.env.RESEND_API_KEY?.trim() || "placeholder");
 
 // Runs every Monday at 8h via Vercel cron
 export async function GET(request: Request) {
@@ -96,9 +97,9 @@ export async function GET(request: Request) {
                 <div style="border:1px solid #DADCE0;border-radius:10px;padding:14px 16px;margin-bottom:8px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <span style="font-size:14px;color:#FBBC04;">${stars(r.review.rating)}</span>
-                    <span style="font-size:11px;color:#80868B;">${r.businessName || "–"}</span>
+                    <span style="font-size:11px;color:#80868B;">${escapeHtml(r.businessName || "–")}</span>
                   </div>
-                  <p style="margin:0;font-size:13px;color:#5F6368;font-style:italic;">"${r.review.text?.slice(0, 120) || "Avis sans texte"}..."</p>
+                  <p style="margin:0;font-size:13px;color:#5F6368;font-style:italic;">"${escapeHtml(r.review.text?.slice(0, 120) || "Avis sans texte")}..."</p>
                 </div>
               `).join("")}
             ` : "<p style='color:#80868B;font-size:14px;'>Aucun avis cette semaine.</p>"}

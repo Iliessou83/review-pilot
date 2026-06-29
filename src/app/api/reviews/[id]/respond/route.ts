@@ -6,30 +6,7 @@ import { reviews, businesses } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { generateAutoResponse } from "@/lib/claude";
-
-async function postGoogleReply(reviewId: string, responseText: string, token: string) {
-  const response = await fetch(
-    `https://mybusiness.googleapis.com/v4/${reviewId}/reply`,
-    {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ comment: responseText }),
-    }
-  );
-  if (!response.ok) throw new Error(`Google reply failed: ${response.status}`);
-}
-
-async function postTrustpilotReply(businessUnitId: string, reviewId: string, responseText: string, apiKey: string) {
-  const response = await fetch(
-    `https://api.trustpilot.com/v1/private/business-units/${businessUnitId}/reviews/${reviewId}/reply`,
-    {
-      method: "POST",
-      headers: { apikey: apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ message: responseText }),
-    }
-  );
-  if (!response.ok) throw new Error(`Trustpilot reply failed: ${response.status}`);
-}
+import { publishReply } from "@/lib/platform-reply";
 
 export async function POST(
   request: NextRequest,
@@ -101,16 +78,16 @@ export async function POST(
     return NextResponse.json({ error: "No response text provided" }, { status: 400 });
   }
 
-  // Only mark as responded if platform post succeeds
+  // On ne marque "responded" QUE si la publication plateforme réussit.
+  // Un échec (token expiré, 403...) renvoie 502 et l'avis reste à retenter.
   try {
-    if (reviewRow.platform === "google") {
-      await postGoogleReply(reviewRow.platformReviewId, responseText, business.platformToken);
-    } else {
-      await postTrustpilotReply(business.platformId, reviewRow.platformReviewId, responseText, business.platformToken);
-    }
+    await publishReply(reviewRow, business, responseText);
   } catch (err) {
     console.error("Platform post error:", err);
-    // Save locally even if platform is down — mark with a note
+    return NextResponse.json(
+      { error: "La publication sur la plateforme a échoué. Réessayez." },
+      { status: 502 }
+    );
   }
 
   const [updated] = await db

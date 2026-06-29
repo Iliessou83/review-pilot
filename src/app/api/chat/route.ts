@@ -32,7 +32,7 @@ TARIFS (affichage annuel par défaut, -20%):
 - Pro: 149€/mois (119€ annuel) — 5 établissements + personnalisation du ton + multi-users
 - Agence: 449€/mois (359€ annuel) — 30 établissements max + API + support 7j/7
 
-ESSAI GRATUIT: 14 jours sans carte bancaire
+ESSAI GRATUIT: 14 jours. Carte bancaire requise, avec un rappel par email 3 jours avant le premier prélèvement. Résiliation en 2 clics à tout moment.
 
 SERVICES CAELA AGENCY (prestations humaines):
 - Création de fiche GMB: 199€ (unique)

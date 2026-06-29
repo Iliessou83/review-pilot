@@ -11,7 +11,25 @@ export async function GET(request: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const all = await db.select().from(businesses).orderBy(businesses.createdAt);
+    // On n'expose JAMAIS platformToken (clé API Google/Trustpilot) au navigateur.
+    const all = await db
+      .select({
+        id: businesses.id,
+        name: businesses.name,
+        platform: businesses.platform,
+        platformId: businesses.platformId,
+        autoReply5Star: businesses.autoReply5Star,
+        autoReplyNegative: businesses.autoReplyNegative,
+        businessType: businesses.businessType,
+        compensationEnabled: businesses.compensationEnabled,
+        compensationText: businesses.compensationText,
+        ownerEmail: businesses.ownerEmail,
+        referralCode: businesses.referralCode,
+        referredBy: businesses.referredBy,
+        createdAt: businesses.createdAt,
+      })
+      .from(businesses)
+      .orderBy(businesses.createdAt);
     return NextResponse.json(all);
   } catch (err) {
     console.error("GET /businesses error:", err);

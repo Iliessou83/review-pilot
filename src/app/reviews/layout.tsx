@@ -11,7 +11,7 @@ export default async function ReviewsLayout({
   if (!session) redirect("/");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0f" }}>
+    <div style={{ minHeight: "100vh", background: "#F8F9FA" }}>
       <NavBar />
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "32px 24px" }}>
         {children}

@@ -16,12 +16,13 @@ export async function GET(request: NextRequest) {
   const platform = searchParams.get("platform");
   const responded = searchParams.get("responded");
   const rating = searchParams.get("rating");
-  const limit = parseInt(searchParams.get("limit") || "50");
+  // Borne dure: jamais NaN, jamais de dump complet de la table.
+  const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "50", 10) || 50, 1), 200);
 
   const conditions = [];
 
-  if (platform && platform !== "all") {
-    conditions.push(eq(reviews.platform, platform as "google" | "trustpilot"));
+  if (platform === "google" || platform === "trustpilot") {
+    conditions.push(eq(reviews.platform, platform));
   }
 
   if (responded === "true") {
@@ -30,8 +31,12 @@ export async function GET(request: NextRequest) {
     conditions.push(eq(reviews.responded, false));
   }
 
+  // N'ajouter le filtre note que si c'est un entier 1..5 (évite eq(rating, NaN) -> 500).
   if (rating) {
-    conditions.push(eq(reviews.rating, parseInt(rating)));
+    const r = parseInt(rating, 10);
+    if (Number.isInteger(r) && r >= 1 && r <= 5) {
+      conditions.push(eq(reviews.rating, r));
+    }
   }
 
   const query = db
