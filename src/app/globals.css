@@ -1,0 +1,38 @@
+/* Base mobile-first : l'app est en styles inline, ce fichier pose les garde-fous
+   globaux que les inline styles ne couvrent pas (débordement horizontal, zoom iOS). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* iOS zoome dès qu'un champ a une police < 16px. On force 16px sous 768px. */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Helper : conteneur de table scrollable horizontalement sur petit écran. */
+.rp-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
