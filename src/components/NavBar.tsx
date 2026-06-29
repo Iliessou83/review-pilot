@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: "/dashboard/roue", label: "Roue", icon: "🎡", exact: false },
   { href: "/pending", label: "En attente", icon: "⏳", exact: false, badge: true },
   { href: "/dashboard/analytics", label: "Analytics", icon: "📈", exact: false },
+  { href: "/dashboard/widget", label: "Widget", icon: "🔗", exact: false },
   { href: "/dashboard/settings", label: "Paramètres", icon: "⚙️", exact: false },
 ];
 
