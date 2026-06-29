@@ -12,14 +12,15 @@ const sections = [
     title: "1. Éditeur du service",
     content: `Caela Réputation est un service édité par :
 
-Raison sociale : Caela Agency
-Forme juridique : Entreprise individuelle (Auto-entrepreneur)
+Raison sociale : Bourbouane Iliès (entreprise individuelle)
+Nom commercial : Caela Réputation — marque Caela Agency
+Forme juridique : Entreprise individuelle (micro-entreprise)
 Nom du responsable : Iliès Bourbouane
-Adresse : France
+SIRET : [À COMPLÉTER — 14 chiffres]
+TVA intracommunautaire : Non assujetti — TVA non applicable, art. 293 B du CGI
+Adresse : [À COMPLÉTER — adresse de l'entreprise]
 Email : contact@caela.fr
-Site web : https://caela-reputation.fr
-
-Le numéro SIRET et le numéro TVA intracommunautaire seront communiqués sur simple demande à contact@caela.fr.`,
+Site web : https://caela-reputation.fr`,
   },
   {
     title: "2. Directeur de la publication",

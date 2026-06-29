@@ -138,7 +138,7 @@ export default function PolitiqueConfidentialitePage() {
               ["Oracle Cloud (OCI)", "Serveur d'automatisation (worker cron)", "États-Unis", "Requêtes API, logs d'exécution", "CCT Commission Européenne"],
               ["Anthropic PBC", "Génération IA des réponses (Claude API)", "États-Unis", "Texte des avis Google (prénom auteur + contenu)", "CCT — Zero data retention option"],
               ["Resend Inc.", "Envoi d'emails transactionnels", "États-Unis", "Adresse email, contenu des suggestions de réponse", "CCT Commission Européenne"],
-              ["Stripe Inc.", "Paiement en ligne", "États-Unis", "Données de paiement (traitement direct, hors notre accès)", "CCT + Privacy Shield successor"],
+              ["Stripe Inc.", "Paiement en ligne", "États-Unis", "Données de paiement (traitement direct, hors notre accès)", "CCT + EU-US Data Privacy Framework (DPF)"],
               ["Google LLC", "API Google My Business (récupération avis)", "États-Unis", "Tokens OAuth, identifiants de fiche", "CCT + Google's own DPA"],
             ]}
           />

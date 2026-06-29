@@ -334,6 +334,7 @@ export default async function DashboardPage() {
           { icon: "🏢", label: "Ajouter un établissement", href: "/businesses", color: G.blue, bg: "#E8F0FE" },
           { icon: "⏳", label: `Traiter les ${stats.pending} avis en attente`, href: "/pending", color: G.red, bg: "#FCE8E6" },
           { icon: "📊", label: "Voir tous les avis", href: "/reviews", color: G.green, bg: "#E6F4EA" },
+          { icon: "💳", label: "Abonnement & facturation", href: "/dashboard/billing", color: G.blue, bg: "#E8F0FE" },
         ].map(a => (
           <Link key={a.href} href={a.href} style={{
             display: "flex", alignItems: "center", gap: "10px",

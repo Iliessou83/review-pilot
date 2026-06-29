@@ -68,8 +68,12 @@ Les réponses générées ou suggérées par l'IA sont des suggestions. Le Clien
     content: `5.1 OFFRES
 Les plans tarifaires (Starter, Pro, Agence) sont décrits sur la page d'accueil du Service. Les caractéristiques et tarifs exacts de chaque plan sont ceux affichés au moment de la souscription.
 
-5.2 ESSAI GRATUIT
-Une période d'essai gratuit de 14 jours est proposée sans engagement et sans nécessité de fournir des coordonnées bancaires. À l'issue de cette période, sans souscription à un plan payant, l'accès au Service est automatiquement suspendu. Les données sont conservées 30 jours puis supprimées.
+5.2 ESSAI GRATUIT AVEC CARTE BANCAIRE
+Une période d'essai gratuit de 14 jours est proposée. L'enregistrement d'une carte bancaire valide est requis dès la souscription, via notre prestataire Stripe. Aucune somme n'est débitée pendant l'essai.
+
+Avant toute validation, le Client se voit présenter un récapitulatif clair indiquant le tarif applicable, la date du premier prélèvement et la nature de l'engagement, qu'il doit accepter expressément (case à cocher non pré-cochée), conformément à l'article L.221-5 du Code de la consommation.
+
+À l'issue des 14 jours, et sauf résiliation du Client avant la fin de l'essai, l'abonnement au plan choisi démarre automatiquement et la carte enregistrée est débitée du montant correspondant. Un email de rappel est systématiquement envoyé au Client 3 jours avant ce premier prélèvement. Le Client peut résilier à tout moment, sans frais, depuis son espace (voir article 11), y compris pendant l'essai. En l'absence de moyen de paiement valide à la fin de l'essai, l'abonnement n'est pas activé et l'accès est suspendu.
 
 5.3 PAIEMENT
 Le paiement est effectué via Stripe, prestataire de paiement certifié PCI-DSS. Caela Agency n'a jamais accès aux données bancaires du Client. L'abonnement est facturé mensuellement ou annuellement selon le choix du Client, par prélèvement automatique à la date anniversaire de souscription.
@@ -78,7 +82,7 @@ Le paiement est effectué via Stripe, prestataire de paiement certifié PCI-DSS.
 Caela Agency se réserve le droit de modifier ses tarifs. Toute modification sera notifiée au Client par email avec un préavis de 30 jours. Le Client peut résilier sans frais pendant ce délai de préavis si la modification ne lui convient pas.
 
 5.5 RENOUVELLEMENT AUTOMATIQUE
-L'abonnement se renouvelle automatiquement à chaque échéance. Le Client peut désactiver le renouvellement automatique depuis son dashboard ou par email à contact@caela.fr, au plus tard 48h avant l'échéance suivante.`,
+L'abonnement se renouvelle automatiquement à chaque échéance. Le Client peut résilier ou désactiver le renouvellement à tout moment, en ligne et en quelques clics, depuis la section « Abonnement & facturation » de son dashboard (/dashboard/billing), conformément à l'article L.215-1-1 du Code de la consommation. La résiliation prend effet à la fin de la période en cours, sans nouveau prélèvement.`,
   },
   {
     title: "6. Rétractation et remboursements",
@@ -139,7 +143,7 @@ Points clés : nous ne revendons aucune donnée, nous utilisons Anthropic (Claud
   },
   {
     title: "11. Résiliation",
-    content: `11.1 Le Client peut résilier son abonnement à tout moment depuis son dashboard (section Paramètres) ou par email à contact@caela.fr. La résiliation prend effet à la fin de la période d'abonnement en cours (mensuelle ou annuelle).
+    content: `11.1 Le Client peut résilier son abonnement à tout moment, en ligne et en quelques clics, depuis la section « Abonnement & facturation » de son dashboard (/dashboard/billing). Conformément à l'article L.215-1-1 du Code de la consommation, la résiliation est aussi simple que la souscription : aucune justification, aucun frais, aucune relance téléphonique. Une fonctionnalité de résiliation est accessible en permanence depuis l'espace client. La résiliation prend effet à la fin de la période en cours (ou à la fin de l'essai si elle intervient pendant l'essai), sans nouveau prélèvement. Le Client peut également écrire à contact@caela.fr.
 
 11.2 Caela Agency se réserve le droit de suspendre ou résilier l'accès d'un Client sans remboursement dans les cas suivants :
 — Violation des présentes CGV, après mise en demeure par email restée sans effet sous 48h
