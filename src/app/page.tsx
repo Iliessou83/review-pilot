@@ -304,9 +304,16 @@ const GMB_SERVICES = [
 ];
 
 const NFC_PACKS = [
-  { name: "Plaque Solo", price: "19€", qty: "1 plaque", color: G.blue, features: ["NFC + QR code intégré", "Design personnalisé", "Lien direct fiche Google", "Résistant eau/chaleur"] },
-  { name: "Pack Établissement", price: "79€", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR code", "Design identique (votre logo)", "Setup inclus", "Livraison sous 7j"], highlight: true },
-  { name: "Pack Réseau", price: "299€", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR code", "Design multi-établissements", "Configuration centralisée", "Livraison express"], },
+  { name: "Plaque Solo", price: "19€", qty: "1 plaque", color: G.blue, features: ["NFC + QR code de secours", "Design personnalisé (votre logo)", "Cible au choix : Google, Insta, TikTok…", "Résistant eau et chaleur"] },
+  { name: "Pack Établissement", price: "79€", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"], highlight: true },
+  { name: "Pack Réseau", price: "299€", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR de secours", "Design multi-établissements", "Cible modifiable à distance (roue ou lien direct)", "Configuration centralisée"], },
+];
+
+const NFC_REASSURANCE = [
+  { icon: "🛡️", title: "Garantie remplacement", desc: "Plaque défectueuse ? On la remplace gratuitement." },
+  { icon: "📱", title: "iOS + Android", desc: "Compatible iPhone et Android. QR de secours pour les vieux téléphones." },
+  { icon: "🌐", title: "Multi-réseaux", desc: "Google, Instagram, TikTok, WhatsApp : vous choisissez la cible." },
+  { icon: "🔄", title: "Cible pilotable", desc: "Plaque reliée à votre page Caela : changez la destination depuis le dashboard, sans racheter." },
 ];
 
 export default function LandingPage() {
@@ -699,6 +706,52 @@ export default function LandingPage() {
             ))}
           </div>
 
+          {/* Plaque seule vs plaque + moteur — réponse aux concurrents hardware (bostap & co) */}
+          <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden", marginBottom: "40px" }}>
+            <div style={{ padding: "24px 28px 4px", textAlign: "center" }}>
+              <h3 style={{ margin: "0 0 6px", fontSize: "clamp(18px, 2.4vw, 24px)", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
+                Une plaque NFC coûte 20€. Ce qu&apos;on en fait ensuite, c&apos;est tout l&apos;enjeu.
+              </h3>
+              <p style={{ margin: "0 auto 4px", maxWidth: "560px", fontSize: "14px", color: "#5F6368", lineHeight: 1.6 }}>
+                La plupart des plaques du marché envoient le client sur Google. Puis plus rien. Nous, la plaque n&apos;est que le point de départ.
+              </p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+              <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "#80868B", marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Une plaque NFC seule</div>
+                {[
+                  "Envoie le client sur votre fiche Google. C'est tout.",
+                  "Le client scanne, part, et disparaît. Aucun contact récupéré.",
+                  "Un avis négatif part directement en public. Aucun filtre.",
+                  "Aucune réponse aux avis. Vous rédigez tout, à la main.",
+                  "Zéro donnée : ni suivi des scans, ni note, ni tendance.",
+                  "Rien à afficher sur votre site. Les avis restent sur Google.",
+                ].map(item => (
+                  <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
+                    <span style={{ color: "#BDC1C6", fontWeight: 700, flexShrink: 0 }}>✗</span>
+                    <span style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: "24px 28px", background: "#F6FBF7" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>La plaque + le moteur Caela Réputation</div>
+                {[
+                  "Collecte les avis ET les exploite : l'IA répond en 30 secondes.",
+                  "Roue de la fortune : le client laisse son email/SMS avant de jouer. Vous gardez le contact.",
+                  "Les mécontents sont invités à vous écrire en privé d'abord.",
+                  "Chaque avis négatif : 3 réponses prêtes, 1 clic pour publier.",
+                  "Dashboard : note, volume, tendance, rapport hebdo par email.",
+                  "Widget d'avis + étoiles dans Google (rich snippets) sur votre site.",
+                ].map(item => (
+                  <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
+                    <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: "13px", color: "#202124", lineHeight: 1.5 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* NFC Packs */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
             {NFC_PACKS.map(p => (
@@ -720,7 +773,20 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div style={{ marginTop: "16px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Bande de réassurance — aligne nos garanties sur les concurrents hardware */}
+          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+            {NFC_REASSURANCE.map(r => (
+              <div key={r.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 18px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                <span style={{ fontSize: "20px", flexShrink: 0 }}>{r.icon}</span>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124", marginBottom: "3px" }}>{r.title}</div>
+                  <div style={{ fontSize: "12px", color: "#5F6368", lineHeight: 1.5 }}>{r.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: "12px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ fontSize: "20px" }}>💡</span>
             <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>
               <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + Caela Réputation (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.

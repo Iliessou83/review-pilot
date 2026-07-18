@@ -1,7 +1,52 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { ProductFact } from "@/db/schema";
 
 function getClient() {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
+/** Contexte anti-hallucination transmis à chaque génération. */
+export type FactContext = {
+  productFacts?: ProductFact[];
+  factCheckNotes?: string[];
+  compensationEnabled?: boolean;
+  compensationText?: string | null;
+};
+
+function buildFactBlock(ctx?: FactContext): string {
+  if (!ctx) return "";
+
+  const parts: string[] = [];
+
+  parts.push(`
+RÈGLE FACTUELLE ABSOLUE — priorité sur tout le reste:
+• Tu ne dois JAMAIS admettre, valider, ou t'excuser pour un fait matériel (produit périmé, congelé non annoncé, problème d'hygiène, etc.) qui n'est pas explicitement confirmé ci-dessous.
+• Si le client affirme quelque chose qui CONTREDIT la fiche de référence, ne t'excuse jamais du principe. Réponds de façon factuelle, calme, non défensive, et invite à en discuter en direct (téléphone/message privé) plutôt que d'assumer une faute non confirmée.
+• Une excuse ne porte QUE sur le ressenti du client ("je comprends votre déception"), jamais sur un fait que tu ne peux pas vérifier.`);
+
+  if (ctx.productFacts && ctx.productFacts.length > 0) {
+    const lines = ctx.productFacts.map(f => {
+      const statusLabel = f.status === "frais" ? "FRAIS" : f.status === "surgele" ? "SURGELÉ" : "FRAIS ET SURGELÉ (selon la pièce)";
+      const disclosureLabel = f.disclosed ? "annoncé clairement en boutique" : "PAS annoncé clairement en boutique";
+      return `- ${f.category} : ${statusLabel}, ${disclosureLabel}${f.note ? ` — ${f.note}` : ""}`;
+    });
+    parts.push(`\nFICHE DE RÉFÉRENCE DE L'ÉTABLISSEMENT (source de vérité, ne jamais contredire):\n${lines.join("\n")}`);
+  }
+
+  if (ctx.factCheckNotes && ctx.factCheckNotes.length > 0) {
+    parts.push(`\nNOTES DE VÉRIFICATION POUR CET AVIS PRÉCIS:\n${ctx.factCheckNotes.map(n => `- ${n}`).join("\n")}`);
+  }
+
+  if (ctx.compensationEnabled && ctx.compensationText) {
+    parts.push(`
+GESTE COMMERCIAL (uniquement si une faute réelle est confirmée par la fiche ou les notes ci-dessus, jamais en échange d'un futur avis):
+• Si tu proposes un geste commercial, utilise EXACTEMENT ce texte, ne l'invente jamais autrement: "${ctx.compensationText}"
+• Ne propose JAMAIS ce geste comme récompense pour avoir laissé un avis, ni conditionné à une future note.`);
+  } else {
+    parts.push(`\nNe propose aucun geste commercial, remise ou cadeau : aucun n'est configuré pour cet établissement.`);
+  }
+
+  return parts.join("\n");
 }
 
 export const TONE_LABELS = [
@@ -55,7 +100,8 @@ export async function generateAutoResponse(
   reviewText: string,
   authorName: string,
   businessName: string,
-  rating: number
+  rating: number,
+  factContext?: FactContext
 ): Promise<string> {
   const firstName = authorName.split(" ")[0];
   const context = detectContext(rating);
@@ -73,7 +119,8 @@ STYLE:
 • Zéro adverbes inutiles: "vraiment", "totalement", "effectivement" sont bannis
 • Naturel et chaud — comme si c'était un vrai humain qui écrit depuis son téléphone, pas un bot
 
-CONTEXTE DE CET AVIS: ${context}`,
+CONTEXTE DE CET AVIS: ${context}
+${buildFactBlock(factContext)}`,
     messages: [
       {
         role: "user",
@@ -98,7 +145,8 @@ export async function generateResponseSuggestions(
   reviewText: string,
   authorName: string,
   businessName: string,
-  rating: number
+  rating: number,
+  factContext?: FactContext
 ): Promise<string[]> {
   const firstName = authorName.split(" ")[0];
   const context = detectContext(rating);
@@ -109,6 +157,7 @@ export async function generateResponseSuggestions(
     system: `Tu es un expert en psychologie de la relation client et gestion de e-réputation pour ${businessName}.
 
 ${CORE_RULES}
+${buildFactBlock(factContext)}
 
 Tu vas générer 3 réponses radicalement distinctes — même fond, 3 approches psychologiques différentes:
 

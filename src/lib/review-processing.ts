@@ -5,7 +5,8 @@
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { generateAutoResponse, generateResponseSuggestions } from "@/lib/claude";
+import { generateAutoResponse, generateResponseSuggestions, type FactContext } from "@/lib/claude";
+import { assessReviewRisk } from "@/lib/risk-detection";
 import { escapeHtml } from "@/lib/escape-html";
 import { Resend } from "resend";
 import { SignJWT } from "jose";
@@ -56,7 +57,8 @@ export function buildNotificationEmail(
   reviewText: string,
   suggestions: string[],
   tokens: string[],
-  appUrl: string
+  appUrl: string,
+  riskReasons: string[] = []
 ) {
   const safe = {
     businessName: escapeHtml(businessName),
@@ -66,6 +68,14 @@ export function buildNotificationEmail(
     s1: escapeHtml(suggestions[1]),
     s2: escapeHtml(suggestions[2]),
   };
+
+  const riskBanner = riskReasons.length > 0 ? `
+    <div style="background:#FEF7E0;border:1px solid rgba(251,188,4,0.4);border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:#B06000;">🚩 Point à vérifier avant de valider</div>
+      <div style="font-size:12px;color:#5F6368;margin-top:4px;">
+        Sujet sensible détecté (${escapeHtml(riskReasons.join(", "))}). Relisez la réponse proposée : ne validez pas une excuse sur un fait que vous n'avez pas vous-même confirmé.
+      </div>
+    </div>` : "";
 
   return {
     from: "Caela Réputation <notifications@caela.fr>",
@@ -81,6 +91,7 @@ export function buildNotificationEmail(
       <div style="font-size:14px;font-weight:700;color:#EA4335;">Avis ${rating}★ — action requise</div>
       <div style="font-size:12px;color:#5F6368;">${safe.businessName} · ${safe.authorName}</div>
     </div>
+    ${riskBanner}
     <div style="background:#F8F9FA;border-left:3px solid #DADCE0;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:24px;">
       <div style="font-size:12px;color:#5F6368;margin-bottom:4px;">${safe.authorName} écrit :</div>
       <div style="font-size:14px;color:#202124;font-style:italic;">&ldquo;${safe.reviewText}&rdquo;</div>
@@ -116,9 +127,24 @@ export function buildNotificationEmail(
 export async function processHighRatedReview(review: Review, business: Business): Promise<void> {
   if (review.responded) return;
 
+  const risk = assessReviewRisk(review.text, business.productFacts, business.escalationKeywords);
+  if (risk.escalate) {
+    // Sujet sensible malgré la bonne note (ex: 5★ qui évoque quand même un point santé/hygiène) :
+    // jamais d'auto-publication, toujours repasser par la validation humaine.
+    await processLowRatedReview(review, business, risk);
+    return;
+  }
+
+  const factContext: FactContext = {
+    productFacts: business.productFacts,
+    factCheckNotes: risk.factCheckNotes,
+    compensationEnabled: business.compensationEnabled,
+    compensationText: business.compensationText,
+  };
+
   let responseText: string;
   try {
-    responseText = await generateAutoResponse(review.text, review.authorName, business.name, review.rating);
+    responseText = await generateAutoResponse(review.text, review.authorName, business.name, review.rating, factContext);
   } catch (err) {
     console.error(`Auto-response generation failed for review ${review.id}:`, err);
     return;
@@ -143,7 +169,11 @@ export async function processHighRatedReview(review: Review, business: Business)
  * or a 4★ without auto-reply enabled.
  * Idempotent: skips if a pending response already exists.
  */
-export async function processLowRatedReview(review: Review, business: Business): Promise<void> {
+export async function processLowRatedReview(
+  review: Review,
+  business: Business,
+  precomputedRisk?: ReturnType<typeof assessReviewRisk>
+): Promise<void> {
   const existing = await db
     .select({ id: pendingResponses.id })
     .from(pendingResponses)
@@ -151,9 +181,17 @@ export async function processLowRatedReview(review: Review, business: Business):
     .limit(1);
   if (existing.length > 0) return;
 
+  const risk = precomputedRisk ?? assessReviewRisk(review.text, business.productFacts, business.escalationKeywords);
+  const factContext: FactContext = {
+    productFacts: business.productFacts,
+    factCheckNotes: risk.factCheckNotes,
+    compensationEnabled: business.compensationEnabled,
+    compensationText: business.compensationText,
+  };
+
   let suggestions: string[];
   try {
-    suggestions = await generateResponseSuggestions(review.text, review.authorName, business.name, review.rating);
+    suggestions = await generateResponseSuggestions(review.text, review.authorName, business.name, review.rating, factContext);
   } catch (err) {
     console.error(`Suggestion generation failed for review ${review.id}:`, err);
     return;
@@ -174,7 +212,7 @@ export async function processLowRatedReview(review: Review, business: Business):
   try {
     const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
     await resend.emails.send(
-      buildNotificationEmail(business.ownerEmail, business.name, review.authorName, review.rating, review.text, suggestions, tokens, appUrl)
+      buildNotificationEmail(business.ownerEmail, business.name, review.authorName, review.rating, review.text, suggestions, tokens, appUrl, risk.reasons)
     );
   } catch (err) {
     console.error(`Notification email failed for review ${review.id}:`, err);

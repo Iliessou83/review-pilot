@@ -8,10 +8,19 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 
+// Une ligne de la fiche produits (questionnaire commerçant). Sert de référentiel
+// de faits que l'IA n'a JAMAIS le droit de contredire ou de renier dans une réponse.
+export type ProductFact = {
+  category: string;       // ex: "Steak haché", "Filet de poulet"
+  status: "frais" | "surgele" | "mixte"; // mixte = les deux selon la pièce
+  disclosed: boolean;     // annoncé/étiqueté clairement en boutique ?
+  note?: string;          // précision libre (ex: "décongelé sous vide le jour même")
+};
+
 export const businesses = pgTable("businesses", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  platform: text("platform", { enum: ["google", "trustpilot"] }).notNull(),
+  platform: text("platform", { enum: ["google", "trustpilot", "facebook", "tripadvisor", "pagesjaunes", "other"] }).notNull(),
   platformId: text("platform_id").notNull(),
   platformToken: text("platform_token").notNull(),
   autoReply5Star: boolean("auto_reply_5_star").default(true).notNull(),
@@ -19,6 +28,11 @@ export const businesses = pgTable("businesses", {
   businessType: text("business_type").default("restaurant"),
   compensationEnabled: boolean("compensation_enabled").default(false).notNull(),
   compensationText: text("compensation_text"),
+  // Fiche de faits produits (voir ProductFact) — référentiel anti-hallucination de l'IA.
+  productFacts: json("product_facts").$type<ProductFact[]>().default([]).notNull(),
+  // Mots-clés additionnels (en plus de la liste par défaut) qui forcent la validation
+  // humaine et bloquent toute auto-publication, quelle que soit la note.
+  escalationKeywords: json("escalation_keywords").$type<string[]>().default([]).notNull(),
   ownerEmail: text("owner_email").notNull(),
   referralCode: text("referral_code"),
   referredBy: text("referred_by"),
@@ -38,7 +52,7 @@ export const reviews = pgTable("reviews", {
   responded: boolean("responded").default(false).notNull(),
   responseText: text("response_text"),
   respondedAt: timestamp("responded_at"),
-  platform: text("platform", { enum: ["google", "trustpilot"] }).notNull(),
+  platform: text("platform", { enum: ["google", "trustpilot", "facebook", "tripadvisor", "pagesjaunes", "other"] }).notNull(),
 });
 
 export const pendingResponses = pgTable("pending_responses", {

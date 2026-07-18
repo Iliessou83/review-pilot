@@ -25,6 +25,13 @@ const COMPENSATION_EXAMPLES: Record<string, string[]> = {
   other: ["Un geste commercial lors de votre prochaine visite", "10% de réduction exclusive"],
 };
 
+type ProductFact = {
+  category: string;
+  status: "frais" | "surgele" | "mixte";
+  disclosed: boolean;
+  note?: string;
+};
+
 type BusinessSettings = {
   id: number;
   name: string;
@@ -33,7 +40,15 @@ type BusinessSettings = {
   autoReplyNegative: boolean;
   compensationEnabled: boolean;
   compensationText: string;
+  productFacts: ProductFact[];
+  escalationKeywords: string[];
   ownerEmail: string;
+};
+
+const STATUS_LABELS: Record<ProductFact["status"], string> = {
+  frais: "Frais",
+  surgele: "Surgelé",
+  mixte: "Les deux (selon la pièce)",
 };
 
 function Toggle({ value, onChange, color }: { value: boolean; onChange: (v: boolean) => void; color: string }) {
@@ -79,6 +94,8 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
         autoReplyNegative: local.autoReplyNegative,
         compensationEnabled: local.compensationEnabled,
         compensationText: local.compensationText,
+        productFacts: local.productFacts,
+        escalationKeywords: local.escalationKeywords,
         ownerEmail: local.ownerEmail,
       });
       setSaved(true);
@@ -251,6 +268,124 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
               </div>
             </div>
           )}
+        </div>
+
+        {/* Fiche produits — référentiel anti-hallucination de l'IA */}
+        <div style={{ border: "1px solid #DADCE0", borderRadius: "10px", overflow: "hidden" }}>
+          <div style={{ padding: "14px 16px", background: "#F8F9FA" }}>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Fiche produits</div>
+            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
+              L&apos;IA ne s&apos;excusera jamais d&apos;un fait qui contredit cette fiche. Indispensable si un client accuse à tort (ex: &laquo;&nbsp;c&apos;est congelé&nbsp;&raquo;).
+            </div>
+          </div>
+          <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            {local.productFacts.map((fact, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", padding: "10px", background: "#F8F9FA", borderRadius: "8px" }}>
+                <input
+                  type="text"
+                  value={fact.category}
+                  onChange={e => {
+                    const next = [...local.productFacts];
+                    next[i] = { ...next[i], category: e.target.value };
+                    update("productFacts", next);
+                  }}
+                  placeholder="Ex: Steak haché"
+                  style={{ flex: "1 1 160px", padding: "8px 10px", border: "1px solid #DADCE0", borderRadius: "6px", fontSize: "13px", fontFamily: "inherit" }}
+                />
+                <select
+                  value={fact.status}
+                  onChange={e => {
+                    const next = [...local.productFacts];
+                    next[i] = { ...next[i], status: e.target.value as ProductFact["status"] };
+                    update("productFacts", next);
+                  }}
+                  style={{ padding: "8px 10px", border: "1px solid #DADCE0", borderRadius: "6px", fontSize: "13px", fontFamily: "inherit" }}
+                >
+                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#5F6368" }}>
+                  <input
+                    type="checkbox"
+                    checked={fact.disclosed}
+                    onChange={e => {
+                      const next = [...local.productFacts];
+                      next[i] = { ...next[i], disclosed: e.target.checked };
+                      update("productFacts", next);
+                    }}
+                  />
+                  Annoncé en boutique
+                </label>
+                <button
+                  type="button"
+                  onClick={() => update("productFacts", local.productFacts.filter((_, j) => j !== i))}
+                  style={{ marginLeft: "auto", background: "none", border: "none", color: G.red, cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}
+                >
+                  Supprimer
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => update("productFacts", [...local.productFacts, { category: "", status: "frais", disclosed: true }])}
+              style={{
+                alignSelf: "flex-start", padding: "8px 14px", background: "#E8F0FE",
+                border: "1px solid rgba(26,115,232,0.3)", borderRadius: "8px",
+                color: G.blue, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "inherit",
+              }}
+            >
+              + Ajouter un produit
+            </button>
+          </div>
+        </div>
+
+        {/* Mots-clés d'escalade — forcent la validation humaine, jamais d'auto-publication */}
+        <div style={{ border: "1px solid #DADCE0", borderRadius: "10px", overflow: "hidden" }}>
+          <div style={{ padding: "14px 16px", background: "#F8F9FA" }}>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Sujets toujours à valider vous-même</div>
+            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
+              Santé, hygiène, allergène, litige sont déjà bloqués par défaut. Ajoutez vos propres mots-clés spécifiques à votre activité.
+            </div>
+          </div>
+          <div style={{ padding: "16px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
+              {local.escalationKeywords.map((kw, i) => (
+                <span key={i} style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "5px 10px", background: "#FEF7E0", border: "1px solid rgba(251,188,4,0.4)",
+                  borderRadius: "16px", fontSize: "12px", color: "#B06000",
+                }}>
+                  {kw}
+                  <button
+                    type="button"
+                    onClick={() => update("escalationKeywords", local.escalationKeywords.filter((_, j) => j !== i))}
+                    style={{ background: "none", border: "none", color: "#B06000", cursor: "pointer", fontWeight: 700, fontFamily: "inherit", padding: 0 }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <input
+              type="text"
+              placeholder="Tapez un mot-clé et appuyez sur Entrée"
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const value = e.currentTarget.value.trim();
+                  if (value && !local.escalationKeywords.includes(value)) {
+                    update("escalationKeywords", [...local.escalationKeywords, value]);
+                  }
+                  e.currentTarget.value = "";
+                }
+              }}
+              style={{
+                width: "100%", padding: "10px 14px", border: "1px solid #DADCE0", borderRadius: "8px",
+                fontSize: "13px", fontFamily: "inherit", boxSizing: "border-box", outline: "none",
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq, gte, lt, and, count, avg, sql } from "drizzle-orm";
 import Link from "next/link";
+import { platformMeta } from "@/lib/platforms";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
@@ -300,8 +301,8 @@ export default async function AnalyticsPage() {
                 <tr key={b.businessId} style={{ borderBottom: i < data.perBusiness.length - 1 ? "1px solid #F8F9FA" : "none" }}>
                   <td style={{ padding: "13px 16px", fontSize: "14px", fontWeight: 600, color: "#202124" }}>{b.name}</td>
                   <td style={{ padding: "13px 16px" }}>
-                    <span style={{ padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, background: b.platform === "google" ? "#E8F0FE" : "#E6F4EA", color: b.platform === "google" ? G.blue : G.green }}>
-                      {b.platform === "google" ? "Google" : "Trustpilot"}
+                    <span style={{ padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, background: platformMeta(b.platform).bg, color: platformMeta(b.platform).color }}>
+                      {platformMeta(b.platform).label}
                     </span>
                   </td>
                   <td style={{ padding: "13px 16px", fontSize: "14px", color: "#202124" }}>{b.total}</td>

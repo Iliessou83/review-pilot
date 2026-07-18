@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { businesses } from "@/db/schema";
+import { businesses, type ProductFact } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 
@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
       autoReplyNegative: b.autoReplyNegative,
       compensationEnabled: b.compensationEnabled,
       compensationText: b.compensationText || "",
+      productFacts: b.productFacts || [],
+      escalationKeywords: b.escalationKeywords || [],
       ownerEmail: b.ownerEmail,
     })),
   });
@@ -37,6 +39,8 @@ export async function PUT(request: NextRequest) {
     autoReplyNegative?: boolean;
     compensationEnabled?: boolean;
     compensationText?: string;
+    productFacts?: ProductFact[];
+    escalationKeywords?: string[];
     ownerEmail?: string;
   };
 
@@ -57,6 +61,8 @@ export async function PUT(request: NextRequest) {
   if (fields.autoReplyNegative !== undefined) update.autoReplyNegative = fields.autoReplyNegative;
   if (fields.compensationEnabled !== undefined) update.compensationEnabled = fields.compensationEnabled;
   if (fields.compensationText !== undefined) update.compensationText = fields.compensationText;
+  if (fields.productFacts !== undefined) update.productFacts = fields.productFacts;
+  if (fields.escalationKeywords !== undefined) update.escalationKeywords = fields.escalationKeywords;
   if (fields.ownerEmail !== undefined) update.ownerEmail = fields.ownerEmail;
 
   if (Object.keys(update).length === 0) {
