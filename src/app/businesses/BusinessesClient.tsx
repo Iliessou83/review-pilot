@@ -35,9 +35,22 @@ function Field({ label, value, onChange, type = "text", placeholder, required }:
   );
 }
 
-export default function BusinessesClient({ businesses }: { businesses: BusinessWithStats[] }) {
+// Messages de retour après la connexion Google 1 clic (?google=...).
+const GOOGLE_MESSAGES: Record<string, { text: string; ok: boolean }> = {
+  connected: { text: "Établissement Google connecté. Vos avis vont se synchroniser.", ok: true },
+  denied: { text: "Connexion Google annulée. Vous pouvez réessayer quand vous voulez.", ok: false },
+  nolocation: { text: "Aucun établissement trouvé sur ce compte Google.", ok: false },
+  norefresh: { text: "Google n'a pas renvoyé l'autorisation longue durée. Réessayez en acceptant l'accès.", ok: false },
+  quota: { text: "Limite de votre plan atteinte. Passez à un plan supérieur pour ajouter cet établissement.", ok: false },
+  api: { text: "Google n'a pas répondu. Réessayez dans un instant.", ok: false },
+  state: { text: "Session de connexion expirée. Relancez la connexion Google.", ok: false },
+  unconfigured: { text: "La connexion Google n'est pas encore activée sur ce compte (clés à configurer).", ok: false },
+};
+
+export default function BusinessesClient({ businesses, googleStatus }: { businesses: BusinessWithStats[]; googleStatus?: string | null }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
+  const googleMsg = googleStatus ? GOOGLE_MESSAGES[googleStatus] : null;
   const [loading, setLoading] = useState(false);
   const [syncingId, setSyncingId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -127,8 +140,54 @@ export default function BusinessesClient({ businesses }: { businesses: BusinessW
             fontFamily: "inherit",
           }}
         >
-          {showForm ? "Annuler" : "+ Ajouter un établissement"}
+          {showForm ? "Annuler" : "Ajouter manuellement"}
         </button>
+      </div>
+
+      {/* Retour de connexion Google */}
+      {googleMsg && (
+        <div style={{
+          padding: "12px 16px", borderRadius: 10, marginBottom: 20, fontSize: 13.5,
+          background: googleMsg.ok ? "#E6F4EA" : "#FCE8E6",
+          border: `1px solid ${googleMsg.ok ? "#B7DFC2" : "#F5B5AE"}`,
+          color: googleMsg.ok ? "#1E7B34" : G.red,
+        }}>
+          {googleMsg.ok ? "✓ " : "⚠ "}{googleMsg.text}
+        </div>
+      )}
+
+      {/* Connexion Google 1 clic — voie recommandée */}
+      <div style={{
+        background: "#fff", border: "1px solid #DADCE0", borderRadius: 16,
+        padding: "24px 26px", marginBottom: 24, boxShadow: SHADOW,
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap",
+      }}>
+        <div style={{ flex: "1 1 320px" }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#202124", marginBottom: 4 }}>
+            Connectez votre fiche Google en 1 clic
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: "#5F6368", lineHeight: 1.6 }}>
+            Autorisez l&apos;accès à votre établissement Google. Vos avis se synchronisent tout seuls,
+            aucune clé technique à copier. C&apos;est la méthode recommandée.
+          </p>
+        </div>
+        <a
+          href="/api/google/connect"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 10, whiteSpace: "nowrap",
+            padding: "12px 22px", background: "#fff", border: "1px solid #DADCE0",
+            borderRadius: 10, textDecoration: "none", boxShadow: SHADOW,
+            fontSize: 14, fontWeight: 600, color: "#3c4043", fontFamily: "inherit",
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          Se connecter avec Google
+        </a>
       </div>
 
       {/* Form */}

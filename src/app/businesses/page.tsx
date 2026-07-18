@@ -7,14 +7,20 @@ import { getScope, ownedBusinessIds } from "@/lib/scope";
 import { redirect } from "next/navigation";
 import BusinessesClient from "./BusinessesClient";
 
-export default async function BusinessesPage() {
+export default async function BusinessesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ google?: string }>;
+}) {
   const scope = await getScope();
   if (!scope) redirect("/");
+
+  const googleStatus = (await searchParams).google || null;
 
   // Cloisonnement : un client ne voit que ses commerces, l'admin voit tout.
   const ids = await ownedBusinessIds(scope);
   if (ids !== "all" && ids.length === 0) {
-    return <BusinessesClient businesses={[]} />;
+    return <BusinessesClient businesses={[]} googleStatus={googleStatus} />;
   }
 
   const base = db.select().from(businesses);
@@ -41,5 +47,5 @@ export default async function BusinessesPage() {
     reviewCount: countMap[b.id] || 0,
   }));
 
-  return <BusinessesClient businesses={businessesWithStats} />;
+  return <BusinessesClient businesses={businessesWithStats} googleStatus={googleStatus} />;
 }

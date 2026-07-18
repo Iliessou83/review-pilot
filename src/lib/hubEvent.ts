@@ -32,6 +32,8 @@ export async function pushHubEvent(input: {
       method: "POST",
       headers: { "content-type": "application/json", "x-caela-signature": sig },
       body,
+      // Ne jamais bloquer/pendre la réponse du module si le Hub est lent/indispo.
+      signal: AbortSignal.timeout(4000),
     });
   } catch {
     /* non bloquant */

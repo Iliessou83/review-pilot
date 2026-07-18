@@ -7,6 +7,7 @@ import { pushHubEvent } from "@/lib/hubEvent";
 import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
 import { checkReviewQuota } from "@/lib/plan-limits";
+import { googleAccessToken } from "@/lib/google-oauth";
 import { eq, and, inArray } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 
@@ -31,11 +32,13 @@ const STAR_RATING_MAP: Record<string, number> = {
 };
 
 async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
+  // platform_token = refresh_token OAuth → on génère un jeton d'accès frais.
+  const access = await googleAccessToken(business);
   const response = await fetch(
     `https://mybusiness.googleapis.com/v4/${business.platformId}/reviews?pageSize=50`,
     {
       headers: {
-        Authorization: `Bearer ${business.platformToken}`,
+        Authorization: `Bearer ${access}`,
         "Content-Type": "application/json",
       },
     }

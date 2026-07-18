@@ -7,6 +7,7 @@ import { eq, and } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 import { ADMIN_EMAILS } from "@/lib/auth";
 import { checkReviewQuota } from "@/lib/plan-limits";
+import { googleAccessToken } from "@/lib/google-oauth";
 
 interface GoogleReview {
   name: string;
@@ -27,9 +28,11 @@ interface TrustpilotReview {
 const STAR_MAP: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
 
 async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
+  // platform_token = refresh_token OAuth → on génère un jeton d'accès frais.
+  const access = await googleAccessToken(business);
   const res = await fetch(
     `https://mybusiness.googleapis.com/v4/${business.platformId}/reviews?pageSize=50`,
-    { headers: { Authorization: `Bearer ${business.platformToken}`, "Content-Type": "application/json" } }
+    { headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" } }
   );
   if (!res.ok) throw new Error(`Google API ${res.status}`);
   const data = await res.json() as { reviews?: GoogleReview[] };

@@ -1,4 +1,5 @@
 import type { Review, Business } from "@/db/schema";
+import { googleAccessToken } from "@/lib/google-oauth";
 
 /**
  * Publication d'une réponse sur la plateforme d'origine de l'avis (Google / Trustpilot).
@@ -48,7 +49,9 @@ export async function publishReply(
   responseText: string
 ): Promise<void> {
   if (review.platform === "google") {
-    await postGoogleReply(review.platformReviewId, responseText, business.platformToken);
+    // platform_token = refresh_token OAuth → jeton d'accès frais pour publier.
+    const access = await googleAccessToken(business);
+    await postGoogleReply(review.platformReviewId, responseText, access);
   } else {
     await postTrustpilotReply(
       business.platformId,
