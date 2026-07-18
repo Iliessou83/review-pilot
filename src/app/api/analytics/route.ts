@@ -4,11 +4,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reviews, businesses } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { eq, gte, lt, and, count, avg, sql } from "drizzle-orm";
+import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
+import { eq, gte, lt, and, count, avg, sql, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Cloisonnement : un client ne voit que les stats de ses commerces.
+  const scope = scopeFrom(session);
+  const ids = await ownedBusinessIds(scope);
+  if (ids !== "all" && ids.length === 0) {
+    return NextResponse.json({
+      ratingDistribution: [1, 2, 3, 4, 5].map((r) => ({ rating: r, count: 0 })),
+      perBusiness: [],
+      monthly: [],
+    });
+  }
+  // Filtre commerce réutilisé sur chaque agrégat (undefined = admin, pas de filtre).
+  const bizFilter = ids === "all" ? undefined : inArray(reviews.businessId, ids);
 
   const now = new Date();
   const months: { label: string; start: Date; end: Date }[] = [];
@@ -25,7 +39,7 @@ export async function GET(request: NextRequest) {
     db.select({
       rating: reviews.rating,
       count: count(),
-    }).from(reviews).groupBy(reviews.rating),
+    }).from(reviews).where(bizFilter).groupBy(reviews.rating),
 
     // Stats par établissement
     db.select({
@@ -37,6 +51,7 @@ export async function GET(request: NextRequest) {
     })
       .from(reviews)
       .leftJoin(businesses, eq(reviews.businessId, businesses.id))
+      .where(bizFilter)
       .groupBy(reviews.businessId, businesses.name),
 
     // Données mensuelles (12 mois)
@@ -50,7 +65,7 @@ export async function GET(request: NextRequest) {
             negative: sql<number>`SUM(CASE WHEN ${reviews.rating} <= 3 THEN 1 ELSE 0 END)::int`,
           })
           .from(reviews)
-          .where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end)));
+          .where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end), bizFilter));
         return {
           label: m.label,
           total: res?.total || 0,

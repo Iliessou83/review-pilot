@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { businesses, reviews } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
+import { ADMIN_EMAILS } from "@/lib/auth";
+import { checkReviewQuota } from "@/lib/plan-limits";
 
 interface GoogleReview {
   name: string;
@@ -106,7 +108,12 @@ async function runSync() {
 
       for (const review of newReviews) {
         try {
-          if (review.rating >= 4 && business.autoReply5Star) {
+          const isAdminOwned = ADMIN_EMAILS.includes(business.ownerEmail.toLowerCase());
+          const quota = isAdminOwned ? { allowed: true } : await checkReviewQuota(business.ownerEmail);
+
+          if (!quota.allowed) {
+            results[business.name].errors.push(`Review ${review.id}: quota mensuel d'avis dépassé, traitement IA sauté`);
+          } else if (review.rating >= 4 && business.autoReply5Star) {
             await processHighRatedReview(review, business);
           } else {
             await processLowRatedReview(review, business);

@@ -119,6 +119,11 @@ export const billing = {
 // ── 4. OFFRES ────────────────────────────────────────────────────────────────
 // `priceEnv` = nom de la variable d'env contenant le Price ID Stripe.
 // On ne hardcode jamais un Price ID : il vit dans les env Vercel.
+// `maxBusinesses` = nombre d'établissements inclus (null = illimité).
+// `monthlyReviewQuota` = avis traités/mois inclus (null = illimité).
+// Ces deux champs sont la source unique de vérité pour l'application des
+// limites (voir src/lib/plan-limits.ts) — cohérent avec les chiffres déjà
+// annoncés sur la page d'accueil (cartes plans + calculateur + comparatif).
 
 export const plans = [
   {
@@ -127,6 +132,8 @@ export const plans = [
     priceMonthly: 29,
     priceEnv: "STRIPE_PRICE_STARTER",
     quota: "Jusqu'à 30 avis/mois",
+    maxBusinesses: 1,
+    monthlyReviewQuota: 30,
   },
   {
     id: "solo",
@@ -134,20 +141,35 @@ export const plans = [
     priceMonthly: 69,
     priceEnv: "STRIPE_PRICE_SOLO",
     quota: "Jusqu'à 100 avis/mois",
+    maxBusinesses: 1,
+    monthlyReviewQuota: 100,
   },
   {
     id: "pro",
     name: "Pro",
     priceMonthly: 149,
     priceEnv: "STRIPE_PRICE_PRO",
-    quota: "Jusqu'à 300 avis/mois",
+    quota: "Jusqu'à 300 avis/mois — 5 établissements",
+    maxBusinesses: 5,
+    monthlyReviewQuota: 300,
   },
   {
     id: "studio",
     name: "Studio",
     priceMonthly: 299,
     priceEnv: "STRIPE_PRICE_STUDIO",
-    quota: "Avis illimités + multi-établissements",
+    quota: "Avis illimités — 5 établissements",
+    maxBusinesses: 5,
+    monthlyReviewQuota: null,
+  },
+  {
+    id: "agence",
+    name: "Agence",
+    priceMonthly: 449,
+    priceEnv: "STRIPE_PRICE_AGENCE",
+    quota: "Avis illimités — établissements illimités",
+    maxBusinesses: null,
+    monthlyReviewQuota: null,
   },
 ] as const;
 

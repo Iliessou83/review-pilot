@@ -3,33 +3,42 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { businesses } from "@/db/schema";
-import { requireAuth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
+import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
+import { checkBusinessQuota } from "@/lib/plan-limits";
+import { eq, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // Cloisonnement : un client ne voit que ses commerces, l'admin voit tout.
+  const scope = scopeFrom(session);
+  const ids = await ownedBusinessIds(scope);
+  if (ids !== "all" && ids.length === 0) return NextResponse.json([]);
+
   try {
     // On n'expose JAMAIS platformToken (clé API Google/Trustpilot) au navigateur.
-    const all = await db
-      .select({
-        id: businesses.id,
-        name: businesses.name,
-        platform: businesses.platform,
-        platformId: businesses.platformId,
-        autoReply5Star: businesses.autoReply5Star,
-        autoReplyNegative: businesses.autoReplyNegative,
-        businessType: businesses.businessType,
-        compensationEnabled: businesses.compensationEnabled,
-        compensationText: businesses.compensationText,
-        ownerEmail: businesses.ownerEmail,
-        referralCode: businesses.referralCode,
-        referredBy: businesses.referredBy,
-        createdAt: businesses.createdAt,
-      })
-      .from(businesses)
-      .orderBy(businesses.createdAt);
+    const cols = {
+      id: businesses.id,
+      name: businesses.name,
+      platform: businesses.platform,
+      platformId: businesses.platformId,
+      autoReply5Star: businesses.autoReply5Star,
+      autoReplyNegative: businesses.autoReplyNegative,
+      businessType: businesses.businessType,
+      compensationEnabled: businesses.compensationEnabled,
+      compensationText: businesses.compensationText,
+      ownerEmail: businesses.ownerEmail,
+      referralCode: businesses.referralCode,
+      referredBy: businesses.referredBy,
+      createdAt: businesses.createdAt,
+    };
+    const base = db.select(cols).from(businesses);
+    const all =
+      ids === "all"
+        ? await base.orderBy(businesses.createdAt)
+        : await base.where(inArray(businesses.id, ids)).orderBy(businesses.createdAt);
     return NextResponse.json(all);
   } catch (err) {
     console.error("GET /businesses error:", err);
@@ -41,6 +50,8 @@ export async function POST(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const isAdmin = session.role === "admin" || ADMIN_EMAILS.includes(session.email.toLowerCase());
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -48,10 +59,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, platform, platformId, platformToken, ownerEmail, autoReply5Star } = body as {
+  const { name, platform, platformId, platformToken, autoReply5Star } = body as {
     name?: string; platform?: string; platformId?: string;
     platformToken?: string; ownerEmail?: string; autoReply5Star?: boolean;
   };
+
+  // Cloisonnement : un client ne peut créer un commerce QU'À SON nom
+  // (owner_email = son email). Seul le super-admin choisit le propriétaire.
+  const ownerEmail = isAdmin
+    ? (body.ownerEmail as string | undefined)
+    : session.email.toLowerCase();
 
   if (!name || !platform || !platformId || !platformToken || !ownerEmail) {
     return NextResponse.json({ error: "All fields required" }, { status: 400 });
@@ -63,6 +80,18 @@ export async function POST(request: NextRequest) {
 
   if (typeof ownerEmail === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
     return NextResponse.json({ error: "Invalid owner email" }, { status: 400 });
+  }
+
+  // Les comptes super-admin (mode agence, voir ADMIN_EMAILS) ne sont jamais
+  // bridés — le quota ne s'applique qu'aux clients arrivés par abonnement.
+  if (!isAdmin) {
+    const quota = await checkBusinessQuota(String(ownerEmail));
+    if (!quota.allowed) {
+      const message = quota.planName
+        ? `Limite atteinte : le plan ${quota.planName} inclut ${quota.max} établissement(s) maximum (${quota.current} déjà connecté(s)). Passez à un plan supérieur pour en ajouter.`
+        : `Aucun abonnement actif trouvé pour cet email. Un seul établissement est autorisé en mode essai — souscrivez un plan pour en ajouter d'autres.`;
+      return NextResponse.json({ error: message }, { status: 403 });
+    }
   }
 
   try {
@@ -92,6 +121,12 @@ export async function DELETE(request: NextRequest) {
 
   if (!idParam || isNaN(id) || id <= 0) {
     return NextResponse.json({ error: "Valid ID required" }, { status: 400 });
+  }
+
+  // Cloisonnement : un client ne peut supprimer qu'un de ses commerces.
+  const scope = scopeFrom(session);
+  if (!(await ownsBusiness(scope, id))) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   try {

@@ -4,13 +4,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { businesses, type ProductFact } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
+import { eq, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const allBusinesses = await db.select().from(businesses);
+  // Cloisonnement : un client ne configure que ses commerces.
+  const scope = scopeFrom(session);
+  const ids = await ownedBusinessIds(scope);
+  if (ids !== "all" && ids.length === 0) return NextResponse.json({ businesses: [] });
+
+  const allBusinesses =
+    ids === "all"
+      ? await db.select().from(businesses)
+      : await db.select().from(businesses).where(inArray(businesses.id, ids));
 
   return NextResponse.json({
     businesses: allBusinesses.map(b => ({
@@ -53,6 +62,12 @@ export async function PUT(request: NextRequest) {
   const { businessId, ...fields } = body;
   if (!businessId || isNaN(businessId)) {
     return NextResponse.json({ error: "businessId requis" }, { status: 400 });
+  }
+
+  // Cloisonnement : on ne modifie que ses propres commerces.
+  const scope = scopeFrom(session);
+  if (!(await ownsBusiness(scope, businessId))) {
+    return NextResponse.json({ error: "Établissement introuvable" }, { status: 404 });
   }
 
   const update: Partial<typeof businesses.$inferInsert> = {};

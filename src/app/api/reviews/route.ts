@@ -4,13 +4,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reviews, businesses } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { eq, and, desc } from "drizzle-orm";
+import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
+import { eq, and, desc, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Cloisonnement : un client ne voit que les avis de ses commerces.
+  const scope = scopeFrom(session);
+  const ids = await ownedBusinessIds(scope);
+  if (ids !== "all" && ids.length === 0) return NextResponse.json([]);
 
   const { searchParams } = new URL(request.url);
   const platform = searchParams.get("platform");
@@ -20,6 +26,10 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "50", 10) || 50, 1), 200);
 
   const conditions = [];
+
+  if (ids !== "all") {
+    conditions.push(inArray(reviews.businessId, ids));
+  }
 
   if (platform === "google" || platform === "trustpilot") {
     conditions.push(eq(reviews.platform, platform));

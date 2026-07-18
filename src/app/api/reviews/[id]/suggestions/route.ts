@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
 import { generateResponseSuggestions } from "@/lib/claude";
 import { buildNotificationEmail } from "@/lib/review-processing";
@@ -30,8 +31,9 @@ export async function POST(
   const cronSecret = request.headers.get("x-cron-secret");
   const isCron = cronSecret !== null && cronSecret === process.env.CRON_SECRET;
 
+  let session: Awaited<ReturnType<typeof requireAuth>> = null;
   if (!isCron) {
-    const session = await requireAuth(request);
+    session = await requireAuth(request);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -49,6 +51,11 @@ export async function POST(
     .limit(1);
 
   if (!reviewRow) {
+    return NextResponse.json({ error: "Review not found" }, { status: 404 });
+  }
+
+  // Cloisonnement : un client n'agit que sur les avis de ses commerces.
+  if (session && !(await ownsBusiness(scopeFrom(session), reviewRow.businessId))) {
     return NextResponse.json({ error: "Review not found" }, { status: 404 });
   }
 

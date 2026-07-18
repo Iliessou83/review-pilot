@@ -5,6 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { db } from "@/lib/db";
 import { reviews, businesses } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq, and, desc } from "drizzle-orm";
 import { platformLabel } from "@/lib/platforms";
 
@@ -80,6 +81,12 @@ export async function GET(
   const businessId = parseInt(raw, 10);
   if (isNaN(businessId) || businessId <= 0) {
     return NextResponse.json({ error: "Identifiant invalide" }, { status: 400 });
+  }
+
+  // Cloisonnement : un client n'analyse que ses propres commerces.
+  const scope = scopeFrom(session);
+  if (!(await ownsBusiness(scope, businessId))) {
+    return NextResponse.json({ error: "Établissement introuvable" }, { status: 404 });
   }
 
   const url = new URL(request.url);

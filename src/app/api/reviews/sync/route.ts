@@ -3,7 +3,9 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { businesses, reviews } from "@/db/schema";
-import { requireAuth } from "@/lib/auth";
+import { pushHubEvent } from "@/lib/hubEvent";
+import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
+import { checkReviewQuota } from "@/lib/plan-limits";
 import { eq, and } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 
@@ -141,8 +143,23 @@ export async function POST(request: NextRequest) {
 
       // Process reviews — direct function calls, no HTTP self-call (no SSRF risk)
       for (const review of newReviews) {
+        // Remonte l'avis dans le cerveau Caela (cockpit + notifications du Hub).
+        const snippet = (review.text || "").trim().slice(0, 70);
+        await pushHubEvent({
+          ownerEmail: business.ownerEmail,
+          kind: "review",
+          title: `Nouvel avis ${review.rating}★${snippet ? ` : « ${snippet}${(review.text || "").length > 70 ? "…" : ""} »` : ""}`,
+          metadata: { rating: review.rating, platform: review.platform },
+        });
         try {
-          if (review.rating >= 4) {
+          // Les comptes super-admin (compte interne d'Ilies) ne sont jamais
+          // bridés par le quota d'avis/mois — seuls les clients abonnés le sont.
+          const isAdminOwned = ADMIN_EMAILS.includes(business.ownerEmail.toLowerCase());
+          const quota = isAdminOwned ? { allowed: true } : await checkReviewQuota(business.ownerEmail);
+
+          if (!quota.allowed) {
+            results[business.name].errors.push(`Review ${review.id}: quota mensuel d'avis dépassé, traitement IA sauté`);
+          } else if (review.rating >= 4) {
             if (business.autoReply5Star) {
               await processHighRatedReview(review, business);
             } else {
