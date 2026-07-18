@@ -2,14 +2,30 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
-import { eq, desc, count, avg, gte, and, lt } from "drizzle-orm";
+import { eq, desc, count, avg, gte, and, lt, inArray } from "drizzle-orm";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getScope, ownedBusinessIds } from "@/lib/scope";
+
+// Stats vides (client sans commerce rattaché) : évite d'afficher des chiffres
+// d'autres comptes et de faire des requêtes inutiles.
+function emptyStats() {
+  const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+  const now = new Date();
+  return {
+    totalReviews: 0, avgRating: "0.0", autoResponded: 0, pending: 0, recentReviews: [],
+    history: [3, 2, 1, 0].map((k) => ({ label: monthNames[(now.getMonth() - k + 12) % 12], count: 0, avg: 0 })),
+    thisMonthCount: 0, thisMonthAvg: "0.0", lastMonthAvg: "0.0", evolution: 0, evolutionPct: 0,
+    negThisMonth: 0, negLastMonth: 0,
+  };
+}
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 const SHADOW_MD = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 
-async function getStats() {
+async function getStats(biz: ReturnType<typeof inArray> | undefined, hasNone: boolean) {
+  if (hasNone) return emptyStats();
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -20,26 +36,29 @@ async function getStats() {
     thisMonth, lastMonth, twoMonths, threeMonths,
     thisMonthAvg, lastMonthAvg,
     negThisMonth, negLastMonth] = await Promise.all([
-    db.select({ count: count() }).from(reviews),
-    db.select({ avg: avg(reviews.rating) }).from(reviews),
-    db.select({ count: count() }).from(reviews).where(eq(reviews.responded, true)),
-    db.select({ count: count() }).from(pendingResponses).where(eq(pendingResponses.status, "pending")),
+    db.select({ count: count() }).from(reviews).where(biz),
+    db.select({ avg: avg(reviews.rating) }).from(reviews).where(biz),
+    db.select({ count: count() }).from(reviews).where(and(eq(reviews.responded, true), biz)),
+    db.select({ count: count() }).from(pendingResponses)
+      .innerJoin(reviews, eq(pendingResponses.reviewId, reviews.id))
+      .where(and(eq(pendingResponses.status, "pending"), biz)),
     db.select({ review: reviews, businessName: businesses.name })
       .from(reviews)
       .leftJoin(businesses, eq(reviews.businessId, businesses.id))
+      .where(biz)
       .orderBy(desc(reviews.publishedAt))
       .limit(10),
     // Monthly counts
-    db.select({ count: count() }).from(reviews).where(gte(reviews.publishedAt, thisMonthStart)),
-    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart))),
-    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, twoMonthsStart), lt(reviews.publishedAt, lastMonthStart))),
-    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, threeMonthsStart), lt(reviews.publishedAt, twoMonthsStart))),
+    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, thisMonthStart), biz)),
+    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart), biz)),
+    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, twoMonthsStart), lt(reviews.publishedAt, lastMonthStart), biz)),
+    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, threeMonthsStart), lt(reviews.publishedAt, twoMonthsStart), biz)),
     // Monthly avg rating
-    db.select({ avg: avg(reviews.rating) }).from(reviews).where(gte(reviews.publishedAt, thisMonthStart)),
-    db.select({ avg: avg(reviews.rating) }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart))),
+    db.select({ avg: avg(reviews.rating) }).from(reviews).where(and(gte(reviews.publishedAt, thisMonthStart), biz)),
+    db.select({ avg: avg(reviews.rating) }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart), biz)),
     // Negative reviews this vs last month
-    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, thisMonthStart), lt(reviews.rating, 4))),
-    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart), lt(reviews.rating, 4))),
+    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, thisMonthStart), lt(reviews.rating, 4), biz)),
+    db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart), lt(reviews.rating, 4), biz)),
   ]);
 
   const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -97,11 +116,14 @@ function MiniBar({ value, max, color }: { value: number; max: number; color: str
 }
 
 export default async function DashboardPage() {
-  const stats = await getStats().catch(() => ({
-    totalReviews: 0, avgRating: "0.0", autoResponded: 0, pending: 0, recentReviews: [],
-    history: [], thisMonthCount: 0, thisMonthAvg: "0.0", lastMonthAvg: "0.0",
-    evolution: 0, evolutionPct: 0, negThisMonth: 0, negLastMonth: 0,
-  }));
+  // Cloisonnement : super-admin = tous les commerces ; client = les siens.
+  const scope = await getScope();
+  if (!scope) redirect("/");
+  const ids = await ownedBusinessIds(scope);
+  const biz = ids === "all" ? undefined : inArray(reviews.businessId, ids.length ? ids : [-1]);
+  const hasNone = ids !== "all" && ids.length === 0;
+
+  const stats = await getStats(biz, hasNone).catch(() => emptyStats());
 
   const maxHistory = Math.max(...(stats.history as {count:number}[]).map(h => h.count), 1);
 

@@ -11,6 +11,11 @@ const USERS: Record<string, string> = {
   "admin@reviewpilot-demo.fr": "$2a$10$CRq.ez.gg2.4UarM7qX7MO/ePD.WuNd3OC77C2p0u7VeYvIIrPfX.",
 };
 
+// Les comptes ci-dessus sont les SUPER-ADMIN (mode agence : voient tous les
+// commerces). Tout autre email connecté (via SSO Hub) est un CLIENT : il ne
+// voit que SON commerce (filtré par owner_email). Voir src/lib/scope.ts.
+export const ADMIN_EMAILS = Object.keys(USERS);
+
 export function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET environment variable is not set");
@@ -28,8 +33,8 @@ export async function validateCredentials(email: string, password: string): Prom
   return verifyPassword(password, hash);
 }
 
-export async function createToken(email: string): Promise<string> {
-  return new SignJWT({ email, role: "admin" })
+export async function createToken(email: string, role: "admin" | "client" = "admin"): Promise<string> {
+  return new SignJWT({ email, role })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("24h")
