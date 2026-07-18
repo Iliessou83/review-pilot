@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       productFacts: b.productFacts || [],
       escalationKeywords: b.escalationKeywords || [],
       ownerEmail: b.ownerEmail,
+      reviewLink: b.reviewLink || "",
     })),
   });
 }
@@ -51,6 +52,7 @@ export async function PUT(request: NextRequest) {
     productFacts?: ProductFact[];
     escalationKeywords?: string[];
     ownerEmail?: string;
+    reviewLink?: string;
   };
 
   try {
@@ -79,6 +81,7 @@ export async function PUT(request: NextRequest) {
   if (fields.productFacts !== undefined) update.productFacts = fields.productFacts;
   if (fields.escalationKeywords !== undefined) update.escalationKeywords = fields.escalationKeywords;
   if (fields.ownerEmail !== undefined) update.ownerEmail = fields.ownerEmail;
+  if (fields.reviewLink !== undefined) update.reviewLink = fields.reviewLink;
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Aucun champ à mettre à jour" }, { status: 400 });

@@ -43,6 +43,7 @@ type BusinessSettings = {
   productFacts: ProductFact[];
   escalationKeywords: string[];
   ownerEmail: string;
+  reviewLink: string;
 };
 
 const STATUS_LABELS: Record<ProductFact["status"], string> = {
@@ -97,6 +98,7 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
         productFacts: local.productFacts,
         escalationKeywords: local.escalationKeywords,
         ownerEmail: local.ownerEmail,
+        reviewLink: local.reviewLink,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -208,6 +210,30 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
           />
           <p style={{ margin: "4px 0 0", fontSize: "11px", color: "#80868B" }}>
             Reçoit les emails avec les 3 suggestions de réponse pour les avis négatifs.
+          </p>
+        </div>
+
+        {/* Lien d'avis Google — utilisé par la collecte SMS */}
+        <div>
+          <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#202124", marginBottom: "6px" }}>
+            Lien pour laisser un avis Google
+          </label>
+          <input
+            type="url"
+            value={local.reviewLink}
+            onChange={e => update("reviewLink", e.target.value)}
+            placeholder="https://g.page/r/.../review"
+            style={{
+              width: "100%", padding: "10px 14px",
+              border: "1px solid #DADCE0", borderRadius: "8px",
+              fontSize: "14px", color: "#202124", outline: "none",
+              boxSizing: "border-box", fontFamily: "inherit",
+            }}
+            onFocus={e => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
+            onBlur={e => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
+          />
+          <p style={{ margin: "4px 0 0", fontSize: "11px", color: "#80868B" }}>
+            Où le client atterrit quand il clique dans le SMS de demande d&apos;avis. Trouvable sur votre fiche Google (&laquo; Demander des avis &raquo;).
           </p>
         </div>
 

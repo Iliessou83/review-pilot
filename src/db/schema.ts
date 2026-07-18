@@ -36,6 +36,9 @@ export const businesses = pgTable("businesses", {
   ownerEmail: text("owner_email").notNull(),
   referralCode: text("referral_code"),
   referredBy: text("referred_by"),
+  // Lien public "laisser un avis" Google du commerce (g.page/r/... ou write_review).
+  // Utilisé par la boucle de collecte SMS pour envoyer le client au bon endroit.
+  reviewLink: text("review_link"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -115,6 +118,50 @@ export const wheelSpins = pgTable("wheel_spins", {
   reviewClicked: boolean("review_clicked").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// --- Boucle de collecte d'avis (SMS / WhatsApp) ---
+// Réutilise les numéros captés (Roue, saisie, import) pour relancer le client
+// et l'inviter à laisser un avis. Le levier de collecte des leaders FR.
+
+export const contacts = pgTable("contacts", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  phone: text("phone").notNull(), // format E.164 normalisé (+33...)
+  name: text("name"),
+  source: text("source", { enum: ["wheel", "manual", "import"] }).default("manual").notNull(),
+  // désinscription (STOP) : on ne recontacte jamais un opt-out.
+  optedOut: boolean("opted_out").default(false).notNull(),
+  // anti-spam : dernière demande envoyée (on ne relance pas trop tôt).
+  lastRequestedAt: timestamp("last_requested_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const reviewRequests = pgTable("review_requests", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  contactId: integer("contact_id")
+    .notNull()
+    .references(() => contacts.id, { onDelete: "cascade" }),
+  channel: text("channel", { enum: ["sms", "whatsapp"] }).default("sms").notNull(),
+  // jeton du lien tracké /g/[token] (redirige vers le lien d'avis + marque le clic)
+  token: text("token").notNull().unique(),
+  // queued -> sent -> clicked (ou failed)
+  status: text("status", { enum: ["queued", "sent", "failed", "clicked"] }).default("queued").notNull(),
+  providerMessageId: text("provider_message_id"),
+  error: text("error"),
+  sentAt: timestamp("sent_at"),
+  clickedAt: timestamp("clicked_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Contact = typeof contacts.$inferSelect;
+export type NewContact = typeof contacts.$inferInsert;
+export type ReviewRequest = typeof reviewRequests.$inferSelect;
+export type NewReviewRequest = typeof reviewRequests.$inferInsert;
 
 // --- Abonnements / facturation (essai-avec-CB Stripe) ---
 // Une ligne par client (clé = email du compte). Synchronisée par les webhooks
