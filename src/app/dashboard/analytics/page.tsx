@@ -177,7 +177,7 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* KPI row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "14px", marginBottom: "24px" }}>
         {[
           { label: "Total avis (12 mois)", value: data.totalReviews, color: G.blue, bg: "#E8F0FE", trend: `${volumeTrend >= 0 ? "+" : ""}${volumeTrend}% vs mois préc.` },
           { label: "Taux de réponse", value: `${responseRate}%`, color: responseRate >= 80 ? G.green : G.yellow, bg: responseRate >= 80 ? "#E6F4EA" : "#FEF7E0", trend: responseRate >= 80 ? "Excellent" : "À améliorer" },
@@ -197,7 +197,7 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* Volume chart + Rating distribution */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "16px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
 
         {/* Volume 12 mois */}
         <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "20px 24px", boxShadow: SHADOW }}>
@@ -288,7 +288,8 @@ export default async function AnalyticsPage() {
           <div style={{ padding: "18px 24px", borderBottom: "1px solid #DADCE0" }}>
             <h2 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#202124" }}>Performance par établissement</h2>
           </div>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", minWidth: "680px", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#F8F9FA" }}>
                 {["Établissement", "Plateforme", "Total avis", "Répondu", "Taux réponse", "Note moyenne"].map(col => (
@@ -324,6 +325,7 @@ export default async function AnalyticsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

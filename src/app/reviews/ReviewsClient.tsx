@@ -131,7 +131,8 @@ export default function ReviewsClient({
             </p>
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", minWidth: "760px", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#F8F9FA" }}>
                 {["Auteur", "Note", "Contenu", "Établissement", "Date", "Plateforme", "Statut"].map((col) => (
@@ -201,6 +202,7 @@ export default function ReviewsClient({
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

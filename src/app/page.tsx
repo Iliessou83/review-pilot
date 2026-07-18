@@ -39,7 +39,7 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
 
 function GMBCard() {
   return (
-    <div style={{ background: "#fff", borderRadius: "12px", boxShadow: SHADOW_LG, overflow: "hidden", width: "320px", flexShrink: 0, border: "1px solid #DADCE0" }}>
+    <div style={{ background: "#fff", borderRadius: "12px", boxShadow: SHADOW_LG, overflow: "hidden", width: "320px", maxWidth: "100%", flexShrink: 0, border: "1px solid #DADCE0" }}>
       <div style={{ height: "130px", background: "linear-gradient(135deg, #E8F0FE, #D2E3FC 50%, #E6F4EA)", position: "relative", overflow: "hidden" }}>
         {[0,1,2,3,4].map(i => <div key={i} style={{ position: "absolute", left: 0, right: 0, top: `${i*28}px`, height: "1px", background: "rgba(26,115,232,0.08)" }} />)}
         {[0,1,2,3,4,5,6,7].map(i => <div key={i} style={{ position: "absolute", top: 0, bottom: 0, left: `${i*42}px`, width: "1px", background: "rgba(26,115,232,0.08)" }} />)}
@@ -131,7 +131,7 @@ function ROICalculator() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px", marginBottom: "24px" }}>
         {[
           { label: "Temps perdu / mois", value: `${timeH}h`, sub: `${reviews} avis × 4 min`, color: G.red, bg: "#FCE8E6" },
           { label: "Coût de ce temps", value: `${timeCost}€`, sub: "À 50€/heure gérant", color: "#F9AB00", bg: "#FEF7E0" },
@@ -423,7 +423,7 @@ export default function LandingPage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "14px", alignItems: "center" }}>
-          <div style={{ width: "320px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "24px", padding: "10px 18px", display: "flex", alignItems: "center", gap: "10px", boxShadow: SHADOW_SM }}>
+          <div style={{ width: "320px", maxWidth: "100%", boxSizing: "border-box", background: "#fff", border: "1px solid #DADCE0", borderRadius: "24px", padding: "10px 18px", display: "flex", alignItems: "center", gap: "10px", boxShadow: SHADOW_SM }}>
             <GDots size={7} />
             <span style={{ flex: 1, fontSize: "13px", color: "#5F6368" }}>restaurant le cèdre paris</span>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke={G.blue} strokeWidth="2" strokeLinecap="round" /></svg>
@@ -499,7 +499,7 @@ export default function LandingPage() {
 
           {/* Comparison */}
           <div style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
               <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
                 {["Tu réalises à J+3 qu'un avis 1★ attend une réponse", "Tu écris la même réponse générique pour la 12ème fois", "Tu réponds énervé. Ça se voit et ça coûte des clients", "3h/semaine perdues sur les avis au lieu de gérer", "Ta note stagne. Les concurrents qui répondent vite te dépassent"].map(item => (

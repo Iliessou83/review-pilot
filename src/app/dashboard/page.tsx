@@ -203,7 +203,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Stats row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         {cards.map((card) => (
           <div key={card.label} style={{
             background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px",
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
       })()}
 
       {/* History + evolution row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px", marginBottom: "24px" }}>
 
         {/* Monthly bar chart */}
         <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "20px 24px", boxShadow: SHADOW }}>
@@ -352,7 +352,8 @@ export default async function DashboardPage() {
             </p>
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", minWidth: "640px", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#F8F9FA" }}>
                 {["Auteur", "Note", "Avis", "Établissement", "Date", "Statut"].map((col) => (
@@ -385,11 +386,12 @@ export default async function DashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
       {/* Quick actions */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginTop: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginTop: "16px" }}>
         {[
           { icon: "🏢", label: "Ajouter un établissement", href: "/businesses", color: G.blue, bg: "#E8F0FE" },
           { icon: "⏳", label: `Traiter les ${stats.pending} avis en attente`, href: "/pending", color: G.red, bg: "#FCE8E6" },
