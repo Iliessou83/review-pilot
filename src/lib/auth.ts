@@ -6,7 +6,7 @@ import { NextRequest } from "next/server";
 // Hashes are bcrypt cost 10. Rotate passwords via bcrypt CLI if compromised.
 // To add a user: bcrypt.hashSync("password", 10) and add the entry here.
 const USERS: Record<string, string> = {
-  "admin@caela.fr": "$2a$10$Hlqh2ODkxUVWDP8fVYYg7eZTJ9pFLRSCbMzzfwOAS0R/Wg1k.ZoDO",
+  "admin@caela.fr": "$2a$10$v6zJcS5w3rlau1U.xk/HtOTAFL8K4XLMa.KhktpT2TFdF5dDp5jRG",
   "esperenza@caela.fr": "$2a$10$qlUiW288a9CuOIpkdsJ/ou.2GX8ZmRbk1hcETNYU.kJidTGlWkTkC",
   "admin@reviewpilot-demo.fr": "$2a$10$CRq.ez.gg2.4UarM7qX7MO/ePD.WuNd3OC77C2p0u7VeYvIIrPfX.",
 };
