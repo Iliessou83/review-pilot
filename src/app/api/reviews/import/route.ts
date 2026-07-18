@@ -5,6 +5,7 @@ import { createHash } from "crypto";
 import { db } from "@/lib/db";
 import { reviews, businesses } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
 import { PLATFORM_KEYS, type PlatformKey } from "@/lib/platforms";
 
@@ -77,6 +78,11 @@ export async function POST(request: NextRequest) {
   if (!businessId || isNaN(businessId)) return NextResponse.json({ error: "Établissement requis" }, { status: 400 });
   if (!PLATFORM_KEYS.includes(platform)) return NextResponse.json({ error: "Source inconnue" }, { status: 400 });
   if (!csv.trim()) return NextResponse.json({ error: "Aucune donnée à importer" }, { status: 400 });
+
+  // Cloisonnement : on n'importe que dans un de ses commerces.
+  if (!(await ownsBusiness(scopeFrom(session), businessId))) {
+    return NextResponse.json({ error: "Établissement introuvable" }, { status: 404 });
+  }
 
   try {
     const [business] = await db.select({ id: businesses.id }).from(businesses).where(eq(businesses.id, businessId)).limit(1);

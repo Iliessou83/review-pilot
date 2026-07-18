@@ -164,6 +164,29 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Accueil client sans commerce : onboarding guidé. */}
+      {hasNone && (
+        <div style={{
+          background: "linear-gradient(135deg,#E8F0FE,#F6FBF7)", border: "1px solid #D2E3FC",
+          borderRadius: "16px", padding: "28px 32px", marginBottom: "24px",
+        }}>
+          <h2 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 800, color: "#202124", letterSpacing: "-0.4px" }}>
+            Bienvenue 👋 Connectez votre établissement
+          </h2>
+          <p style={{ margin: "0 0 18px", fontSize: "14px", color: "#5F6368", lineHeight: 1.6, maxWidth: "560px" }}>
+            Ajoutez votre établissement pour récupérer vos avis Google et laisser l&apos;IA
+            répondre à votre place. Il sera rattaché à votre compte, visible de vous seul.
+          </p>
+          <Link href="/businesses" style={{
+            display: "inline-flex", alignItems: "center", gap: "8px",
+            padding: "12px 24px", background: G.blue, color: "#fff", textDecoration: "none",
+            borderRadius: "10px", fontSize: "14px", fontWeight: 700, boxShadow: SHADOW,
+          }}>
+            Ajouter mon établissement →
+          </Link>
+        </div>
+      )}
+
       {/* Stats row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "24px" }}>
         {cards.map((card) => (

@@ -130,6 +130,16 @@ export async function GET(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
+  // Cloisonnement : on vérifie que l'avis appartient à un commerce du client.
+  const [reviewRow] = await db
+    .select({ businessId: reviews.businessId })
+    .from(reviews)
+    .where(eq(reviews.id, numId))
+    .limit(1);
+  if (!reviewRow || !(await ownsBusiness(scopeFrom(session), reviewRow.businessId))) {
+    return NextResponse.json(null, { status: 404 });
+  }
+
   const result = await db
     .select()
     .from(pendingResponses)

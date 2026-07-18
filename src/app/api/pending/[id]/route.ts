@@ -2,8 +2,9 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { pendingResponses } from "@/db/schema";
+import { pendingResponses, reviews } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
 
 export async function PATCH(
@@ -32,14 +33,19 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  // Verify the resource exists
-  const existing = await db
-    .select({ id: pendingResponses.id })
+  // Verify the resource exists — et qu'il appartient à un commerce du client.
+  const [existing] = await db
+    .select({ id: pendingResponses.id, businessId: reviews.businessId })
     .from(pendingResponses)
+    .innerJoin(reviews, eq(pendingResponses.reviewId, reviews.id))
     .where(eq(pendingResponses.id, numId))
     .limit(1);
 
-  if (existing.length === 0) {
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (!(await ownsBusiness(scopeFrom(session), existing.businessId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

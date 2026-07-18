@@ -2,16 +2,26 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
 import { businesses, reviews } from "@/db/schema";
-import { eq, count, desc } from "drizzle-orm";
-import { getSession } from "@/lib/auth";
+import { count, desc, inArray } from "drizzle-orm";
+import { getScope, ownedBusinessIds } from "@/lib/scope";
 import { redirect } from "next/navigation";
 import BusinessesClient from "./BusinessesClient";
 
 export default async function BusinessesPage() {
-  const session = await getSession();
-  if (!session) redirect("/");
+  const scope = await getScope();
+  if (!scope) redirect("/");
 
-  const allBusinesses = await db.select().from(businesses).orderBy(desc(businesses.createdAt));
+  // Cloisonnement : un client ne voit que ses commerces, l'admin voit tout.
+  const ids = await ownedBusinessIds(scope);
+  if (ids !== "all" && ids.length === 0) {
+    return <BusinessesClient businesses={[]} />;
+  }
+
+  const base = db.select().from(businesses);
+  const allBusinesses =
+    ids === "all"
+      ? await base.orderBy(desc(businesses.createdAt))
+      : await base.where(inArray(businesses.id, ids)).orderBy(desc(businesses.createdAt));
 
   // Get review counts per business
   const reviewCounts = await db

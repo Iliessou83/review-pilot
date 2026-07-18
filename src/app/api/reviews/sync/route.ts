@@ -5,8 +5,9 @@ import { db } from "@/lib/db";
 import { businesses, reviews } from "@/db/schema";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
+import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
 import { checkReviewQuota } from "@/lib/plan-limits";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 
 interface GoogleReview {
@@ -108,8 +109,9 @@ export async function POST(request: NextRequest) {
   const cronSecret = request.headers.get("x-cron-secret");
   const isCron = cronSecret !== null && cronSecret === process.env.CRON_SECRET;
 
+  let session: Awaited<ReturnType<typeof requireAuth>> = null;
   if (!isCron) {
-    const session = await requireAuth(request);
+    session = await requireAuth(request);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -122,8 +124,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid businessId" }, { status: 400 });
   }
 
-  const allBusinesses = businessId
-    ? await db.select().from(businesses).where(eq(businesses.id, businessId))
+  // Cloisonnement : hors cron, un client ne synchronise que SES commerces.
+  // Le super-admin (et le cron) gardent l'accès à tout.
+  let ownedIds: "all" | number[] = "all";
+  if (session) {
+    ownedIds = await ownedBusinessIds(scopeFrom(session));
+  }
+
+  const bizConds = [];
+  if (businessId) bizConds.push(eq(businesses.id, businessId));
+  if (ownedIds !== "all") {
+    if (ownedIds.length === 0) return NextResponse.json({ results: {} });
+    bizConds.push(inArray(businesses.id, ownedIds));
+  }
+
+  const allBusinesses = bizConds.length
+    ? await db.select().from(businesses).where(and(...bizConds))
     : await db.select().from(businesses);
 
   const results: Record<string, { synced: number; processed: number; errors: string[] }> = {};
