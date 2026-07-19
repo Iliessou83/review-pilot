@@ -944,6 +944,20 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── ÉCOSYSTÈME CAELA ── */}
+      <section style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "48px 40px" }}>
+        <div style={{ maxWidth: "760px", margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ margin: "0 0 10px", fontSize: "16px", fontWeight: 700, color: "#202124" }}>
+            Fait partie de l&apos;écosystème Caela
+          </h2>
+          <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>
+            Un compte, tous vos outils : Réservation (Caelenda) · Fidélité (Rewards) · Jeux (Gagnify) · Campagnes (Pulse) · QR dynamique (CaelaQR).
+            <br />
+            Connexion unique entre tous les produits.
+          </p>
+        </div>
+      </section>
+
       <ChatBot />
 
       {/* ── FOOTER ── */}
