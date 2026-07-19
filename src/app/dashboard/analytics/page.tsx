@@ -2,14 +2,16 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
-import { eq, gte, lt, and, count, avg, sql } from "drizzle-orm";
+import { eq, gte, lt, and, count, avg, sql, inArray, type SQL } from "drizzle-orm";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getScope, ownedBusinessIds } from "@/lib/scope";
 import { platformMeta } from "@/lib/platforms";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
-async function getAnalytics() {
+async function getAnalytics(biz: SQL | undefined) {
   const now = new Date();
   const months: { label: string; start: Date; end: Date }[] = [];
   const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -21,7 +23,7 @@ async function getAnalytics() {
   }
 
   const [ratingDist, perBusiness, totalReviews, totalResponded, pendingCount] = await Promise.all([
-    db.select({ rating: reviews.rating, count: count() }).from(reviews).groupBy(reviews.rating),
+    db.select({ rating: reviews.rating, count: count() }).from(reviews).where(biz).groupBy(reviews.rating),
     db.select({
       businessId: reviews.businessId,
       businessName: businesses.name,
@@ -29,10 +31,12 @@ async function getAnalytics() {
       total: count(),
       responded: sql<string>`SUM(CASE WHEN ${reviews.responded} THEN 1 ELSE 0 END)::bigint`,
       avgRating: avg(reviews.rating),
-    }).from(reviews).leftJoin(businesses, eq(reviews.businessId, businesses.id)).groupBy(reviews.businessId, businesses.name, businesses.platform),
-    db.select({ count: count() }).from(reviews),
-    db.select({ count: count() }).from(reviews).where(eq(reviews.responded, true)),
-    db.select({ count: count() }).from(pendingResponses).where(eq(pendingResponses.status, "pending")),
+    }).from(reviews).leftJoin(businesses, eq(reviews.businessId, businesses.id)).where(biz).groupBy(reviews.businessId, businesses.name, businesses.platform),
+    db.select({ count: count() }).from(reviews).where(biz),
+    db.select({ count: count() }).from(reviews).where(and(eq(reviews.responded, true), biz)),
+    db.select({ count: count() }).from(pendingResponses)
+      .innerJoin(reviews, eq(pendingResponses.reviewId, reviews.id))
+      .where(and(eq(pendingResponses.status, "pending"), biz)),
   ]);
 
   const monthlyData = await Promise.all(
@@ -45,7 +49,7 @@ async function getAnalytics() {
           negative: sql<string>`SUM(CASE WHEN ${reviews.rating} <= 3 THEN 1 ELSE 0 END)::bigint`,
         })
         .from(reviews)
-        .where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end)));
+        .where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end), biz));
       return {
         label: m.label,
         total: res?.total || 0,
@@ -141,14 +145,27 @@ function RatingBar({ rating, count, total }: { rating: number; count: number; to
 }
 
 export default async function AnalyticsPage() {
-  const data = await getAnalytics().catch(() => ({
+  const scope = await getScope();
+  if (!scope) redirect("/");
+
+  // Cloisonnement : super-admin = tout ; client = seulement SES commerces
+  // (aucun commerce rattaché = vue vide, jamais les chiffres d'un autre).
+  const owned = await ownedBusinessIds(scope);
+  const empty = {
     monthly: [],
     ratingDistribution: [],
     perBusiness: [],
     totalReviews: 0,
     totalResponded: 0,
     pendingCount: 0,
-  }));
+  };
+  const biz =
+    owned === "all"
+      ? undefined
+      : owned.length
+        ? inArray(reviews.businessId, owned)
+        : null;
+  const data = biz === null ? empty : await getAnalytics(biz).catch(() => empty);
 
   const maxMonthly = Math.max(...data.monthly.map(m => m.total), 1);
   const responseRate = data.totalReviews > 0 ? Math.round((data.totalResponded / data.totalReviews) * 100) : 0;

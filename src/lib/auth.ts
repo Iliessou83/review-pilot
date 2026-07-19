@@ -33,6 +33,32 @@ export async function validateCredentials(email: string, password: string): Prom
   return verifyPassword(password, hash);
 }
 
+// Authentifie un email+mot de passe. Vérifie d'abord les super-admins en dur
+// (ADMIN_EMAILS), puis la table `users` (comptes self-serve). Renvoie l'email
+// normalisé + le rôle à mettre dans la session, ou null si invalide.
+export async function authenticate(
+  email: string,
+  password: string
+): Promise<{ email: string; role: "admin" | "client" } | null> {
+  const normalized = email.trim().toLowerCase();
+
+  // 1) Super-admin en dur (mode agence).
+  const adminHash = USERS[normalized];
+  if (adminHash) {
+    return (await verifyPassword(password, adminHash)) ? { email: normalized, role: "admin" } : null;
+  }
+
+  // 2) Compte client self-serve.
+  const { db } = await import("@/lib/db");
+  const { users } = await import("@/db/schema");
+  const { eq } = await import("drizzle-orm");
+  const [user] = await db.select().from(users).where(eq(users.email, normalized)).limit(1);
+  if (!user) return null;
+  const ok = await verifyPassword(password, user.passwordHash);
+  if (!ok) return null;
+  return { email: normalized, role: user.role === "admin" ? "admin" : "client" };
+}
+
 export async function createToken(email: string, role: "admin" | "client" = "admin"): Promise<string> {
   return new SignJWT({ email, role })
     .setProtectedHeader({ alg: "HS256" })

@@ -377,8 +377,11 @@ export default function LandingPage() {
           {[["#services", "Services GMB"], ["#nfc", "Plaques NFC"], ["#pricing", "Tarifs"], ["/audit", "Audit gratuit 🔍"]].map(([href, label]) => (
             <a key={href} href={href} style={{ padding: "8px 14px", fontSize: "14px", fontWeight: 500, color: "#5F6368", textDecoration: "none", borderRadius: "24px" }}>{label}</a>
           ))}
-          <a href="#login" style={{ padding: "9px 20px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", marginLeft: "8px" }}>
+          <a href="#login" style={{ padding: "9px 16px", fontSize: "14px", fontWeight: 600, color: G.blue, textDecoration: "none", borderRadius: "6px", marginLeft: "8px" }}>
             Se connecter
+          </a>
+          <a href="/signup" style={{ padding: "9px 20px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
+            Essai gratuit
           </a>
         </div>
       </nav>
@@ -398,7 +401,7 @@ export default function LandingPage() {
             Caela Réputation détecte chaque avis, répond aux 4-5★ en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
-            <a href="#login" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
+            <a href="/signup" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
               Essai gratuit 14 jours
             </a>
             <a href="/audit" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
@@ -844,7 +847,7 @@ export default function LandingPage() {
                     ))}
                   </div>
 
-                  <a href="#login" style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
+                  <a href="/signup" style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
                     {plan.cta}
                   </a>
                 </div>
@@ -915,7 +918,11 @@ export default function LandingPage() {
                 {loading ? "Connexion..." : "Se connecter"}
               </button>
             </form>
-            <p style={{ textAlign: "center", marginTop: "18px", fontSize: "11px", color: "#80868B" }}>Caela Réputation by Caela Agency</p>
+            <p style={{ textAlign: "center", marginTop: "18px", fontSize: "13px", color: "#5F6368" }}>
+              Pas encore de compte ?{" "}
+              <a href="/signup" style={{ color: G.blue, fontWeight: 600, textDecoration: "none" }}>Créer un compte</a>
+            </p>
+            <p style={{ textAlign: "center", marginTop: "10px", fontSize: "11px", color: "#80868B" }}>Caela Réputation by Caela Agency</p>
           </div>
         </div>
       </section>

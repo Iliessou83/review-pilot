@@ -119,6 +119,22 @@ export const wheelSpins = pgTable("wheel_spins", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// --- Comptes self-serve (inscription autonome, hors Hub) ---
+// Un client qui s'inscrit directement sur le site (email + mot de passe).
+// Les 3 super-admins restent en dur dans auth.ts (ADMIN_EMAILS) et priment.
+// Le rôle par défaut est "client" : cloisonné à ses commerces (owner_email).
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name"),
+  role: text("role", { enum: ["admin", "client"] }).default("client").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
 // --- Boucle de collecte d'avis (SMS / WhatsApp) ---
 // Réutilise les numéros captés (Roue, saisie, import) pour relancer le client
 // et l'inviter à laisser un avis. Le levier de collecte des leaders FR.

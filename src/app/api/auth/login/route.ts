@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { validateCredentials, createToken } from "@/lib/auth";
+import { authenticate, createToken } from "@/lib/auth";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    const valid = await validateCredentials(email.trim(), password);
-    if (!valid) {
+    const auth = await authenticate(email, password);
+    if (!auth) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const token = await createToken(email.trim().toLowerCase());
+    const token = await createToken(auth.email, auth.role);
 
     const response = NextResponse.json({ success: true });
     response.cookies.set("rp_session", token, {

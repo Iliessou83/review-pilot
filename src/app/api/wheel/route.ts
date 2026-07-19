@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { wheelConfigs, wheelSpins, type WheelSegment } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { eq, desc, sql } from "drizzle-orm";
+import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
+import { eq, desc, sql, inArray } from "drizzle-orm";
 
 function slugify(input: string): string {
   return input
@@ -38,7 +39,19 @@ export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const configs = await db.select().from(wheelConfigs).orderBy(desc(wheelConfigs.createdAt));
+  // Cloisonnement : un client ne voit que les roues de SES commerces.
+  const owned = await ownedBusinessIds(scopeFrom(session));
+  if (owned !== "all" && owned.length === 0) {
+    return NextResponse.json({ wheels: [] });
+  }
+  const bizFilter =
+    owned === "all" ? undefined : inArray(wheelConfigs.businessId, owned);
+
+  const configs = await db
+    .select()
+    .from(wheelConfigs)
+    .where(bizFilter)
+    .orderBy(desc(wheelConfigs.createdAt));
 
   const counts = await db
     .select({
@@ -80,6 +93,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Segments invalides (2 à 12)" }, { status: 400 });
   }
 
+  // Cloisonnement : un client ne peut créer une roue que sur SON commerce.
+  const scope = scopeFrom(session);
+  const bizId = body.businessId ? Number(body.businessId) : null;
+  if (!scope.isAdmin && (!bizId || !(await ownsBusiness(scope, bizId)))) {
+    return NextResponse.json({ error: "Commerce non autorisé" }, { status: 403 });
+  }
+
   let slug = slugify(String(body.slug || businessName));
   if (!slug) slug = `roue-${Date.now().toString(36)}`;
   // garantit l'unicité du slug
@@ -89,7 +109,7 @@ export async function POST(request: NextRequest) {
   const [created] = await db
     .insert(wheelConfigs)
     .values({
-      businessId: body.businessId ? Number(body.businessId) : null,
+      businessId: bizId,
       slug,
       mode: body.mode === "concours" ? "concours" : "avis",
       theme: ["dark", "neon", "warm"].includes(String(body.theme)) ? (body.theme as "dark" | "neon" | "warm") : "dark",
@@ -121,6 +141,19 @@ export async function PUT(request: NextRequest) {
 
   const id = Number(body.id);
   if (!id || isNaN(id)) return NextResponse.json({ error: "id requis" }, { status: 400 });
+
+  // Cloisonnement : un client ne peut modifier qu'une roue de SON commerce.
+  const scope = scopeFrom(session);
+  if (!scope.isAdmin) {
+    const [w] = await db
+      .select({ businessId: wheelConfigs.businessId })
+      .from(wheelConfigs)
+      .where(eq(wheelConfigs.id, id))
+      .limit(1);
+    if (!w || w.businessId == null || !(await ownsBusiness(scope, w.businessId))) {
+      return NextResponse.json({ error: "Roue introuvable" }, { status: 404 });
+    }
+  }
 
   const update: Record<string, unknown> = {};
   if (body.businessName !== undefined) update.businessName = String(body.businessName);
@@ -157,6 +190,19 @@ export async function DELETE(request: NextRequest) {
 
   const id = Number(new URL(request.url).searchParams.get("id"));
   if (!id || isNaN(id)) return NextResponse.json({ error: "id requis" }, { status: 400 });
+
+  // Cloisonnement : un client ne peut supprimer qu'une roue de SON commerce.
+  const scope = scopeFrom(session);
+  if (!scope.isAdmin) {
+    const [w] = await db
+      .select({ businessId: wheelConfigs.businessId })
+      .from(wheelConfigs)
+      .where(eq(wheelConfigs.id, id))
+      .limit(1);
+    if (!w || w.businessId == null || !(await ownsBusiness(scope, w.businessId))) {
+      return NextResponse.json({ error: "Roue introuvable" }, { status: 404 });
+    }
+  }
 
   await db.delete(wheelConfigs).where(eq(wheelConfigs.id, id));
   return NextResponse.json({ ok: true });
