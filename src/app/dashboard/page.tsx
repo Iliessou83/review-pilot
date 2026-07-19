@@ -120,8 +120,13 @@ export default async function DashboardPage() {
   const scope = await getScope();
   if (!scope) redirect("/");
   const ids = await ownedBusinessIds(scope);
-  const biz = ids === "all" ? undefined : inArray(reviews.businessId, ids.length ? ids : [-1]);
   const hasNone = ids !== "all" && ids.length === 0;
+
+  // Nouveau client sans commerce : on l'envoie à l'onboarding (connexion Google)
+  // plutôt que de lui montrer un tableau de bord vide.
+  if (hasNone) redirect("/onboarding");
+
+  const biz = ids === "all" ? undefined : inArray(reviews.businessId, ids.length ? ids : [-1]);
 
   const stats = await getStats(biz, hasNone).catch(() => emptyStats());
 

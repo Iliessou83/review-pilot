@@ -6,6 +6,7 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createToken, ADMIN_EMAILS } from "@/lib/auth";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { pushHubEvent } from "@/lib/hubEvent";
 
 // Inscription autonome (self-serve). Crée un compte client (email + mot de passe),
 // ouvre une session role "client" (cloisonné à ses commerces). Ne touche pas aux
@@ -52,6 +53,16 @@ export async function POST(request: NextRequest) {
     // Course entre deux inscriptions simultanées (contrainte unique).
     return NextResponse.json({ error: "Un compte existe déjà avec cet email." }, { status: 409 });
   }
+
+  // Fédération au cerveau Caela : le compte apparaît dans le Hub dès l'inscription
+  // (provisionné par email côté Hub si inconnu). Non bloquant.
+  await pushHubEvent({
+    ownerEmail: email,
+    kind: "contact",
+    title: `Nouveau compte Réputation${name ? ` — ${name}` : ""}`,
+    businessName: name,
+    metadata: { event: "signup" },
+  }).catch(() => {});
 
   const token = await createToken(email, "client");
   const res = NextResponse.json({ success: true });

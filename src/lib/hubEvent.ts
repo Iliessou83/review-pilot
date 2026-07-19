@@ -12,6 +12,9 @@ export async function pushHubEvent(input: {
   amount?: number | null;
   href?: string | null;
   metadata?: Record<string, unknown>;
+  // Nom du commerce : sert au provisionnement du compte cerveau (business_name)
+  // quand l'email n'existe pas encore côté Hub (fédération des îlots par email).
+  businessName?: string | null;
 }): Promise<void> {
   try {
     const secret = process.env.CAELA_SSO_SECRET;
@@ -25,6 +28,7 @@ export async function pushHubEvent(input: {
       amount: input.amount ?? null,
       href: input.href ?? "/api/sso/avis",
       metadata: input.metadata ?? {},
+      ...(input.businessName ? { business_name: input.businessName } : {}),
     });
     const sig = createHmac("sha256", secret).update(body).digest("hex");
 

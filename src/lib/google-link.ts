@@ -4,6 +4,7 @@ import { businesses } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { checkBusinessQuota } from "@/lib/plan-limits";
 import { ADMIN_EMAILS } from "@/lib/auth";
+import { pushHubEvent } from "@/lib/hubEvent";
 
 export type LinkResult =
   | { ok: true; businessId: number; duplicate: boolean }
@@ -50,6 +51,15 @@ export async function linkGoogleBusiness(params: {
       autoReply5Star: true,
     })
     .returning({ id: businesses.id });
+
+  // Fédération au cerveau Caela : rattache l'établissement au compte (par email).
+  await pushHubEvent({
+    ownerEmail: email,
+    kind: "contact",
+    title: `Établissement Google connecté — ${params.title}`,
+    businessName: params.title,
+    metadata: { event: "google_connect" },
+  }).catch(() => {});
 
   return { ok: true, businessId: created.id, duplicate: false };
 }

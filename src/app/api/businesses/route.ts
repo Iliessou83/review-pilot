@@ -6,6 +6,7 @@ import { businesses } from "@/db/schema";
 import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
 import { checkBusinessQuota } from "@/lib/plan-limits";
+import { pushHubEvent } from "@/lib/hubEvent";
 import { eq, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
@@ -103,6 +104,15 @@ export async function POST(request: NextRequest) {
       ownerEmail: String(ownerEmail).toLowerCase().trim(),
       autoReply5Star: autoReply5Star ?? true,
     }).returning();
+
+    // Fédération au cerveau Caela (par email).
+    await pushHubEvent({
+      ownerEmail: String(ownerEmail),
+      kind: "contact",
+      title: `Établissement ajouté — ${String(name)}`,
+      businessName: String(name),
+      metadata: { event: "business_added", platform },
+    }).catch(() => {});
 
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
