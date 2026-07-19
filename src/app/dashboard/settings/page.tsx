@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
@@ -35,6 +36,8 @@ type ProductFact = {
 type BusinessSettings = {
   id: number;
   name: string;
+  platform?: string;
+  googleConnected?: boolean;
   businessType: string;
   autoReply5Star: boolean;
   autoReplyNegative: boolean;
@@ -74,11 +77,27 @@ function Toggle({ value, onChange, color }: { value: boolean; onChange: (v: bool
   );
 }
 
-function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: number, data: Partial<BusinessSettings>) => Promise<void> }) {
+function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; onSave: (id: number, data: Partial<BusinessSettings>) => Promise<void>; onDisconnect: (id: number) => Promise<void> }) {
   const [local, setLocal] = useState({ ...biz });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  async function handleDisconnect() {
+    const ok = window.confirm(
+      "Déconnecter ce compte Google ?\n\nTant que vous ne reconnectez pas votre fiche, plus aucun nouvel avis ne sera récupéré et l'auto-réponse s'arrêtera. Vos avis déjà récupérés restent visibles."
+    );
+    if (!ok) return;
+    setDisconnecting(true);
+    setError("");
+    try {
+      await onDisconnect(biz.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur lors de la déconnexion");
+      setDisconnecting(false);
+    }
+  }
 
   function update<K extends keyof BusinessSettings>(key: K, value: BusinessSettings[K]) {
     setLocal(s => ({ ...s, [key]: value }));
@@ -187,6 +206,25 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
             </div>
           </div>
           <Toggle value={local.autoReplyNegative} onChange={v => update("autoReplyNegative", v)} color={G.yellow} />
+        </div>
+
+        {/* Exemple concret de réponse auto (avant activation) */}
+        <div style={{ padding: "14px 16px", background: "#fff", border: "1px dashed #DADCE0", borderRadius: "10px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, color: "#5F6368", textTransform: "uppercase", letterSpacing: "0.03em", marginBottom: "10px" }}>
+            Exemple de ce que l&apos;IA enverrait
+          </div>
+          <div style={{ padding: "10px 12px", background: "#F8F9FA", borderRadius: "8px", marginBottom: "8px" }}>
+            <div style={{ fontSize: "12px", fontWeight: 600, color: "#202124" }}>Marie D. &middot; ★★☆☆☆</div>
+            <div style={{ fontSize: "13px", color: "#3C4043", marginTop: "4px" }}>
+              &laquo; Service correct mais j&apos;ai attendu 20 minutes sans qu&apos;on me prévienne. Un peu déçue. &raquo;
+            </div>
+          </div>
+          <div style={{ padding: "10px 12px", background: "#FEF7E0", borderRadius: "8px", borderLeft: `3px solid ${G.yellow}` }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: "#5F6368", marginBottom: "4px" }}>Réponse générée par l&apos;IA</div>
+            <div style={{ fontSize: "13px", color: "#3C4043" }}>
+              &laquo; Bonjour Marie, merci pour votre retour. Nous sommes désolés pour cette attente, ce n&apos;est pas le service que nous voulons offrir. Nous en tenons compte pour améliorer l&apos;organisation. Au plaisir de mieux vous accueillir prochainement. &raquo;
+            </div>
+          </div>
         </div>
 
         {/* Email notification */}
@@ -366,6 +404,31 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
           </div>
         </div>
 
+        {/* Connexion Google — déconnexion volontaire du compte */}
+        {biz.googleConnected && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", background: "#FCE8E6", borderRadius: "10px", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Compte Google connecté</div>
+              <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
+                Se déconnecter arrête la synchro des avis et l&apos;auto-réponse jusqu&apos;à la reconnexion.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              style={{
+                padding: "8px 16px", background: "#fff",
+                border: `1px solid ${G.red}`, borderRadius: "8px", color: G.red,
+                fontSize: "13px", fontWeight: 600, cursor: disconnecting ? "not-allowed" : "pointer",
+                opacity: disconnecting ? 0.7 : 1, fontFamily: "inherit", flexShrink: 0,
+              }}
+            >
+              {disconnecting ? "Déconnexion..." : "Déconnecter mon compte Google"}
+            </button>
+          </div>
+        )}
+
         {/* Mots-clés d'escalade — forcent la validation humaine, jamais d'auto-publication */}
         <div style={{ border: "1px solid #DADCE0", borderRadius: "10px", overflow: "hidden" }}>
           <div style={{ padding: "14px 16px", background: "#F8F9FA" }}>
@@ -419,6 +482,7 @@ function BusinessCard({ biz, onSave }: { biz: BusinessSettings; onSave: (id: num
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [businesses, setBusinesses] = useState<BusinessSettings[]>([]);
   const [loading, setLoading] = useState(true);
   const [globalError, setGlobalError] = useState("");
@@ -448,6 +512,19 @@ export default function SettingsPage() {
     if (saved.business) {
       setBusinesses(bs => bs.map(b => b.id === id ? { ...b, ...saved.business } : b));
     }
+  }
+
+  async function handleDisconnect(id: number) {
+    const res = await fetch("/api/google/disconnect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessId: id }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({})) as { error?: string };
+      throw new Error(data.error || `Erreur ${res.status}`);
+    }
+    router.push("/onboarding");
   }
 
   return (
@@ -490,7 +567,7 @@ export default function SettingsPage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {businesses.map(biz => (
-          <BusinessCard key={biz.id} biz={biz} onSave={handleSave} />
+          <BusinessCard key={biz.id} biz={biz} onSave={handleSave} onDisconnect={handleDisconnect} />
         ))}
       </div>
 

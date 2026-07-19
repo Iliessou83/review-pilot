@@ -243,7 +243,28 @@ export default async function DashboardPage() {
               <span style={{ fontSize: "9px", color: healthColor, fontWeight: 600 }}>/100</span>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "15px", fontWeight: 700, color: "#202124", marginBottom: "4px" }}>Score de santé : {healthLabel}</div>
+              <div style={{ fontSize: "15px", fontWeight: 700, color: "#202124", marginBottom: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                Score de santé : {healthLabel}
+                <details style={{ display: "inline-block", position: "relative" }}>
+                  <summary
+                    style={{
+                      listStyle: "none", cursor: "pointer", width: "16px", height: "16px", borderRadius: "50%",
+                      background: "#F1F3F4", color: "#5F6368", fontSize: "11px", fontWeight: 700,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", verticalAlign: "middle",
+                    }}
+                    title="Comment ce score est calculé"
+                  >
+                    i
+                  </summary>
+                  <div style={{
+                    position: "absolute", top: "22px", left: 0, zIndex: 10, width: "260px",
+                    background: "#202124", color: "#fff", fontSize: "12px", fontWeight: 400, lineHeight: 1.5,
+                    borderRadius: "8px", padding: "10px 12px", boxShadow: SHADOW_MD,
+                  }}>
+                    Calculé sur 100 points : note moyenne Google (jusqu&apos;à 40 pts), taux de réponse automatique (jusqu&apos;à 35 pts), volume total d&apos;avis (jusqu&apos;à 25 pts, plafonné à 25 avis).
+                  </div>
+                </details>
+              </div>
               <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
                 {[
                   { label: "Note Google", score: ratingScore, max: 40 },

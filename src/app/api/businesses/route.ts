@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
       referralCode: businesses.referralCode,
       referredBy: businesses.referredBy,
       createdAt: businesses.createdAt,
+      lastSyncedAt: businesses.lastSyncedAt,
     };
     const base = db.select(cols).from(businesses);
     const all =

@@ -21,13 +21,21 @@ export async function linkGoogleBusiness(params: {
 }): Promise<LinkResult> {
   const email = params.email.toLowerCase().trim();
 
-  // Déjà lié ? On ne recrée pas.
+  // Déjà lié ? On ne recrée pas, mais on rafraîchit le refresh_token : c'est
+  // notamment le cas après une déconnexion volontaire (voir /api/google/disconnect)
+  // suivie d'une reconnexion — sans ça, le jeton resterait vidé pour toujours.
   const [existing] = await db
     .select({ id: businesses.id })
     .from(businesses)
     .where(and(eq(businesses.platformId, params.locationPath), eq(businesses.ownerEmail, email)))
     .limit(1);
-  if (existing) return { ok: true, businessId: existing.id, duplicate: true };
+  if (existing) {
+    await db
+      .update(businesses)
+      .set({ platformToken: params.refreshToken.slice(0, 1000) })
+      .where(eq(businesses.id, existing.id));
+    return { ok: true, businessId: existing.id, duplicate: true };
+  }
 
   // Quota du plan (le super-admin n'est jamais bridé).
   if (!ADMIN_EMAILS.includes(email)) {

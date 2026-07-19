@@ -68,6 +68,11 @@ function PendingCard({ item }: { item: PendingItem }) {
       return;
     }
 
+    const confirmed = confirm(
+      "Cette réponse sera visible publiquement sur votre fiche Google et ne pourra pas être modifiée après publication. Confirmer ?"
+    );
+    if (!confirmed) return;
+
     setPosting(true);
     try {
       const res = await fetch(`/api/reviews/${item.review.id}/respond`, {

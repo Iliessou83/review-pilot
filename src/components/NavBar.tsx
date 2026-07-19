@@ -32,7 +32,19 @@ export default function NavBar() {
       if (typeof d.count === "number") setPendingCount(d.count);
     }).catch(() => {});
 
-    setLastSync(new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
+    // Vraie dernière synchro Google/Trustpilot réussie (stockée en base), pas
+    // l'heure de chargement de la page. On prend la plus récente parmi tous
+    // les commerces visibles.
+    fetch("/api/businesses")
+      .then(r => (r.ok ? r.json() : []))
+      .then((d: Array<{ lastSyncedAt?: string | null }>) => {
+        if (!Array.isArray(d) || d.length === 0) return;
+        const dates = d.map(b => b.lastSyncedAt ? new Date(b.lastSyncedAt).getTime() : 0).filter(t => t > 0);
+        if (dates.length === 0) return;
+        const mostRecent = new Date(Math.max(...dates));
+        setLastSync(mostRecent.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }));
+      })
+      .catch(() => {});
 
     const mq = window.matchMedia("(max-width: 860px)");
     const update = () => setIsMobile(mq.matches);

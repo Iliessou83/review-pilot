@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 const G = { blue: "#1A73E8", green: "#34A853", red: "#EA4335" };
 
 type Business = { id: number; name: string };
+type WidgetStats = { avgRating: number; totalCount: number };
 
 export default function WidgetPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [stats, setStats] = useState<Record<number, WidgetStats>>({});
   const [origin, setOrigin] = useState("");
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
@@ -20,6 +22,23 @@ export default function WidgetPage() {
       .catch(() => setBusinesses([]))
       .finally(() => setLoading(false));
   }, []);
+
+  // Vraie note moyenne + vrai nombre d'avis par commerce (même source publique
+  // que le widget.js embarqué) : jamais de chiffres inventés dans le JSON-LD.
+  useEffect(() => {
+    if (!businesses.length) return;
+    businesses.forEach((b) => {
+      if (stats[b.id]) return;
+      fetch(`/api/widget/${b.id}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: { avgRating?: number; totalCount?: number } | null) => {
+          if (!d) return;
+          setStats((s) => ({ ...s, [b.id]: { avgRating: d.avgRating || 0, totalCount: d.totalCount || 0 } }));
+        })
+        .catch(() => {});
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businesses]);
 
   // Charge le vrai widget.js une fois les <div> d'aperçu présents dans le DOM.
   useEffect(() => {
@@ -42,13 +61,22 @@ export default function WidgetPage() {
   function embedCode(id: number) {
     return `<div data-caela-widget="${id}"></div>\n<script src="${origin}/widget.js" async></script>`;
   }
-  function jsonLdCode(id: number) {
-    return `<!-- Étoiles dans Google : collez ce bloc dans le <head> de votre site.\n     Remplacez les valeurs par celles de votre dernier audit, ou laissez le widget les injecter automatiquement. -->\n<script type="application/ld+json">\n${JSON.stringify(
+  // Retourne null tant qu'aucun avis réel n'existe : on ne publie jamais de
+  // faux avis structuré (schema.org AggregateRating), Google pénalise ça.
+  function jsonLdCode(id: number): string | null {
+    const s = stats[id];
+    if (!s || s.totalCount === 0) return null;
+    return `<!-- Étoiles dans Google : collez ce bloc dans le <head> de votre site.\n     Ces valeurs sont vos VRAIES note moyenne et nombre d'avis, mises à jour à chaque synchro. -->\n<script type="application/ld+json">\n${JSON.stringify(
       {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         name: businesses.find((b) => b.id === id)?.name || "",
-        aggregateRating: { "@type": "AggregateRating", ratingValue: "4.8", reviewCount: "120", bestRating: 5 },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: String(s.avgRating),
+          reviewCount: String(s.totalCount),
+          bestRating: 5,
+        },
       },
       null,
       2
@@ -112,11 +140,17 @@ export default function WidgetPage() {
           {/* JSON-LD */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#80868B", textTransform: "uppercase", letterSpacing: 0.5 }}>Étoiles dans Google (optionnel)</span>
-            <button style={copyBtn(copied === `ld-${b.id}`)} onClick={() => copy(jsonLdCode(b.id), `ld-${b.id}`)}>
-              {copied === `ld-${b.id}` ? "✓ Copié" : "Copier"}
-            </button>
+            {jsonLdCode(b.id) && (
+              <button style={copyBtn(copied === `ld-${b.id}`)} onClick={() => copy(jsonLdCode(b.id) as string, `ld-${b.id}`)}>
+                {copied === `ld-${b.id}` ? "✓ Copié" : "Copier"}
+              </button>
+            )}
           </div>
-          <div style={box}>{jsonLdCode(b.id)}</div>
+          {jsonLdCode(b.id) ? (
+            <div style={box}>{jsonLdCode(b.id)}</div>
+          ) : (
+            <div style={{ ...box, color: "#9AA0A6" }}>Disponible dès votre premier avis.</div>
+          )}
         </div>
       ))}
     </div>

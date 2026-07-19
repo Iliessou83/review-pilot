@@ -3,6 +3,9 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { getScope, ownedBusinessIds } from "@/lib/scope";
 import { googleConfigured } from "@/lib/google-oauth";
+import { db } from "@/lib/db";
+import { businesses } from "@/db/schema";
+import { inArray } from "drizzle-orm";
 
 // Onboarding client Reputation. Un nouveau client arrive par le SSO du Hub
 // (module Avis) sans commerce rattaché. On l'accueille et on le guide vers la
@@ -32,7 +35,20 @@ export default async function OnboardingPage({
   if (scope.isAdmin) redirect("/dashboard"); // le mode agence n'a pas d'onboarding
 
   const owned = await ownedBusinessIds(scope);
-  if (owned === "all" || owned.length > 0) redirect("/dashboard"); // déjà équipé
+  if (owned === "all") redirect("/dashboard"); // déjà équipé
+
+  // "Équipé" veut dire : au moins un commerce avec un jeton de connexion actif.
+  // Après une déconnexion volontaire (voir /api/google/disconnect), le commerce
+  // reste en base mais son platform_token est vidé — on doit alors laisser
+  // passer le commerçant vers cet écran plutôt que le renvoyer au dashboard.
+  if (owned.length > 0) {
+    const rows = await db
+      .select({ platformToken: businesses.platformToken })
+      .from(businesses)
+      .where(inArray(businesses.id, owned));
+    const hasActiveConnection = rows.some((r) => Boolean(r.platformToken));
+    if (hasActiveConnection) redirect("/dashboard");
+  }
 
   const gStatus = (await searchParams).google || null;
   const gOk = googleConfigured();
@@ -134,6 +150,10 @@ export default async function OnboardingPage({
         </div>
 
         {gOk ? (
+          <>
+          <p style={{ fontSize: 12.5, color: "#5F6368", margin: "0 0 12px", lineHeight: 1.5 }}>
+            On peut lire et répondre à vos avis. On ne touche pas à vos horaires, photos ou informations de fiche.
+          </p>
           <a
             href="/api/google/connect"
             style={{
@@ -154,6 +174,7 @@ export default async function OnboardingPage({
           >
             <GoogleGlyph /> Connecter ma fiche Google
           </a>
+          </>
         ) : (
           <div
             style={{

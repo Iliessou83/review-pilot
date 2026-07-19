@@ -186,7 +186,7 @@ export default async function AnalyticsPage() {
           <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
             Analytics
           </h1>
-          <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>Analyse de votre réputation sur 12 mois</p>
+          <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>Vos chiffres bruts : notes, volume, tendance.</p>
         </div>
         <Link href="/dashboard" style={{ padding: "8px 16px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "8px", textDecoration: "none", fontSize: "13px", color: "#5F6368", boxShadow: SHADOW }}>
           ← Dashboard

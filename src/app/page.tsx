@@ -918,6 +918,23 @@ export default function LandingPage() {
                 {loading ? "Connexion..." : "Se connecter"}
               </button>
             </form>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
+              <div style={{ flex: 1, height: "1px", background: "#DADCE0" }} />
+              <span style={{ fontSize: "12px", color: "#80868B", fontWeight: 500 }}>Ou</span>
+              <div style={{ flex: 1, height: "1px", background: "#DADCE0" }} />
+            </div>
+
+            <a
+              href="https://caela-hub.vercel.app/api/sso/avis"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", padding: "11px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "6px", color: "#202124", fontSize: "14px", fontWeight: 600, textDecoration: "none", boxSizing: "border-box", fontFamily: "inherit" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#F8F9FA"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
+            >
+              <GDots size={7} />
+              Se connecter avec Caela
+            </a>
+
             <p style={{ textAlign: "center", marginTop: "18px", fontSize: "13px", color: "#5F6368" }}>
               Pas encore de compte ?{" "}
               <a href="/signup" style={{ color: G.blue, fontWeight: 600, textDecoration: "none" }}>Créer un compte</a>

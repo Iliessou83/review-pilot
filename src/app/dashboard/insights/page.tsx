@@ -84,7 +84,7 @@ export default function InsightsPage() {
           <h1 style={{ margin: "0 0 4px", fontSize: 24, fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
             Insights IA
           </h1>
-          <p style={{ margin: 0, color: "#5F6368", fontSize: 14 }}>Ce que vos clients disent vraiment. Thèmes, tendances, actions.</p>
+          <p style={{ margin: 0, color: "#5F6368", fontSize: 14 }}>Ce que l&apos;IA comprend de vos avis : thèmes récurrents, points d&apos;attention.</p>
         </div>
         <Link href="/dashboard" style={{ padding: "8px 16px", background: "#fff", border: "1px solid #DADCE0", borderRadius: 8, textDecoration: "none", fontSize: 13, color: "#5F6368", boxShadow: SHADOW }}>
           ← Dashboard

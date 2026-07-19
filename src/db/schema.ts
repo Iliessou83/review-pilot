@@ -39,6 +39,10 @@ export const businesses = pgTable("businesses", {
   // Lien public "laisser un avis" Google du commerce (g.page/r/... ou write_review).
   // Utilisé par la boucle de collecte SMS pour envoyer le client au bon endroit.
   reviewLink: text("review_link"),
+  // Horodatage de la DERNIÈRE synchro Google/Trustpilot réussie (voir
+  // /api/reviews/sync). Affiché tel quel dans la NavBar — jamais l'heure de
+  // chargement de la page, qui ne prouve aucune synchro réelle.
+  lastSyncedAt: timestamp("last_synced_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

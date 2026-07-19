@@ -239,15 +239,22 @@ export default function CollectePage() {
           {/* Barre d'action */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 10 }}>
             <span style={{ fontSize: 13, color: "#5F6368" }}>{checked.size} sélectionné(s)</span>
-            <button onClick={send} disabled={busy === "send" || checked.size === 0 || !smsOk || !hasLink}
-              style={{
-                padding: "11px 22px", borderRadius: 8, border: "none", fontSize: 14, fontWeight: 700, fontFamily: "inherit",
-                background: (checked.size === 0 || !smsOk || !hasLink) ? "#DADCE0" : G.green,
-                color: (checked.size === 0 || !smsOk || !hasLink) ? "#80868B" : "#fff",
-                cursor: (busy === "send" || checked.size === 0 || !smsOk || !hasLink) ? "not-allowed" : "pointer",
-              }}>
-              {busy === "send" ? "Envoi…" : `📩 Envoyer la demande d'avis (SMS)`}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {!smsOk && (
+                <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#FEF7E0", color: "#7A5900", border: "1px solid #FBBC04" }}>
+                  Bientôt
+                </span>
+              )}
+              <button onClick={send} disabled={busy === "send" || checked.size === 0 || !smsOk || !hasLink}
+                style={{
+                  padding: "11px 22px", borderRadius: 8, border: "none", fontSize: 14, fontWeight: 700, fontFamily: "inherit",
+                  background: (checked.size === 0 || !smsOk || !hasLink) ? "#DADCE0" : G.green,
+                  color: (checked.size === 0 || !smsOk || !hasLink) ? "#80868B" : "#fff",
+                  cursor: (busy === "send" || checked.size === 0 || !smsOk || !hasLink) ? "not-allowed" : "pointer",
+                }}>
+                {busy === "send" ? "Envoi…" : `📩 Envoyer la demande d'avis (SMS)`}
+              </button>
+            </div>
           </div>
 
           {/* Table contacts */}

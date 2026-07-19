@@ -160,6 +160,14 @@ export async function POST(request: NextRequest) {
 
       results[business.name].synced = newReviews.length;
 
+      // Synchro réellement réussie (l'appel API n'a pas levé) : on horodate.
+      // Affiché tel quel dans la NavBar — jamais l'heure de chargement de page.
+      await db
+        .update(businesses)
+        .set({ lastSyncedAt: new Date() })
+        .where(eq(businesses.id, business.id))
+        .catch((err) => console.error(`lastSyncedAt update failed for ${business.name}:`, err));
+
       // Process reviews — direct function calls, no HTTP self-call (no SSRF risk)
       for (const review of newReviews) {
         // Remonte l'avis dans le cerveau Caela (cockpit + notifications du Hub).

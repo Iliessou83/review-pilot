@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     businesses: allBusinesses.map(b => ({
       id: b.id,
       name: b.name,
+      platform: b.platform,
+      googleConnected: b.platform === "google" && Boolean(b.platformToken),
       businessType: b.businessType || "other",
       autoReply5Star: b.autoReply5Star,
       autoReplyNegative: b.autoReplyNegative,
