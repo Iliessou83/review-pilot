@@ -7,9 +7,10 @@ import { db } from "@/lib/db";
 import { subscriptions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { planById, billing } from "@/config/legal.config";
+import { getReviewQuotaStatus } from "@/lib/plan-limits";
 import CancelButton from "./CancelButton";
 
-const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368" };
+const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", yellow: "#F9AB00" };
 
 function fmt(d: Date | null) {
   if (!d) return "—";
@@ -38,6 +39,7 @@ export default async function BillingPage() {
   const plan = sub?.planId ? planById(sub.planId) : undefined;
   const isTrial = sub?.status === "trialing";
   const endDate = isTrial ? sub?.trialEndsAt : sub?.currentPeriodEnd;
+  const quotaStatus = sub ? await getReviewQuotaStatus(session.email) : null;
 
   return (
     <div style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 24px", fontFamily: "system-ui,-apple-system,sans-serif" }}>
@@ -77,6 +79,32 @@ export default async function BillingPage() {
               )}
             </p>
           </div>
+
+          {quotaStatus && quotaStatus.max !== null && (
+            <div style={{ marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: G.grey, marginBottom: "6px" }}>
+                <span>Avis traités ce mois-ci</span>
+                <span style={{ fontWeight: 600, color: quotaStatus.status === "ok" ? "#202124" : quotaStatus.status === "near" ? G.yellow : G.red }}>
+                  {quotaStatus.current} / {quotaStatus.max}
+                </span>
+              </div>
+              <div style={{ height: "8px", background: "#EEEFF1", borderRadius: "4px", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%",
+                  width: `${Math.min(100, Math.round((quotaStatus.ratio ?? 0) * 100))}%`,
+                  background: quotaStatus.status === "ok" ? G.blue : quotaStatus.status === "near" ? G.yellow : G.red,
+                  transition: "width 0.3s",
+                }} />
+              </div>
+              {quotaStatus.status !== "ok" && (
+                <p style={{ fontSize: "12px", color: quotaStatus.status === "exceeded" ? G.red : G.yellow, margin: "8px 0 0", lineHeight: 1.5 }}>
+                  {quotaStatus.status === "exceeded"
+                    ? `Quota dépassé — le service continue sans interruption${plan?.overagePricePerReview ? `, un supplément de ${plan.overagePricePerReview}€/avis s'applique jusqu'au renouvellement` : ""}.`
+                    : "Vous approchez de votre quota mensuel. Passez à un plan supérieur pour l'augmenter."}
+                </p>
+              )}
+            </div>
+          )}
 
           <CancelButton alreadyCancelled={sub.cancelAtPeriodEnd} />
         </div>

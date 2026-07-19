@@ -6,7 +6,7 @@ import { businesses, reviews } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 import { ADMIN_EMAILS } from "@/lib/auth";
-import { checkReviewQuota } from "@/lib/plan-limits";
+import { maybeSendQuotaAlert } from "@/lib/plan-limits";
 import { googleAccessToken } from "@/lib/google-oauth";
 
 interface GoogleReview {
@@ -111,12 +111,7 @@ async function runSync() {
 
       for (const review of newReviews) {
         try {
-          const isAdminOwned = ADMIN_EMAILS.includes(business.ownerEmail.toLowerCase());
-          const quota = isAdminOwned ? { allowed: true } : await checkReviewQuota(business.ownerEmail);
-
-          if (!quota.allowed) {
-            results[business.name].errors.push(`Review ${review.id}: quota mensuel d'avis dépassé, traitement IA sauté`);
-          } else if (review.rating >= 4 && business.autoReply5Star) {
+          if (review.rating >= 4 && business.autoReply5Star) {
             await processHighRatedReview(review, business);
           } else {
             await processLowRatedReview(review, business);
@@ -126,6 +121,14 @@ async function runSync() {
           results[business.name].errors.push(`Review ${review.id}: ${err instanceof Error ? err.message : "error"}`);
           console.error(`Review ${review.id} processing error:`, err);
         }
+      }
+
+      // Alerte quota (90%/dépassé) — jamais de blocage, juste prévenir le client.
+      // Les comptes super-admin ne sont jamais concernés (pas de facturation interne).
+      if (newReviews.length > 0 && !ADMIN_EMAILS.includes(business.ownerEmail.toLowerCase())) {
+        await maybeSendQuotaAlert(business.ownerEmail, business.name).catch((err) =>
+          console.error(`Quota alert failed for ${business.name}:`, err)
+        );
       }
     } catch (err) {
       results[business.name].errors.push(`Sync failed: ${err instanceof Error ? err.message : "error"}`);

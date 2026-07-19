@@ -6,7 +6,7 @@ import { businesses, reviews } from "@/db/schema";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
-import { checkReviewQuota } from "@/lib/plan-limits";
+import { maybeSendQuotaAlert } from "@/lib/plan-limits";
 import { googleAccessToken } from "@/lib/google-oauth";
 import { eq, and, inArray } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
@@ -171,14 +171,7 @@ export async function POST(request: NextRequest) {
           metadata: { rating: review.rating, platform: review.platform },
         });
         try {
-          // Les comptes super-admin (compte interne d'Ilies) ne sont jamais
-          // bridés par le quota d'avis/mois — seuls les clients abonnés le sont.
-          const isAdminOwned = ADMIN_EMAILS.includes(business.ownerEmail.toLowerCase());
-          const quota = isAdminOwned ? { allowed: true } : await checkReviewQuota(business.ownerEmail);
-
-          if (!quota.allowed) {
-            results[business.name].errors.push(`Review ${review.id}: quota mensuel d'avis dépassé, traitement IA sauté`);
-          } else if (review.rating >= 4) {
+          if (review.rating >= 4) {
             if (business.autoReply5Star) {
               await processHighRatedReview(review, business);
             } else {
@@ -193,6 +186,14 @@ export async function POST(request: NextRequest) {
           results[business.name].errors.push(`Review ${review.id}: processing failed`);
           console.error(`Review ${review.id} processing error:`, reviewErr);
         }
+      }
+
+      // Alerte quota (90%/dépassé) — jamais de blocage, juste prévenir le client.
+      // Les comptes super-admin ne sont jamais concernés (pas de facturation interne).
+      if (newReviews.length > 0 && !ADMIN_EMAILS.includes(business.ownerEmail.toLowerCase())) {
+        await maybeSendQuotaAlert(business.ownerEmail, business.name).catch((err) =>
+          console.error(`Quota alert failed for ${business.name}:`, err)
+        );
       }
     } catch (err) {
       results[business.name].errors.push("Sync failed");

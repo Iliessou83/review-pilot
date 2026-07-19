@@ -195,6 +195,9 @@ export const subscriptions = pgTable("subscriptions", {
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
   // horodatage de l'email de rappel J-3 (anti-doublon)
   reminderSentAt: timestamp("reminder_sent_at"),
+  // horodatage du dernier email d'alerte quota (90%) — anti-doublon mensuel,
+  // voir src/lib/plan-limits.ts::maybeSendQuotaAlert.
+  quotaAlertSentAt: timestamp("quota_alert_sent_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

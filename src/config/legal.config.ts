@@ -121,7 +121,12 @@ export const billing = {
 // On ne hardcode jamais un Price ID : il vit dans les env Vercel.
 // `maxBusinesses` = nombre d'établissements inclus (null = illimité).
 // `monthlyReviewQuota` = avis traités/mois inclus (null = illimité).
-// Ces deux champs sont la source unique de vérité pour l'application des
+// `overagePricePerReview` = supplément facturé par avis au-delà du quota
+// (null = pas de dépassement possible, soit illimité soit non applicable).
+// Décision produit (2026-07-19) : jamais de blocage sec au dépassement —
+// alerte à 90% du quota, puis service continu + petit supplément jusqu'au
+// renouvellement plutôt qu'un système de crédits à la carte.
+// Ces champs sont la source unique de vérité pour l'application des
 // limites (voir src/lib/plan-limits.ts) — cohérent avec les chiffres déjà
 // annoncés sur la page d'accueil (cartes plans + calculateur + comparatif).
 
@@ -134,6 +139,7 @@ export const plans = [
     quota: "Jusqu'à 30 avis/mois",
     maxBusinesses: 1,
     monthlyReviewQuota: 30,
+    overagePricePerReview: 1,
   },
   {
     id: "solo",
@@ -143,6 +149,7 @@ export const plans = [
     quota: "Jusqu'à 100 avis/mois",
     maxBusinesses: 1,
     monthlyReviewQuota: 100,
+    overagePricePerReview: 0.8,
   },
   {
     id: "pro",
@@ -152,6 +159,7 @@ export const plans = [
     quota: "Jusqu'à 300 avis/mois — 5 établissements",
     maxBusinesses: 5,
     monthlyReviewQuota: 300,
+    overagePricePerReview: 0.6,
   },
   {
     id: "studio",
@@ -161,6 +169,7 @@ export const plans = [
     quota: "Avis illimités — 5 établissements",
     maxBusinesses: 5,
     monthlyReviewQuota: null,
+    overagePricePerReview: null,
   },
   {
     id: "agence",
@@ -170,6 +179,7 @@ export const plans = [
     quota: "Avis illimités — établissements illimités",
     maxBusinesses: null,
     monthlyReviewQuota: null,
+    overagePricePerReview: null,
   },
 ] as const;
 
