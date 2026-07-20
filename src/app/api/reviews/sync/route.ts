@@ -8,6 +8,7 @@ import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
 import { maybeSendQuotaAlert } from "@/lib/plan-limits";
 import { googleAccessToken } from "@/lib/google-oauth";
+import { decryptToken } from "@/lib/token-crypto";
 import { eq, and, inArray } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 
@@ -76,7 +77,7 @@ async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
 async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
   const response = await fetch(
     `https://api.trustpilot.com/v1/business-units/${business.platformId}/reviews?pageSize=50`,
-    { headers: { apikey: business.platformToken } }
+    { headers: { apikey: decryptToken(business.platformToken) } }
   );
   if (!response.ok) throw new Error(`Trustpilot API error: ${response.status}`);
 

@@ -7,6 +7,7 @@ import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
 import { checkBusinessQuota } from "@/lib/plan-limits";
 import { pushHubEvent } from "@/lib/hubEvent";
+import { encryptToken } from "@/lib/token-crypto";
 import { eq, inArray } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
       name: String(name).slice(0, 255),
       platform: platform as "google" | "trustpilot",
       platformId: String(platformId).slice(0, 500),
-      platformToken: String(platformToken).slice(0, 1000),
+      platformToken: encryptToken(String(platformToken).slice(0, 1000)),
       ownerEmail: String(ownerEmail).toLowerCase().trim(),
       autoReply5Star: autoReply5Star ?? true,
     }).returning();

@@ -8,6 +8,7 @@ import { processHighRatedReview, processLowRatedReview } from "@/lib/review-proc
 import { ADMIN_EMAILS } from "@/lib/auth";
 import { maybeSendQuotaAlert } from "@/lib/plan-limits";
 import { googleAccessToken } from "@/lib/google-oauth";
+import { decryptToken } from "@/lib/token-crypto";
 
 interface GoogleReview {
   name: string;
@@ -59,7 +60,7 @@ async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
 async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
   const res = await fetch(
     `https://api.trustpilot.com/v1/business-units/${business.platformId}/reviews?pageSize=50`,
-    { headers: { apikey: business.platformToken } }
+    { headers: { apikey: decryptToken(business.platformToken) } }
   );
   if (!res.ok) throw new Error(`Trustpilot API ${res.status}`);
   const data = await res.json() as { reviews?: TrustpilotReview[] };

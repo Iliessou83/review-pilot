@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { checkBusinessQuota } from "@/lib/plan-limits";
 import { ADMIN_EMAILS } from "@/lib/auth";
 import { pushHubEvent } from "@/lib/hubEvent";
+import { encryptToken } from "@/lib/token-crypto";
 
 export type LinkResult =
   | { ok: true; businessId: number; duplicate: boolean }
@@ -32,7 +33,7 @@ export async function linkGoogleBusiness(params: {
   if (existing) {
     await db
       .update(businesses)
-      .set({ platformToken: params.refreshToken.slice(0, 1000) })
+      .set({ platformToken: encryptToken(params.refreshToken.slice(0, 1000)) })
       .where(eq(businesses.id, existing.id));
     return { ok: true, businessId: existing.id, duplicate: true };
   }
@@ -54,7 +55,7 @@ export async function linkGoogleBusiness(params: {
       name: params.title.slice(0, 255),
       platform: "google",
       platformId: params.locationPath.slice(0, 500),
-      platformToken: params.refreshToken.slice(0, 1000),
+      platformToken: encryptToken(params.refreshToken.slice(0, 1000)),
       ownerEmail: email,
       autoReply5Star: true,
     })

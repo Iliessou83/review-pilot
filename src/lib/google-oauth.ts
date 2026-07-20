@@ -1,4 +1,5 @@
 import "server-only";
+import { decryptToken } from "@/lib/token-crypto";
 
 // Connexion Google Business Profile en 1 clic (OAuth 2.0).
 // Le commerçant autorise l'accès à sa fiche ; on stocke son refresh_token
@@ -90,14 +91,15 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
 // - Fallback legacy : si le refresh échoue (jeton d'accès collé à la main jadis),
 //   on retente avec la valeur brute pour ne rien casser.
 export async function googleAccessToken(business: { platformToken: string }): Promise<string> {
+  const token = decryptToken(business.platformToken);
   if (googleConfigured()) {
     try {
-      return await refreshAccessToken(business.platformToken);
+      return await refreshAccessToken(token);
     } catch {
       // On retombe sur la valeur brute (ancienne saisie manuelle).
     }
   }
-  return business.platformToken;
+  return token;
 }
 
 // Liste les comptes Business Profile accessibles (mybusinessaccountmanagement v1).

@@ -108,7 +108,11 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
     setSaving(true);
     setError("");
     try {
-      await onSave(biz.id, {
+      // ownerEmail = propriétaire du commerce (cloisonnement multi-tenant), pas juste
+      // un email de notification malgré le libellé du champ. Réservé à l'admin côté
+      // API (/api/settings) : on ne l'envoie que s'il a vraiment changé, pour ne pas
+      // faire échouer l'enregistrement des autres réglages pour un client normal.
+      const payload: Partial<BusinessSettings> = {
         businessType: local.businessType,
         autoReply5Star: local.autoReply5Star,
         autoReplyNegative: local.autoReplyNegative,
@@ -116,9 +120,11 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
         compensationText: local.compensationText,
         productFacts: local.productFacts,
         escalationKeywords: local.escalationKeywords,
-        ownerEmail: local.ownerEmail,
         reviewLink: local.reviewLink,
-      });
+      };
+      if (local.ownerEmail !== biz.ownerEmail) payload.ownerEmail = local.ownerEmail;
+
+      await onSave(biz.id, payload);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
@@ -246,6 +252,9 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
             onFocus={e => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
             onBlur={e => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
           />
+          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#80868B" }}>
+            Détermine aussi le propriétaire du commerce — un changement n&apos;est appliqué que par l&apos;administrateur.
+          </p>
           <p style={{ margin: "4px 0 0", fontSize: "11px", color: "#80868B" }}>
             Reçoit les emails avec les 3 suggestions de réponse pour les avis négatifs.
           </p>

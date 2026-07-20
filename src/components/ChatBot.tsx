@@ -58,8 +58,9 @@ export default function ChatBot() {
       {/* Chat window */}
       {open && (
         <div style={{
-          position: "fixed", bottom: "90px", right: "24px",
-          width: "360px", maxHeight: "520px",
+          position: "fixed", bottom: "90px", right: "16px",
+          width: "360px", maxWidth: "calc(100vw - 32px)",
+          maxHeight: "min(520px, calc(100vh - 140px))",
           background: "#fff", borderRadius: "16px",
           boxShadow: "0 8px 32px rgba(60,64,67,0.24), 0 2px 8px rgba(60,64,67,0.12)",
           display: "flex", flexDirection: "column",

@@ -74,6 +74,13 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Établissement introuvable" }, { status: 404 });
   }
 
+  // Changer le propriétaire (owner_email) d'un commerce est réservé au super-admin :
+  // un client qui pourrait se le réattribuer contournerait tout le cloisonnement
+  // multi-tenant (accès à d'autres commerces, quotas, facturation...).
+  if (fields.ownerEmail !== undefined && !scope.isAdmin) {
+    return NextResponse.json({ error: "Modification réservée à l'administrateur" }, { status: 403 });
+  }
+
   const update: Partial<typeof businesses.$inferInsert> = {};
   if (fields.businessType !== undefined) update.businessType = fields.businessType;
   if (fields.autoReply5Star !== undefined) update.autoReply5Star = fields.autoReply5Star;

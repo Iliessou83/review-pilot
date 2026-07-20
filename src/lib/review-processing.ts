@@ -10,6 +10,8 @@ import { assessReviewRisk } from "@/lib/risk-detection";
 import { escapeHtml } from "@/lib/escape-html";
 import { Resend } from "resend";
 import { SignJWT } from "jose";
+import { googleAccessToken } from "@/lib/google-oauth";
+import { decryptToken } from "@/lib/token-crypto";
 
 type Review = typeof reviews.$inferSelect;
 type Business = typeof businesses.$inferSelect;
@@ -152,9 +154,11 @@ export async function processHighRatedReview(review: Review, business: Business)
 
   try {
     if (review.platform === "google") {
-      await postGoogleReply(review.platformReviewId, responseText, business.platformToken);
+      // platform_token = refresh_token OAuth chiffré → jeton d'accès frais pour publier.
+      const access = await googleAccessToken(business);
+      await postGoogleReply(review.platformReviewId, responseText, access);
     } else {
-      await postTrustpilotReply(business.platformId, review.platformReviewId, responseText, business.platformToken);
+      await postTrustpilotReply(business.platformId, review.platformReviewId, responseText, decryptToken(business.platformToken));
     }
     await db.update(reviews)
       .set({ responded: true, responseText, respondedAt: new Date() })

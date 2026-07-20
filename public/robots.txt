@@ -6,4 +6,4 @@ Disallow: /reviews
 Disallow: /pending
 Disallow: /api/
 
-Sitemap: https://caela-reputation.fr/sitemap.xml
+Sitemap: https://review-pilot.vercel.app/sitemap.xml

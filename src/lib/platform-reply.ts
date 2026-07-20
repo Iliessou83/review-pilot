@@ -1,5 +1,6 @@
 import type { Review, Business } from "@/db/schema";
 import { googleAccessToken } from "@/lib/google-oauth";
+import { decryptToken } from "@/lib/token-crypto";
 
 /**
  * Publication d'une réponse sur la plateforme d'origine de l'avis (Google / Trustpilot).
@@ -57,7 +58,7 @@ export async function publishReply(
       business.platformId,
       review.platformReviewId,
       responseText,
-      business.platformToken
+      decryptToken(business.platformToken)
     );
   }
 }

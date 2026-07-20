@@ -209,6 +209,19 @@ export const subscriptions = pgTable("subscriptions", {
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 
+// --- Anti-bruteforce login (compteur partagé, voir src/lib/rate-limit.ts) ---
+// Un compteur en mémoire ne fonctionne pas sur Vercel (chaque instance serverless
+// a sa propre mémoire, donc chaque instance autorise à nouveau 5 tentatives). On
+// stocke le compteur en base pour qu'il soit partagé par toutes les instances.
+export const loginAttempts = pgTable("login_attempts", {
+  id: serial("id").primaryKey(),
+  ipKey: text("ip_key").notNull().unique(), // ex: "login:1.2.3.4"
+  count: integer("count").default(1).notNull(),
+  resetAt: timestamp("reset_at").notNull(),
+});
+
+export type LoginAttempt = typeof loginAttempts.$inferSelect;
+
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Review = typeof reviews.$inferSelect;

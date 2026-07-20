@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://review-pilot.vercel.app"),
   title: "Caela Réputation — Gestion d'avis Google automatisée",
   description: "IA spécialisée fiches Google Business. Réponses automatiques, optimisation de fiche, référencement local.",
 };
