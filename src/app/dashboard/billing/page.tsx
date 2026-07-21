@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { planById, billing } from "@/config/legal.config";
 import { getReviewQuotaStatus } from "@/lib/plan-limits";
 import CancelButton from "./CancelButton";
+import ExtensionsWidget from "./ExtensionsWidget";
 
 const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", yellow: "#F9AB00" };
 
@@ -114,6 +115,8 @@ export default async function BillingPage() {
         Résiliation libre à tout moment, en ligne, sans frais ni justification (art. L215-1-1 du Code de la consommation).
         Détails dans les <Link href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</Link>.
       </p>
+
+      <ExtensionsWidget />
     </div>
   );
 }
