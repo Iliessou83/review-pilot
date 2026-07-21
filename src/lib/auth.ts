@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
+import crypto from "crypto";
 
 // Hardcoded admin accounts — acceptable for a private mono-tenant system.
 // Hashes are bcrypt cost 10. Rotate passwords via bcrypt CLI if compromised.
@@ -25,6 +26,20 @@ export function getJwtSecret(): Uint8Array {
 export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
   const bcrypt = await import("bcryptjs");
   return bcrypt.compare(plain, hash);
+}
+
+export async function hashPassword(plain: string): Promise<string> {
+  const bcrypt = await import("bcryptjs");
+  return bcrypt.hash(plain, 10);
+}
+
+// Mot de passe oublié (comptes self-serve `users` uniquement — les super-admins
+// en dur ci-dessus n'ont pas de flow email, Ilies change leur hash directement).
+export function generateResetToken(): string {
+  return crypto.randomBytes(32).toString("hex");
+}
+export function hashResetToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
 }
 
 export async function validateCredentials(email: string, password: string): Promise<boolean> {

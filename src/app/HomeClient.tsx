@@ -994,6 +994,9 @@ export default function HomeClient() {
               <button type="submit" disabled={loading} style={{ width: "100%", padding: "12px", background: loading ? `${G.blue}80` : G.blue, border: "none", borderRadius: "6px", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
                 {loading ? "Connexion..." : "Se connecter"}
               </button>
+              <div style={{ textAlign: "center", marginTop: "12px" }}>
+                <a href="/mot-de-passe-oublie" style={{ fontSize: "13px", color: G.blue, fontWeight: 600, textDecoration: "none" }}>Mot de passe oublié ?</a>
+              </div>
             </form>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>

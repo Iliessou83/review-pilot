@@ -222,6 +222,20 @@ export const loginAttempts = pgTable("login_attempts", {
 
 export type LoginAttempt = typeof loginAttempts.$inferSelect;
 
+// --- Mot de passe oublié (comptes clients self-serve, table `users`) ---
+// Jeton brut envoyé par email, seul son hash sha256 est stocké. Usage unique,
+// valable 1h. Voir drizzle/manual/2026-07-21_add_password_reset_tokens.sql.
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Review = typeof reviews.$inferSelect;
