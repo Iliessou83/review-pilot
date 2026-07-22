@@ -70,6 +70,8 @@ export default async function BillingPage() {
             </span>
           </div>
 
+          <ExtensionsWidget />
+
           <div style={{ padding: "16px", background: "#F8F9FA", borderRadius: "8px", marginBottom: "24px" }}>
             <p style={{ fontSize: "14px", color: G.grey, margin: 0, lineHeight: 1.6 }}>
               {isTrial ? (
@@ -115,8 +117,6 @@ export default async function BillingPage() {
         Résiliation libre à tout moment, en ligne, sans frais ni justification (art. L215-1-1 du Code de la consommation).
         Détails dans les <Link href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</Link>.
       </p>
-
-      <ExtensionsWidget />
     </div>
   );
 }
