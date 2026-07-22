@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { WheelSegment } from "@/db/schema";
+import DelegateBanner from "@/components/DelegateBanner";
 
 type Wheel = {
   id: number;
@@ -133,6 +134,15 @@ export default function RouePage() {
         Configure la roue que tes clients scannent. Le tirage est pondéré côté serveur.
         La récompense reste indépendante de l&apos;avis Google (conformité Google + RGPD).
       </p>
+
+      <DelegateBanner
+        storageKey="roue"
+        icon="🎡"
+        title="Pas à l'aise avec le design des lots ou l'affiche à imprimer ?"
+        body="Caela Agency peut créer vos visuels de roue et votre affiche/QR à afficher en caisse, assortis à votre enseigne. Prestation payante, sur devis."
+        ctaLabel="En discuter →"
+        mailSubject="Déléguer la création des visuels de ma roue à avis"
+      />
 
       {/* Éditeur */}
       <div style={card}>

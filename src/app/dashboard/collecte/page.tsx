@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import DelegateBanner from "@/components/DelegateBanner";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
@@ -158,6 +159,15 @@ export default function CollectePage() {
           ← Dashboard
         </Link>
       </div>
+
+      <DelegateBanner
+        storageKey="collecte"
+        icon="📣"
+        title="Pas le temps de relancer vos clients régulièrement ?"
+        body="Caela Agency peut prendre en charge vos campagnes de collecte d'avis (import, relances, suivi) chaque mois. Prestation payante, sur devis."
+        ctaLabel="En discuter →"
+        mailSubject="Déléguer mes campagnes de collecte d'avis"
+      />
 
       {loadingBiz && <p style={{ color: "#80868B" }}>Chargement…</p>}
 
