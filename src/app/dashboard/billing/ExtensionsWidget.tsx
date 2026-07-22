@@ -13,6 +13,8 @@ type Extension = {
   pitch: string;
   status: "active" | "available";
   openUrl?: string;
+  previewImage?: string;
+  landingUrl?: string;
 };
 
 const EMOJI: Record<string, string> = {
@@ -83,37 +85,73 @@ export default function ExtensionsWidget() {
       ) : (
         <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
           {active.map((ext) => (
-            <div key={ext.key} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column" }}>
-              <div style={{ width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px", fontSize: "16px", background: ext.wash }}>
-                {EMOJI[ext.key] ?? "🧩"}
-              </div>
-              <div style={{ fontWeight: 700, color: "#202124", fontSize: "14px" }}>{ext.produit}</div>
-              <div style={{ fontSize: "11px", color: "#5F6368", marginTop: "2px" }}>{ext.name}</div>
-              <p style={{ fontSize: "12.5px", color: "#5F6368", marginTop: "8px", flex: 1 }}>{ext.pitch}</p>
-              <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#34A853", marginTop: "10px" }}>● Actif</span>
-              {ext.openUrl && (
-                <a href={ext.openUrl} style={{ marginTop: "8px", padding: "9px 14px", background: ext.accent, borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", textDecoration: "none", fontFamily: "inherit" }}>
-                  Ouvrir {ext.produit}
-                </a>
+            <div key={ext.key} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {ext.previewImage && (
+                ext.landingUrl ? (
+                  <a href={ext.landingUrl} target="_blank" rel="noopener noreferrer" title={`Voir ${ext.produit}`}>
+                    <img src={ext.previewImage} alt={`Aperçu ${ext.produit}`} loading="lazy" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", objectPosition: "top", display: "block", borderBottom: "1px solid #DADCE0" }} />
+                  </a>
+                ) : (
+                  <img src={ext.previewImage} alt={`Aperçu ${ext.produit}`} loading="lazy" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", objectPosition: "top", display: "block", borderBottom: "1px solid #DADCE0" }} />
+                )
               )}
+              <div style={{ padding: "16px", display: "flex", flexDirection: "column", flex: 1 }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px", fontSize: "16px", background: ext.wash }}>
+                  {EMOJI[ext.key] ?? "🧩"}
+                </div>
+                <div style={{ fontWeight: 700, color: "#202124", fontSize: "14px" }}>{ext.produit}</div>
+                <div style={{ fontSize: "11px", color: "#5F6368", marginTop: "2px" }}>{ext.name}</div>
+                <p style={{ fontSize: "12.5px", color: "#5F6368", marginTop: "8px", flex: 1 }}>{ext.pitch}</p>
+                <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#34A853", marginTop: "10px" }}>● Actif</span>
+                <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                  {ext.landingUrl && (
+                    <a href={ext.landingUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "9px 14px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "8px", color: "#5F6368", fontSize: "13px", fontWeight: 600, textAlign: "center", textDecoration: "none", fontFamily: "inherit" }}>
+                      En savoir plus
+                    </a>
+                  )}
+                  {ext.openUrl && (
+                    <a href={ext.openUrl} style={{ flex: 1, padding: "9px 14px", background: ext.accent, borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", textDecoration: "none", fontFamily: "inherit" }}>
+                      Ouvrir {ext.produit}
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
           {available.map((ext) => (
-            <div key={ext.key} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column" }}>
-              <div style={{ width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px", fontSize: "16px", background: ext.wash }}>
-                {EMOJI[ext.key] ?? "🧩"}
+            <div key={ext.key} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {ext.previewImage && (
+                ext.landingUrl ? (
+                  <a href={ext.landingUrl} target="_blank" rel="noopener noreferrer" title={`Voir ${ext.produit}`}>
+                    <img src={ext.previewImage} alt={`Aperçu ${ext.produit}`} loading="lazy" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", objectPosition: "top", display: "block", borderBottom: "1px solid #DADCE0" }} />
+                  </a>
+                ) : (
+                  <img src={ext.previewImage} alt={`Aperçu ${ext.produit}`} loading="lazy" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", objectPosition: "top", display: "block", borderBottom: "1px solid #DADCE0" }} />
+                )
+              )}
+              <div style={{ padding: "16px", display: "flex", flexDirection: "column", flex: 1 }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px", fontSize: "16px", background: ext.wash }}>
+                  {EMOJI[ext.key] ?? "🧩"}
+                </div>
+                <div style={{ fontWeight: 700, color: "#202124", fontSize: "14px" }}>{ext.produit}</div>
+                <div style={{ fontSize: "11px", color: "#5F6368", marginTop: "2px" }}>{ext.name}</div>
+                <p style={{ fontSize: "12.5px", color: "#5F6368", marginTop: "8px", flex: 1 }}>{ext.pitch}</p>
+                <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124", marginTop: "10px" }}>{ext.price}€/mois</div>
+                <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+                  {ext.landingUrl && (
+                    <a href={ext.landingUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "9px 14px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "8px", color: "#5F6368", fontSize: "13px", fontWeight: 600, textAlign: "center", textDecoration: "none", fontFamily: "inherit" }}>
+                      En savoir plus
+                    </a>
+                  )}
+                  <button
+                    onClick={() => activate(ext.key)}
+                    disabled={busy === ext.key}
+                    style={{ flex: 1, padding: "9px 14px", background: ext.accent, border: "none", borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", opacity: busy === ext.key ? 0.7 : 1, fontFamily: "inherit" }}
+                  >
+                    {busy === ext.key ? "..." : `Ajouter ${ext.produit}`}
+                  </button>
+                </div>
               </div>
-              <div style={{ fontWeight: 700, color: "#202124", fontSize: "14px" }}>{ext.produit}</div>
-              <div style={{ fontSize: "11px", color: "#5F6368", marginTop: "2px" }}>{ext.name}</div>
-              <p style={{ fontSize: "12.5px", color: "#5F6368", marginTop: "8px", flex: 1 }}>{ext.pitch}</p>
-              <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124", marginTop: "10px" }}>{ext.price}€/mois</div>
-              <button
-                onClick={() => activate(ext.key)}
-                disabled={busy === ext.key}
-                style={{ marginTop: "10px", padding: "9px 14px", background: ext.accent, border: "none", borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", opacity: busy === ext.key ? 0.7 : 1, fontFamily: "inherit" }}
-              >
-                {busy === ext.key ? "..." : `Ajouter ${ext.produit}`}
-              </button>
             </div>
           ))}
         </div>

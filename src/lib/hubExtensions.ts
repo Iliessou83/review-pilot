@@ -23,6 +23,8 @@ export interface HubExtension {
   pitch: string;
   status: "active" | "available";
   openUrl?: string;
+  previewImage?: string;
+  landingUrl?: string;
 }
 
 // Renvoie [] si le Hub est indisponible ou le secret absent : la page marche
