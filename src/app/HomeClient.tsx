@@ -316,6 +316,14 @@ const NFC_REASSURANCE = [
   { icon: "🔄", title: "Cible pilotable", desc: "Plaque reliée à votre page Caela : changez la destination depuis le dashboard, sans racheter." },
 ];
 
+// Chemin de retour après connexion (?next=/link-account?ticket=...), whitelisté
+// aux chemins internes seulement (jamais une URL externe — anti open-redirect).
+function safeNext(): string {
+  if (typeof window === "undefined") return "/dashboard";
+  const n = new URLSearchParams(window.location.search).get("next") || "";
+  return n.startsWith("/") && !n.startsWith("//") ? n : "/dashboard";
+}
+
 const NAV_LINKS: [string, string][] = [
   ["#services", "Services GMB"],
   ["#nfc", "Plaques NFC"],
@@ -332,6 +340,7 @@ export default function HomeClient() {
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [next, setNext] = useState("/dashboard");
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 860px)");
@@ -340,6 +349,8 @@ export default function HomeClient() {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
+
+  useEffect(() => { setNext(safeNext()); }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -352,7 +363,7 @@ export default function HomeClient() {
         body: JSON.stringify({ email, password }),
       });
       if (res.ok) {
-        router.push("/dashboard");
+        router.push(next);
       } else {
         const data = await res.json() as { error: string };
         setError(data.error || "Identifiants incorrects");

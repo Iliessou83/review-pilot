@@ -83,6 +83,41 @@ export async function openHubAccount(ownerEmail: string): Promise<OpenHubResult>
   }
 }
 
+export interface ConfirmLinkResult {
+  ok: boolean;
+  error?: string;
+}
+
+// Confirme au Hub que ce commerçant, réellement connecté ici (preuve de
+// possession), veut relier son compte Reputation à son compte Caela principal.
+// Appelé UNIQUEMENT côté serveur, jamais avec un email fourni par le client.
+export async function confirmAccountLink(input: {
+  ticket: string;
+  localEmail: string;
+}): Promise<ConfirmLinkResult> {
+  try {
+    const body = JSON.stringify({
+      ticket: input.ticket,
+      module: "avis",
+      local_email: input.localEmail.toLowerCase(),
+    });
+    const sig = sign(body);
+    if (!sig) return { ok: false, error: "secret_manquant" };
+
+    const res = await fetch(`${HUB_URL}/api/account-links/confirm`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-caela-signature": sig },
+      body,
+      signal: AbortSignal.timeout(8000),
+    });
+    const data = (await res.json()) as { ok?: boolean; error?: string };
+    if (!res.ok || !data.ok) return { ok: false, error: data.error ?? "erreur_hub" };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "hub_indisponible" };
+  }
+}
+
 export interface ActivateExtensionResult {
   ok: boolean;
   checkoutUrl?: string;
