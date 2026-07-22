@@ -142,6 +142,7 @@ export default function RouePage() {
         body="Caela Agency peut créer vos visuels de roue et votre affiche/QR à afficher en caisse, assortis à votre enseigne. Prestation payante, sur devis."
         ctaLabel="En discuter →"
         mailSubject="Déléguer la création des visuels de ma roue à avis"
+        kind="visuel"
       />
 
       {/* Éditeur */}

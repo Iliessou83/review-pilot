@@ -7,6 +7,10 @@ const DISMISS_DAYS = 14;
 // (payant, transparent). Se ferme et reste fermé pendant DISMISS_DAYS pour ne
 // jamais devenir intrusif. Palette calquée sur le thème Material du dashboard
 // (bleu Google #1A73E8, cartes blanches, bordures #DADCE0).
+//
+// Le CTA ouvre un petit formulaire qui poste la demande directement dans la
+// file Nexus (/api/delegate-request). En cas d'échec réseau, on garde le
+// mailto en filet de sécurité.
 export default function DelegateBanner({
   storageKey,
   icon = "✨",
@@ -14,6 +18,8 @@ export default function DelegateBanner({
   body,
   ctaLabel = "En discuter →",
   mailSubject,
+  kind,
+  defaultBrief,
 }: {
   storageKey: string;
   icon?: string;
@@ -21,8 +27,11 @@ export default function DelegateBanner({
   body: string;
   ctaLabel?: string;
   mailSubject: string;
+  kind: "campagne" | "visuel";
+  defaultBrief?: string;
 }) {
   const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const key = `rp_delegate_dismiss_${storageKey}`;
@@ -38,6 +47,8 @@ export default function DelegateBanner({
   }
 
   if (!visible) return null;
+
+  const mailtoHref = `mailto:contact@caela-agency.fr?subject=${encodeURIComponent(mailSubject)}`;
 
   return (
     <div
@@ -81,8 +92,8 @@ export default function DelegateBanner({
         <div style={{ fontSize: 13.5, fontWeight: 700, color: "#202124", marginBottom: 2 }}>{title}</div>
         <div style={{ fontSize: 12.5, color: "#5F6368", lineHeight: 1.5 }}>{body}</div>
       </div>
-      <a
-        href={`mailto:contact@caela-agency.fr?subject=${encodeURIComponent(mailSubject)}`}
+      <button
+        onClick={() => setOpen(true)}
         style={{
           flexShrink: 0,
           padding: "9px 16px",
@@ -92,12 +103,13 @@ export default function DelegateBanner({
           color: "#fff",
           fontWeight: 700,
           fontSize: 12.5,
-          textDecoration: "none",
+          border: "none",
+          cursor: "pointer",
           fontFamily: "inherit",
         }}
       >
         {ctaLabel}
-      </a>
+      </button>
       <button
         onClick={dismiss}
         aria-label="Fermer ce rappel"
@@ -117,6 +129,202 @@ export default function DelegateBanner({
       >
         ✕
       </button>
+
+      {open && (
+        <DelegateForm
+          title={title}
+          kind={kind}
+          defaultBrief={defaultBrief || body}
+          mailtoHref={mailtoHref}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }
+
+function DelegateForm({
+  title,
+  kind,
+  defaultBrief,
+  mailtoHref,
+  onClose,
+}: {
+  title: string;
+  kind: "campagne" | "visuel";
+  defaultBrief: string;
+  mailtoHref: string;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState(defaultBrief);
+  const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!message.trim() || status === "sending") return;
+    setStatus("sending");
+    try {
+      const r = await fetch("/api/delegate-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, brief: message, name, email, kind }),
+        signal: AbortSignal.timeout(8000),
+      });
+      const j = await r.json().catch(() => ({}));
+      setStatus(j?.ok ? "ok" : "error");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(32,33,36,0.45)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        zIndex: 200,
+        animation: "rpDelegateSlideIn 0.2s ease both",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "#fff",
+          borderRadius: 14,
+          padding: 20,
+          boxShadow: "0 8px 28px rgba(32,33,36,0.28)",
+          fontFamily: "inherit",
+        }}
+      >
+        {status === "ok" ? (
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#188038", marginBottom: 6 }}>
+              ✓ Demande envoyée
+            </div>
+            <div style={{ fontSize: 13, color: "#5F6368", lineHeight: 1.5, marginBottom: 16 }}>
+              L&apos;équipe Caela Agency a reçu votre demande et revient vers vous rapidement.
+            </div>
+            <button onClick={onClose} style={btnPrimary}>
+              Fermer
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#202124", marginBottom: 12 }}>{title}</div>
+
+            <label style={label}>Nom</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Votre nom"
+              style={input}
+            />
+
+            <label style={label}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="vous@exemple.fr"
+              style={input}
+            />
+
+            <label style={label}>Message</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+              style={{ ...input, resize: "vertical" }}
+            />
+
+            {status === "error" && (
+              <div
+                style={{
+                  fontSize: 12.5,
+                  color: "#C5221F",
+                  background: "rgba(197,34,31,0.08)",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  marginBottom: 12,
+                  lineHeight: 1.5,
+                }}
+              >
+                Envoi impossible pour le moment.{" "}
+                <a href={mailtoHref} style={{ color: "#1A73E8", fontWeight: 700 }}>
+                  Envoyer par email à la place →
+                </a>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <button type="button" onClick={onClose} style={btnSecondary}>
+                Annuler
+              </button>
+              <button type="submit" disabled={status === "sending"} style={btnPrimary}>
+                {status === "sending" ? "Envoi…" : "Envoyer la demande"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const label: React.CSSProperties = {
+  display: "block",
+  fontSize: 11.5,
+  fontWeight: 700,
+  color: "#5F6368",
+  marginBottom: 4,
+  marginTop: 10,
+};
+
+const input: React.CSSProperties = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "9px 11px",
+  borderRadius: 8,
+  border: "1px solid #DADCE0",
+  fontSize: 13,
+  fontFamily: "inherit",
+  color: "#202124",
+};
+
+const btnPrimary: React.CSSProperties = {
+  flex: 1,
+  padding: "10px 14px",
+  borderRadius: 8,
+  background: "#1A73E8",
+  color: "#fff",
+  fontWeight: 700,
+  fontSize: 13,
+  border: "none",
+  cursor: "pointer",
+  fontFamily: "inherit",
+};
+
+const btnSecondary: React.CSSProperties = {
+  flex: 1,
+  padding: "10px 14px",
+  borderRadius: 8,
+  background: "rgba(60,64,67,0.06)",
+  color: "#5F6368",
+  fontWeight: 700,
+  fontSize: 13,
+  border: "none",
+  cursor: "pointer",
+  fontFamily: "inherit",
+};

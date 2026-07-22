@@ -167,6 +167,7 @@ export default function CollectePage() {
         body="Caela Agency peut prendre en charge vos campagnes de collecte d'avis (import, relances, suivi) chaque mois. Prestation payante, sur devis."
         ctaLabel="En discuter →"
         mailSubject="Déléguer mes campagnes de collecte d'avis"
+        kind="campagne"
       />
 
       {loadingBiz && <p style={{ color: "#80868B" }}>Chargement…</p>}
