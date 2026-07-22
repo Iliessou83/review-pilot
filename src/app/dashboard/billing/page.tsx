@@ -10,6 +10,7 @@ import { planById, billing } from "@/config/legal.config";
 import { getReviewQuotaStatus } from "@/lib/plan-limits";
 import CancelButton from "./CancelButton";
 import ExtensionsWidget from "./ExtensionsWidget";
+import PlanTiers from "./PlanTiers";
 
 const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", yellow: "#F9AB00" };
 
@@ -43,18 +44,25 @@ export default async function BillingPage() {
   const quotaStatus = sub ? await getReviewQuotaStatus(session.email) : null;
 
   return (
-    <div style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 24px", fontFamily: "system-ui,-apple-system,sans-serif" }}>
+    <div style={{ maxWidth: "880px", margin: "0 auto", padding: "48px 24px", fontFamily: "system-ui,-apple-system,sans-serif" }}>
       <Link href="/dashboard" style={{ fontSize: "14px", color: G.blue, textDecoration: "none" }}>← Retour au dashboard</Link>
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#202124", margin: "16px 0 32px" }}>Abonnement & facturation</h1>
 
       {!sub || !sub.stripeSubscriptionId ? (
-        <div style={{ padding: "24px", background: "#F8F9FA", borderRadius: "12px", border: "1px solid #DADCE0" }}>
-          <p style={{ fontSize: "15px", color: G.grey, margin: "0 0 16px" }}>
-            Aucun abonnement actif. Démarrez votre essai gratuit de {billing.trialDays} jours.
+        <div style={{ padding: "28px", background: "linear-gradient(135deg, #E8F0FE 0%, #fff 70%)", borderRadius: "12px", border: "1px solid #DADCE0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#F9AB00" }} />
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "#B06000", textTransform: "uppercase", letterSpacing: "0.04em" }}>Aucune formule active</span>
+          </div>
+          <p style={{ fontSize: "16px", fontWeight: 700, color: "#202124", margin: "0 0 6px" }}>
+            Choisis ta formule pour démarrer
           </p>
-          <Link href="/#tarifs" style={{ display: "inline-block", padding: "10px 18px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600 }}>
-            Voir les tarifs →
-          </Link>
+          <p style={{ fontSize: "14px", color: G.grey, margin: "0 0 18px", lineHeight: 1.6 }}>
+            Essai gratuit de {billing.trialDays} jours, résiliable à tout moment. Aucun prélèvement avant la fin de l&apos;essai.
+          </p>
+          <a href="#tarifs" style={{ display: "inline-block", padding: "10px 18px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600 }}>
+            Voir les tarifs ↓
+          </a>
         </div>
       ) : (
         <div style={{ padding: "28px", background: "#fff", borderRadius: "12px", border: "1px solid #DADCE0", boxShadow: "0 1px 3px rgba(60,64,67,0.12)" }}>
@@ -70,7 +78,7 @@ export default async function BillingPage() {
             </span>
           </div>
 
-          <a href="/#tarifs" style={{ display: "inline-block", fontSize: "13px", fontWeight: 600, color: G.blue, textDecoration: "none", marginBottom: "20px" }}>
+          <a href="#tarifs" style={{ display: "inline-block", fontSize: "13px", fontWeight: 600, color: G.blue, textDecoration: "none", marginBottom: "20px" }}>
             Changer de formule →
           </a>
 
@@ -116,6 +124,10 @@ export default async function BillingPage() {
           <CancelButton alreadyCancelled={sub.cancelAtPeriodEnd} />
         </div>
       )}
+
+      <div style={{ marginTop: "40px" }}>
+        <PlanTiers currentPlanId={sub?.stripeSubscriptionId ? sub.planId ?? undefined : undefined} email={session.email} />
+      </div>
 
       <p style={{ fontSize: "12px", color: "#80868B", marginTop: "24px", lineHeight: 1.6 }}>
         Résiliation libre à tout moment, en ligne, sans frais ni justification (art. L215-1-1 du Code de la consommation).
