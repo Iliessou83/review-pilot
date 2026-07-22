@@ -24,8 +24,9 @@ export default function SignupClient() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [existingModules, setExistingModules] = useState<string[] | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent, confirmSeparate = false) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -33,10 +34,15 @@ export default function SignupClient() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, confirmSeparate }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
+        if (data.needsLink) {
+          setExistingModules(data.existingModules ?? []);
+          setLoading(false);
+          return;
+        }
         router.push("/dashboard");
       } else {
         setError(data.error || "Inscription impossible.");
@@ -46,6 +52,44 @@ export default function SignupClient() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Cette adresse a déjà un compte actif ailleurs dans l'écosystème Caela :
+  // on prévient avant de créer un doublon, sans jamais bloquer la vente.
+  if (existingModules) {
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(180deg,#F8F9FA,#fff)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px", boxSizing: "border-box" }}>
+        <div style={{ width: "100%", maxWidth: 420 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 20 }}>
+            <GDots size={11} />
+            <span style={{ fontSize: 20, fontWeight: 700, color: "#202124", letterSpacing: "-0.3px" }}>Caela Réputation</span>
+          </div>
+          <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: 16, padding: "36px 32px", boxShadow: SHADOW, textAlign: "center" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🧩</div>
+            <h1 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 800, color: "#202124", letterSpacing: "-0.3px" }}>
+              Tu fais déjà partie de l&apos;écosystème Caela
+            </h1>
+            <p style={{ margin: 0, color: "#5F6368", fontSize: 14, lineHeight: 1.5 }}>
+              Cette adresse a déjà {existingModules.length > 1 ? "des comptes actifs" : "un compte actif"} sur{" "}
+              <strong>{existingModules.join(", ")}</strong>. Connecte-toi avec ton compte Caela pour tout retrouver au même endroit.
+            </p>
+            <a
+              href="https://caela-hub.vercel.app/api/sso/avis"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 20, padding: 13, background: G.blue, borderRadius: 10, color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "inherit" }}
+            >
+              Se connecter avec Caela
+            </a>
+            <button
+              onClick={(e) => handleSubmit(e as unknown as React.FormEvent, true)}
+              disabled={loading}
+              style={{ marginTop: 10, width: "100%", padding: 11, background: "transparent", border: "none", borderRadius: 8, color: "#5F6368", fontSize: 13, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+            >
+              {loading ? "..." : "Non, créer un compte Réputation séparé"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const fields = [

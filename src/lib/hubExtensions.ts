@@ -55,6 +55,34 @@ export async function getSuggestedExtensions(
   }
 }
 
+export interface OpenHubResult {
+  ok: boolean;
+  url?: string;
+  error?: string;
+}
+
+// URL de connexion directe au cockpit Hub, pour le bouton "Ouvrir mon compte"
+// visible en permanence dans le dashboard (pas seulement à l'écran de login).
+export async function openHubAccount(ownerEmail: string): Promise<OpenHubResult> {
+  try {
+    const body = JSON.stringify({ owner_email: ownerEmail.toLowerCase() });
+    const sig = sign(body);
+    if (!sig) return { ok: false, error: "secret_manquant" };
+
+    const res = await fetch(`${HUB_URL}/api/hub/open`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-caela-signature": sig },
+      body,
+      signal: AbortSignal.timeout(8000),
+    });
+    const data = (await res.json()) as { url?: string; error?: string };
+    if (!res.ok || !data.url) return { ok: false, error: data.error ?? "erreur_hub" };
+    return { ok: true, url: data.url };
+  } catch {
+    return { ok: false, error: "hub_indisponible" };
+  }
+}
+
 export interface ActivateExtensionResult {
   ok: boolean;
   checkoutUrl?: string;

@@ -217,6 +217,7 @@ export default function ExtensionsWidget() {
   const [promoCode, setPromoCode] = useState<string | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  const [hubBusy, setHubBusy] = useState(false);
 
   useEffect(() => {
     fetch("/api/extensions")
@@ -227,6 +228,23 @@ export default function ExtensionsWidget() {
 
   const items = extensions ?? [];
   if (extensions !== null && items.length === 0) return null;
+
+  async function openHub() {
+    setHubBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/hub/open", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setError(data.error || "Erreur");
+    } catch {
+      setError("Connexion impossible");
+    }
+    setHubBusy(false);
+  }
 
   async function activate(key: string) {
     setBusy(key);
@@ -278,6 +296,25 @@ export default function ExtensionsWidget() {
           position: "relative",
         }}
       >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", borderRadius: "14px", background: "#fff", border: "1px solid #DADCE0", padding: "12px 14px", marginBottom: "20px" }}>
+          <span style={{ flexShrink: 0, width: "32px", height: "32px", borderRadius: "8px", background: "#1A73E8", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
+            C
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#202124" }}>Caela Hub</p>
+            <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#5F6368", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              Ton compte central : facturation groupée et vue d&apos;ensemble de tous tes outils.
+            </p>
+          </div>
+          <button
+            onClick={openHub}
+            disabled={hubBusy}
+            style={{ flexShrink: 0, borderRadius: "8px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, border: "none", background: "#1A73E8", color: "#fff", cursor: hubBusy ? "not-allowed" : "pointer", opacity: hubBusy ? 0.7 : 1, fontFamily: "inherit" }}
+          >
+            {hubBusy ? "..." : "Ouvrir mon compte"}
+          </button>
+        </div>
+
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "20px" }}>
           <div>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1A73E8", marginBottom: "6px" }}>
