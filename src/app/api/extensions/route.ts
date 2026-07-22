@@ -10,6 +10,6 @@ export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const modules = await getSuggestedExtensions(session.email);
-  return NextResponse.json({ modules });
+  const { modules, memberPromoCode } = await getSuggestedExtensions(session.email);
+  return NextResponse.json({ modules, memberPromoCode });
 }

@@ -6,17 +6,40 @@ import { useState, useEffect } from "react";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
-const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard", icon: "📊", exact: true },
-  { href: "/businesses", label: "Établissements", icon: "🏢", exact: false },
-  { href: "/reviews", label: "Avis", icon: "⭐", exact: false },
-  { href: "/dashboard/roue", label: "Roue", icon: "🎡", exact: false },
-  { href: "/dashboard/collecte", label: "Collecte", icon: "📩", exact: false },
-  { href: "/pending", label: "En attente", icon: "⏳", exact: false, badge: true },
-  { href: "/dashboard/analytics", label: "Analytics", icon: "📈", exact: false },
-  { href: "/dashboard/insights", label: "Insights IA", icon: "🧠", exact: false },
-  { href: "/dashboard/widget", label: "Widget", icon: "🔗", exact: false },
-  { href: "/dashboard/settings", label: "Paramètres", icon: "⚙️", exact: false },
+// Palette de sections — couleurs statiques (jamais générées dynamiquement),
+// une par groupe fonctionnel du menu. Réutilise l'identité Google déjà en
+// place (bleu/vert/jaune) + un gris neutre pour le compte.
+const SECTION_COLOR = {
+  blue: "#1A73E8",
+  green: "#0F9D58",
+  amber: "#B06000",
+  slate: "#5F6368",
+} as const;
+type SectionColor = keyof typeof SECTION_COLOR;
+
+const NAV_LINKS: Array<{
+  href: string;
+  label: string;
+  short: string;
+  icon: string;
+  exact: boolean;
+  badge?: boolean;
+  section: string;
+  color: SectionColor;
+}> = [
+  { href: "/dashboard", label: "Dashboard", short: "Accueil", icon: "📊", exact: true, section: "Vue d'ensemble", color: "blue" },
+
+  { href: "/businesses", label: "Établissements", short: "Établ.", icon: "🏢", exact: false, section: "Avis & collecte", color: "green" },
+  { href: "/reviews", label: "Avis", short: "Avis", icon: "⭐", exact: false, section: "Avis & collecte", color: "green" },
+  { href: "/dashboard/roue", label: "Roue", short: "Roue", icon: "🎡", exact: false, section: "Avis & collecte", color: "green" },
+  { href: "/dashboard/collecte", label: "Collecte", short: "Collecte", icon: "📩", exact: false, section: "Avis & collecte", color: "green" },
+  { href: "/pending", label: "En attente", short: "Attente", icon: "⏳", exact: false, badge: true, section: "Avis & collecte", color: "green" },
+
+  { href: "/dashboard/analytics", label: "Analytics", short: "Stats", icon: "📈", exact: false, section: "Pilotage", color: "amber" },
+  { href: "/dashboard/insights", label: "Insights IA", short: "Insights", icon: "🧠", exact: false, section: "Pilotage", color: "amber" },
+
+  { href: "/dashboard/widget", label: "Widget", short: "Widget", icon: "🔗", exact: false, section: "Compte", color: "slate" },
+  { href: "/dashboard/settings", label: "Paramètres", short: "Réglages", icon: "⚙️", exact: false, section: "Compte", color: "slate" },
 ];
 
 export default function NavBar() {
@@ -66,8 +89,31 @@ export default function NavBar() {
     return pathname === link.href || pathname.startsWith(link.href + "/");
   }
 
+  // Groupe les liens par section en conservant l'ordre de déclaration.
+  const sections: Array<{ name: string; items: typeof NAV_LINKS }> = [];
+  for (const link of NAV_LINKS) {
+    let sec = sections.find(s => s.name === link.section);
+    if (!sec) { sec = { name: link.section, items: [] }; sections.push(sec); }
+    sec.items.push(link);
+  }
+
   return (
     <>
+      {/* Effet relief au survol des liens de nav (impossible en style inline,
+          d'où cette feuille de style dédiée avec classes statiques par couleur). */}
+      <style>{`
+        .rp-nav-link { transition: transform 0.15s, box-shadow 0.15s, background 0.15s, color 0.15s; }
+        .rp-nav-link:not(.rp-nav-active):hover {
+          background: #fff;
+          box-shadow: 0 4px 12px rgba(60,64,67,0.14);
+          transform: translateY(-1px);
+          color: var(--rp-nav-c, #5F6368);
+        }
+        .rp-nav-mobile-link:not(.rp-nav-active):hover {
+          background: #F8F9FA;
+        }
+      `}</style>
+
       {/* Top bar */}
       <nav style={{
         background: "#fff",
@@ -99,42 +145,56 @@ export default function NavBar() {
           )}
         </div>
 
-        {/* Desktop: nav links centrés */}
+        {/* Desktop: nav links centrés, groupés par section avec séparateurs */}
         {!isMobile && (
-          <div style={{ display: "flex", gap: "2px", flex: 1, justifyContent: "center", flexWrap: "wrap" }}>
-            {NAV_LINKS.map((link) => {
-              const active = isActive(link);
-              return (
-                <Link key={link.href} href={link.href} style={{
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  fontSize: "13px",
-                  fontWeight: active ? 600 : 400,
-                  color: active ? G.blue : "#5F6368",
-                  background: active ? "#E8F0FE" : "transparent",
-                  textDecoration: "none",
-                  transition: "all 0.15s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  position: "relative",
-                  whiteSpace: "nowrap",
-                }}>
-                  <span style={{ fontSize: "12px" }}>{link.icon}</span>
-                  {link.label}
-                  {link.badge && pendingCount > 0 && (
-                    <span style={{
-                      fontSize: "10px", fontWeight: 700,
-                      background: G.red, color: "#fff",
-                      borderRadius: "10px", padding: "1px 5px",
-                      minWidth: "16px", textAlign: "center",
-                    }}>
-                      {pendingCount}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+          <div style={{ display: "flex", alignItems: "center", gap: "2px", flex: 1, justifyContent: "center", flexWrap: "wrap" }}>
+            {sections.map((sec, si) => (
+              <div key={sec.name} style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                {si > 0 && (
+                  <div style={{ width: "1px", height: "20px", background: "#DADCE0", margin: "0 8px" }} aria-hidden="true" />
+                )}
+                {sec.items.map((link) => {
+                  const active = isActive(link);
+                  const color = SECTION_COLOR[link.color];
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      title={sec.name}
+                      className={`rp-nav-link${active ? " rp-nav-active" : ""}`}
+                      style={{
+                        "--rp-nav-c": color,
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        fontWeight: active ? 600 : 400,
+                        color: active ? color : "#5F6368",
+                        background: active ? color + "15" : "transparent",
+                        textDecoration: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        position: "relative",
+                        whiteSpace: "nowrap",
+                      } as React.CSSProperties}
+                    >
+                      <span style={{ fontSize: "12px" }}>{link.icon}</span>
+                      {link.label}
+                      {link.badge && pendingCount > 0 && (
+                        <span style={{
+                          fontSize: "10px", fontWeight: 700,
+                          background: G.red, color: "#fff",
+                          borderRadius: "10px", padding: "1px 5px",
+                          minWidth: "16px", textAlign: "center",
+                        }}>
+                          {pendingCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         )}
 
@@ -195,42 +255,59 @@ export default function NavBar() {
         )}
       </nav>
 
-      {/* Mobile: panneau déroulant */}
+      {/* Mobile: panneau déroulant, groupé par section */}
       {isMobile && menuOpen && (
         <div style={{
           position: "sticky", top: "60px", zIndex: 49,
           background: "#fff", borderBottom: "1px solid #DADCE0",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
           padding: "10px 16px 14px",
-          display: "flex", flexDirection: "column", gap: "2px",
+          display: "flex", flexDirection: "column", gap: "10px",
+          maxHeight: "calc(100vh - 60px)",
+          overflowY: "auto",
         }}>
-          {NAV_LINKS.map((link) => {
-            const active = isActive(link);
-            return (
-              <Link key={link.href} href={link.href} style={{
-                padding: "13px 14px",
-                borderRadius: "10px",
-                fontSize: "15px",
-                fontWeight: active ? 600 : 400,
-                color: active ? G.blue : "#202124",
-                background: active ? "#E8F0FE" : "transparent",
-                textDecoration: "none",
-                display: "flex", alignItems: "center", gap: "10px",
-              }}>
-                <span style={{ fontSize: "16px" }}>{link.icon}</span>
-                {link.label}
-                {link.badge && pendingCount > 0 && (
-                  <span style={{ marginLeft: "auto", fontSize: "11px", fontWeight: 700, background: G.red, color: "#fff", borderRadius: "10px", padding: "2px 7px" }}>
-                    {pendingCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+          {sections.map((sec) => (
+            <div key={sec.name}>
+              <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: SECTION_COLOR[sec.items[0].color], margin: "4px 0 4px 4px" }}>
+                {sec.name}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                {sec.items.map((link) => {
+                  const active = isActive(link);
+                  const color = SECTION_COLOR[link.color];
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`rp-nav-mobile-link${active ? " rp-nav-active" : ""}`}
+                      style={{
+                        padding: "13px 14px",
+                        borderRadius: "10px",
+                        fontSize: "15px",
+                        fontWeight: active ? 600 : 400,
+                        color: active ? color : "#202124",
+                        background: active ? color + "15" : "transparent",
+                        textDecoration: "none",
+                        display: "flex", alignItems: "center", gap: "10px",
+                      }}
+                    >
+                      <span style={{ fontSize: "16px" }}>{link.icon}</span>
+                      {link.label}
+                      {link.badge && pendingCount > 0 && (
+                        <span style={{ marginLeft: "auto", fontSize: "11px", fontWeight: 700, background: G.red, color: "#fff", borderRadius: "10px", padding: "2px 7px" }}>
+                          {pendingCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
           <button
             onClick={handleLogout}
             style={{
-              marginTop: "6px", padding: "13px 14px",
+              marginTop: "4px", padding: "13px 14px",
               background: "transparent", border: "1px solid #DADCE0",
               borderRadius: "10px", color: "#5F6368",
               fontSize: "15px", cursor: "pointer", fontFamily: "inherit",

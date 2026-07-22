@@ -29,14 +29,16 @@ export interface HubExtension {
 
 // Renvoie [] si le Hub est indisponible ou le secret absent : la page marche
 // sans le widget, jamais bloquée par ça.
-export async function getSuggestedExtensions(ownerEmail: string): Promise<HubExtension[]> {
+export async function getSuggestedExtensions(
+  ownerEmail: string,
+): Promise<{ modules: HubExtension[]; memberPromoCode: string | null }> {
   try {
     const body = JSON.stringify({
       owner_email: ownerEmail.toLowerCase(),
       exclude_module: "avis",
     });
     const sig = sign(body);
-    if (!sig) return [];
+    if (!sig) return { modules: [], memberPromoCode: null };
 
     const res = await fetch(`${HUB_URL}/api/extensions/status`, {
       method: "POST",
@@ -45,11 +47,11 @@ export async function getSuggestedExtensions(ownerEmail: string): Promise<HubExt
       signal: AbortSignal.timeout(4000),
       cache: "no-store",
     });
-    if (!res.ok) return [];
-    const data = (await res.json()) as { modules?: HubExtension[] };
-    return data.modules ?? [];
+    if (!res.ok) return { modules: [], memberPromoCode: null };
+    const data = (await res.json()) as { modules?: HubExtension[]; memberPromoCode?: string | null };
+    return { modules: data.modules ?? [], memberPromoCode: data.memberPromoCode ?? null };
   } catch {
-    return [];
+    return { modules: [], memberPromoCode: null };
   }
 }
 

@@ -52,13 +52,13 @@ export default async function BillingPage() {
           <p style={{ fontSize: "15px", color: G.grey, margin: "0 0 16px" }}>
             Aucun abonnement actif. Démarrez votre essai gratuit de {billing.trialDays} jours.
           </p>
-          <Link href="/#pricing" style={{ display: "inline-block", padding: "10px 18px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600 }}>
-            Voir les formules
+          <Link href="/#tarifs" style={{ display: "inline-block", padding: "10px 18px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600 }}>
+            Voir les tarifs →
           </Link>
         </div>
       ) : (
         <div style={{ padding: "28px", background: "#fff", borderRadius: "12px", border: "1px solid #DADCE0", boxShadow: "0 1px 3px rgba(60,64,67,0.12)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
             <div>
               <div style={{ fontSize: "13px", color: G.grey, marginBottom: "4px" }}>Formule</div>
               <div style={{ fontSize: "20px", fontWeight: 700, color: "#202124" }}>
@@ -69,6 +69,10 @@ export default async function BillingPage() {
               {STATUS_LABEL[sub.status] ?? sub.status}
             </span>
           </div>
+
+          <a href="/#tarifs" style={{ display: "inline-block", fontSize: "13px", fontWeight: 600, color: G.blue, textDecoration: "none", marginBottom: "20px" }}>
+            Changer de formule →
+          </a>
 
           <ExtensionsWidget />
 

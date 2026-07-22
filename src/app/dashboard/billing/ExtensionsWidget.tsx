@@ -26,7 +26,7 @@ const EMOJI: Record<string, string> = {
   qr: "🔗",
 };
 
-function ExtCard({ ext, busy, onActivate }: { ext: Extension; busy: string; onActivate: (key: string) => void }) {
+function ExtCard({ ext, busy, onActivate, promoCode }: { ext: Extension; busy: string; onActivate: (key: string) => void; promoCode: string | null }) {
   return (
     <div
       className="rp-ext-card"
@@ -155,7 +155,30 @@ function ExtCard({ ext, busy, onActivate }: { ext: Extension; busy: string; onAc
             </>
           ) : (
             <>
-              <p style={{ fontSize: "13px", fontWeight: 700, color: "#202124", margin: "0 0 8px" }}>{ext.price}€/mois</p>
+              <p style={{ fontSize: "13px", fontWeight: 700, color: "#202124", margin: "0 0 4px" }}>À partir de {ext.price}€/mois</p>
+              {promoCode && (
+                <div className="rp-ext-promowrap" style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: "4px", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "10px", fontWeight: 700, color: "#B06000" }}>🎁 -10% avec {promoCode}</span>
+                  <div
+                    className="rp-ext-promobubble"
+                    style={{
+                      pointerEvents: "none",
+                      position: "absolute",
+                      bottom: "100%",
+                      left: 0,
+                      marginBottom: "6px",
+                      width: "224px",
+                      opacity: 0,
+                      transition: "opacity 0.15s",
+                      zIndex: 30,
+                    }}
+                  >
+                    <div style={{ background: "#202124", color: "#fff", fontSize: "11px", lineHeight: 1.5, borderRadius: "8px", padding: "8px 12px", boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }}>
+                      Code exclusif réservé aux membres Caela : parce que tu es déjà client Caela Réputation, tu bénéficies de -10% sur {ext.produit}. Colle-le sur la page de paiement.
+                    </div>
+                  </div>
+                </div>
+              )}
               <button
                 onClick={() => onActivate(ext.key)}
                 disabled={busy === ext.key}
@@ -191,13 +214,14 @@ function ExtCard({ ext, busy, onActivate }: { ext: Extension; busy: string; onAc
 // quand le nombre de modules ne tombe pas juste sur 3 colonnes.
 export default function ExtensionsWidget() {
   const [extensions, setExtensions] = useState<Extension[] | null>(null);
+  const [promoCode, setPromoCode] = useState<string | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/extensions")
       .then((r) => (r.ok ? r.json() : { modules: [] }))
-      .then((d) => setExtensions(d.modules ?? []))
+      .then((d) => { setExtensions(d.modules ?? []); setPromoCode(d.memberPromoCode ?? null); })
       .catch(() => setExtensions([]));
   }, []);
 
@@ -240,6 +264,7 @@ export default function ExtensionsWidget() {
         .rp-ext-card:hover .rp-ext-overlay { opacity: 1; }
         .rp-ext-card:hover .rp-ext-bubble { opacity: 1; }
         .rp-ext-infowrap a:hover { background: #F1F3F4; border-color: #5F6368 !important; }
+        .rp-ext-promowrap:hover .rp-ext-promobubble { opacity: 1; }
         @media (prefers-reduced-motion: reduce) { .rp-ext-track { animation: none !important; } }
       `}</style>
 
@@ -292,7 +317,7 @@ export default function ExtensionsWidget() {
               style={{ display: "flex", gap: "16px", width: "max-content", padding: "0 24px", animationDuration: `${Math.max(items.length * 8, 25)}s` }}
             >
               {marqueeItems.map((ext, i) => (
-                <ExtCard key={`${ext.key}-${i}`} ext={ext} busy={busy} onActivate={activate} />
+                <ExtCard key={`${ext.key}-${i}`} ext={ext} busy={busy} onActivate={activate} promoCode={promoCode} />
               ))}
             </div>
           </div>

@@ -876,6 +876,9 @@ export default function HomeClient() {
       </section>
 
       {/* ── PRICING ── */}
+      {/* id="tarifs" en alias : ancre stable utilisée par les CTA "Voir les tarifs"
+          du dashboard, en plus de #pricing déjà référencé ailleurs sur la page. */}
+      <div id="tarifs" style={{ position: "relative", top: "-1px" }} />
       <section id="pricing" style={{ padding: "80px 40px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
@@ -897,7 +900,17 @@ export default function HomeClient() {
               const price = billing === "annual" ? Math.round(parseInt(plan.price) * 0.8) : parseInt(plan.price);
               const savings = parseInt(plan.price) * 12 - price * 12;
               return (
-                <div key={plan.name} style={{ background: "#fff", border: plan.highlight ? `2px solid ${plan.color}` : "1px solid #DADCE0", borderRadius: "14px", padding: "24px 20px", boxShadow: plan.highlight ? `0 4px 16px ${plan.color}20` : SHADOW_SM, position: "relative", overflow: "hidden" }}>
+                <div style={{
+                  background: "#fff",
+                  border: plan.highlight ? `2px solid ${plan.color}` : "1px solid #DADCE0",
+                  borderRadius: "14px",
+                  padding: plan.highlight ? "30px 20px 24px" : "24px 20px",
+                  boxShadow: plan.highlight ? `0 12px 28px ${plan.color}28` : SHADOW_SM,
+                  position: "relative",
+                  overflow: "hidden",
+                  transform: plan.highlight ? "translateY(-10px)" : "none",
+                  zIndex: plan.highlight ? 1 : 0,
+                }} key={plan.name}>
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.color }} />
                   {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "2px 8px", background: plan.color + "15", borderRadius: "20px", fontSize: "9px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
                   <p style={{ margin: "0 0 2px", fontSize: "11px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
