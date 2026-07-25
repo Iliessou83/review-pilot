@@ -30,11 +30,18 @@ export async function pushHubEvent(input: {
       metadata: input.metadata ?? {},
       ...(input.businessName ? { business_name: input.businessName } : {}),
     });
-    const sig = createHmac("sha256", secret).update(body).digest("hex");
+    // Anti-rejeu : l'horodatage entre dans la signature et le Hub refuse
+    // au-delà de 5 minutes. Une requête capturée devient inutilisable.
+    const ts = String(Date.now());
+    const sig = createHmac("sha256", secret).update(`${ts}.${body}`).digest("hex");
 
     await fetch(`${HUB_URL}/api/events/ingest`, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-caela-signature": sig },
+      headers: {
+        "content-type": "application/json",
+        "x-caela-timestamp": ts,
+        "x-caela-signature": sig,
+      },
       body,
       // Ne jamais bloquer/pendre la réponse du module si le Hub est lent/indispo.
       signal: AbortSignal.timeout(4000),
