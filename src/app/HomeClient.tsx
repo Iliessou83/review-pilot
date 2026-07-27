@@ -970,7 +970,15 @@ export default function HomeClient() {
           <div style={{ marginTop: "12px", textAlign: "center" }}>
             <span style={{ fontSize: "13px", color: "#80868B" }}>
               Vous gérez 5+ établissements ?{" "}
-              <a href="#contact" style={{ color: G.blue, textDecoration: "none", fontWeight: 600 }}>
+              {/* Visait l'ancre #contact, qui n'existe sur aucune section de
+                  cette page : le lien ne faisait rien, sans erreur ni 404. Un
+                  prospect Plan Agence à 449 €/mois n'avait aucun moyen de nous
+                  joindre depuis cette ligne. Même destination que le reste de
+                  la page de tarifs. */}
+              <a
+                href="mailto:contact@caela.fr?subject=Plan%20Agence%20-%205%20etablissements%20ou%20plus"
+                style={{ color: G.blue, textDecoration: "none", fontWeight: 600 }}
+              >
                 Plan Agence à partir de 449€/mois →
               </a>
             </span>
