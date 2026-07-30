@@ -8,11 +8,10 @@ import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
 import { generateResponseSuggestions } from "@/lib/claude";
 import { buildNotificationEmail } from "@/lib/review-processing";
-import { Resend } from "resend";
+import { envoyer } from "@/lib/email";
 import { SignJWT } from "jose";
 import { getJwtSecret } from "@/lib/auth";
 
-const getResend = () => new Resend(process.env.RESEND_API_KEY || "placeholder");
 
 async function createQuickToken(pendingId: number, choice: number): Promise<string> {
   return new SignJWT({ pendingId, choice })
@@ -104,7 +103,7 @@ export async function POST(
   const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   try {
-    await getResend().emails.send(
+    await envoyer(
       buildNotificationEmail(business.ownerEmail, business.name, reviewRow.authorName, reviewRow.rating, reviewRow.text, suggestions, tokens, appUrl)
     );
   } catch (err) {

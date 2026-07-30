@@ -2,14 +2,13 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { Resend } from "resend";
+import { envoyer, EXPEDITEUR } from "@/lib/email";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { escapeHtml } from "@/lib/escape-html";
 
 const claude = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;
-const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
 
 // ─── Google ───────────────────────────────────────────────────────────────────
 
@@ -385,8 +384,8 @@ export async function POST(request: NextRequest) {
         rating = sim.rating; reviewCount = sim.reviewCount; insights = sim.insights;
         const scoreColorSim = score >= 75 ? "#34A853" : score >= 50 ? "#FBBC04" : "#EA4335";
         try {
-          await resend.emails.send({
-            from: "Caela Réputation <noreply@caela.fr>",
+          await envoyer({
+            from: EXPEDITEUR,
             to: email,
             subject: `📊 Audit Trustpilot — ${businessName} : ${score}/100`,
             html: buildEmailHtml({ platform: "trustpilot", businessName, location: "", score, scoreColor: scoreColorSim, found, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation, simulated: true }),
@@ -423,8 +422,8 @@ export async function POST(request: NextRequest) {
     const platformLabel = platform === "trustpilot" ? "Trustpilot" : "Google Business Profile";
 
     try {
-      await resend.emails.send({
-        from: "Caela Réputation <noreply@caela.fr>",
+      await envoyer({
+        from: EXPEDITEUR,
         to: email,
         subject: `📊 Audit ${platformLabel} — ${businessName} : ${score}/100`,
         html: buildEmailHtml({ platform, businessName, location, score, scoreColor, found, rating, reviewCount, insights, priorities, recommendation }),

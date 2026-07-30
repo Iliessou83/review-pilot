@@ -1,5 +1,5 @@
 import "server-only";
-import { Resend } from "resend";
+import { envoyer, EXPEDITEUR_NOTIF } from "@/lib/email";
 import { db } from "@/lib/db";
 import { subscriptions, businesses, reviews } from "@/db/schema";
 import { eq, and, inArray, gte, count } from "drizzle-orm";
@@ -137,9 +137,8 @@ export async function maybeSendQuotaAlert(ownerEmail: string, businessName: stri
     : "";
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
-    await resend.emails.send({
-      from: "Caela Réputation <notifications@caela.fr>",
+    await envoyer({
+      from: EXPEDITEUR_NOTIF,
       to: normalized,
       subject:
         statusInfo.status === "exceeded"

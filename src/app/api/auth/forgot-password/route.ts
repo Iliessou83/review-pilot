@@ -6,9 +6,8 @@ import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/db/schema";
 import { generateResetToken, hashResetToken } from "@/lib/auth";
 import { dbRateLimit, getClientIp } from "@/lib/rate-limit";
-import { Resend } from "resend";
+import { resend, EXPEDITEUR } from "@/lib/email";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
 
 // POST /api/auth/forgot-password { email }
 // Répond toujours { ok: true } — ne révèle jamais si l'email existe ou non.
@@ -37,8 +36,8 @@ export async function POST(req: NextRequest) {
         // d'envoi. Un email de réinitialisation de mot de passe pouvait être
         // rejeté par Resend sans laisser la moindre trace, et la personne
         // restait bloquée hors de son compte en croyant s'être trompée.
-        const { error: erreurResend } = await resend.emails.send({
-          from: "Caela Réputation <noreply@caela.fr>",
+        const { error: erreurResend } = await resend().emails.send({
+          from: EXPEDITEUR,
           to: email,
           subject: "Réinitialise ton mot de passe",
           html: `<p>Une demande de réinitialisation a été faite pour ce compte Caela Réputation.</p>

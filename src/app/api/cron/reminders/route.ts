@@ -4,10 +4,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { pendingResponses, reviews, businesses } from "@/db/schema";
 import { eq, and, lt, gt } from "drizzle-orm";
-import { Resend } from "resend";
+import { envoyer, EXPEDITEUR } from "@/lib/email";
 import { escapeHtml } from "@/lib/escape-html";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
 
 // Sends ONE reminder per pending — only items in the 24h-48h window are picked up.
 // Items < 24h: too fresh. Items > 48h: already reminded, skip.
@@ -48,8 +47,8 @@ export async function GET(request: Request) {
         const safeText = escapeHtml(item.review.text?.slice(0, 200) || "Avis sans texte");
         const safeBusiness = escapeHtml(item.businessName || "–");
 
-        await resend.emails.send({
-          from: "Caela Réputation <noreply@caela.fr>",
+        await envoyer({
+          from: EXPEDITEUR,
           to: clientEmail,
           subject: `⏰ Rappel : avis ${rating}★ en attente de réponse`,
           html: `

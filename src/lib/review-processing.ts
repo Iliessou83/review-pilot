@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 import { generateAutoResponse, generateResponseSuggestions, type FactContext } from "@/lib/claude";
 import { assessReviewRisk } from "@/lib/risk-detection";
 import { escapeHtml } from "@/lib/escape-html";
-import { Resend } from "resend";
+import { envoyer, EXPEDITEUR_NOTIF } from "@/lib/email";
 import { SignJWT } from "jose";
 import { googleAccessToken } from "@/lib/google-oauth";
 import { decryptToken } from "@/lib/token-crypto";
@@ -80,7 +80,7 @@ export function buildNotificationEmail(
     </div>` : "";
 
   return {
-    from: "Caela Réputation <notifications@caela.fr>",
+    from: EXPEDITEUR_NOTIF,
     to: ownerEmail,
     subject: `Avis ${rating}★ pour ${safe.businessName} — action requise`,
     html: `
@@ -214,8 +214,7 @@ export async function processLowRatedReview(
   const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
-    await resend.emails.send(
+    await envoyer(
       buildNotificationEmail(business.ownerEmail, business.name, review.authorName, review.rating, review.text, suggestions, tokens, appUrl, risk.reasons)
     );
   } catch (err) {

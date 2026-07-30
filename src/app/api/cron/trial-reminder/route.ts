@@ -4,10 +4,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { subscriptions } from "@/db/schema";
 import { and, eq, gt, lt, isNull } from "drizzle-orm";
-import { Resend } from "resend";
+import { envoyer, EXPEDITEUR } from "@/lib/email";
 import { billing } from "@/config/legal.config";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
 
 /**
  * Rappel J-3 avant la fin de l'essai (obligation de transparence + meilleur
@@ -52,8 +51,8 @@ export async function GET(request: Request) {
           })
         : "bientôt";
 
-      await resend.emails.send({
-        from: "Caela Réputation <noreply@caela.fr>",
+      await envoyer({
+        from: EXPEDITEUR,
         to: sub.email,
         subject: "Votre essai se termine dans 3 jours",
         html: `

@@ -4,10 +4,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq, gte } from "drizzle-orm";
-import { Resend } from "resend";
+import { resend, EXPEDITEUR } from "@/lib/email";
 import { escapeHtml } from "@/lib/escape-html";
 
-const resend = new Resend(process.env.RESEND_API_KEY?.trim() || "placeholder");
 
 // Runs every Monday at 8h via Vercel cron
 export async function GET(request: Request) {
@@ -48,8 +47,8 @@ export async function GET(request: Request) {
 
     // Le SDK Resend renvoie { data, error } et ne lève pas : sans cette
     // lecture, le cron répondait ok:true alors qu'aucun rapport n'était parti.
-    const { error: erreurResend } = await resend.emails.send({
-      from: "Caela Réputation <noreply@caela.fr>",
+    const { error: erreurResend } = await resend().emails.send({
+      from: EXPEDITEUR,
       to: clientEmail,
       subject: `📊 Votre rapport hebdomadaire — ${total} avis cette semaine`,
       html: `
