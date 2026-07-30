@@ -32,7 +32,12 @@ export async function POST(req: NextRequest) {
       });
       const url = `${req.nextUrl.origin}/reset-password?token=${token}`;
       if (process.env.RESEND_API_KEY) {
-        await resend.emails.send({
+        // Le SDK Resend renvoie { data, error } sans lever d'exception : le
+        // `catch { /* fail-quiet */ }` plus bas ne voyait donc jamais un refus
+        // d'envoi. Un email de réinitialisation de mot de passe pouvait être
+        // rejeté par Resend sans laisser la moindre trace, et la personne
+        // restait bloquée hors de son compte en croyant s'être trompée.
+        const { error: erreurResend } = await resend.emails.send({
           from: "Caela Réputation <noreply@caela.fr>",
           to: email,
           subject: "Réinitialise ton mot de passe",
@@ -40,6 +45,12 @@ export async function POST(req: NextRequest) {
                  <p><a href="${url}">Choisir un nouveau mot de passe</a></p>
                  <p style="color:#888;font-size:12px">Ce lien expire dans 1 heure. Si ce n'est pas toi, ignore cet email.</p>`,
         });
+        // Journalisé, jamais renvoyé au client : la réponse reste volontairement
+        // identique qu'un compte existe ou non, sinon on offre un moyen de
+        // deviner les adresses inscrites.
+        if (erreurResend) {
+          console.error("[email:forgot-password] Resend a refusé l'envoi", erreurResend.message || erreurResend);
+        }
       }
     }
   } catch { /* fail-quiet */ }

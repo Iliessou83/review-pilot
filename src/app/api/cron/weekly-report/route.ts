@@ -46,7 +46,9 @@ export async function GET(request: Request) {
 
     const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
 
-    await resend.emails.send({
+    // Le SDK Resend renvoie { data, error } et ne lève pas : sans cette
+    // lecture, le cron répondait ok:true alors qu'aucun rapport n'était parti.
+    const { error: erreurResend } = await resend.emails.send({
       from: "Caela Réputation <noreply@caela.fr>",
       to: clientEmail,
       subject: `📊 Votre rapport hebdomadaire — ${total} avis cette semaine`,
@@ -116,6 +118,10 @@ export async function GET(request: Request) {
         </div>
       `,
     });
+    if (erreurResend) {
+      console.error("[email:cron/weekly-report] Resend a refusé l'envoi", erreurResend.message || erreurResend);
+      return NextResponse.json({ ok: false, error: "email-non-envoye" }, { status: 502 });
+    }
 
     return NextResponse.json({ ok: true, total_reviews: total, unanswered: unanswered.length });
   } catch (err) {
