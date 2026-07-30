@@ -25,6 +25,14 @@ export const entity = {
   contactEmail: "contact@caela.fr",
   supportEmail: "contact@caela.fr",
 
+  // Adresse PUBLIQUE du service, celle qu'un visiteur peut réellement ouvrir.
+  // Les pages légales, les CGV et le lien de parrainage annonçaient
+  // `caela-reputation.fr`, qui ne résout pas (aucun DNS, `curl` rend 000) :
+  // le texte légal citait un site inexistant, et le lien de parrainage partagé
+  // par les clients en WhatsApp menait dans le vide, donc filleul perdu.
+  // Le jour où un vrai domaine existe, il suffit de poser NEXT_PUBLIC_APP_URL.
+  siteUrl: process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://review-pilot-iota.vercel.app",
+
   // Statut micro-entreprise (FR)
   micro: {
     legalName: "Bourbouane Iliès", // raison sociale = nom de l'EI

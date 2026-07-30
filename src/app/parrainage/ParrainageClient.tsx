@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { entity } from "@/config/legal.config";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 2px 8px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
@@ -93,7 +94,7 @@ export default function ParrainageClient() {
 
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {[
-              { label: "📱 WhatsApp", href: `https://wa.me/?text=J'utilise Caela Réputation pour gérer mes avis Google automatiquement. Essaie avec mon code ${code} pour -15% : https://caela-reputation.fr` },
+              { label: "📱 WhatsApp", href: `https://wa.me/?text=J'utilise Caela Réputation pour gérer mes avis Google automatiquement. Essaie avec mon code ${code} pour -15% : ${entity.siteUrl}` },
               { label: "📧 Email", href: `mailto:?subject=Un outil pour tes avis Google&body=Utilise mon code ${code} pour -15% sur Caela Réputation.` },
             ].map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{ padding: "8px 16px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", textDecoration: "none", fontSize: "13px", color: "#202124", fontWeight: 500 }}>

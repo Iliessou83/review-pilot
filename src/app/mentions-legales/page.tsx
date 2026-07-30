@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { entity } from "@/config/legal.config";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
@@ -20,7 +21,7 @@ SIRET : [À COMPLÉTER — 14 chiffres]
 TVA intracommunautaire : Non assujetti — TVA non applicable, art. 293 B du CGI
 Adresse : [À COMPLÉTER — adresse de l'entreprise]
 Email : contact@caela.fr
-Site web : https://caela-reputation.fr`,
+Site web : ${entity.siteUrl}`,
   },
   {
     title: "2. Directeur de la publication",

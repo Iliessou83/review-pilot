@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { envoyer, EXPEDITEUR } from "@/lib/email";
+import { entity } from "@/config/legal.config";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { escapeHtml } from "@/lib/escape-html";
 
@@ -322,7 +323,7 @@ function buildEmailHtml(p: {
         <div style="background:${p.platform==="trustpilot"?"#F0FDF8":"#E8F0FE"};border-radius:10px;padding:16px;margin-bottom:24px;font-size:13px;color:${accentColor};line-height:1.6;">
           ${escapeHtml(p.recommendation)}
         </div>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://caela-reputation.vercel.app"}/#login" style="display:block;text-align:center;padding:14px;background:${accentColor};color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || entity.siteUrl}/#login" style="display:block;text-align:center;padding:14px;background:${accentColor};color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
           Corriger ça avec Caela Réputation — Essai 14 jours →
         </a>
       </div>

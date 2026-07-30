@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq, gte } from "drizzle-orm";
 import { resend, EXPEDITEUR } from "@/lib/email";
+import { entity } from "@/config/legal.config";
 import { escapeHtml } from "@/lib/escape-html";
 
 
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
       : "–";
 
     const clientEmail = process.env.CLIENT_NOTIFICATION_EMAIL || "contact@caela.fr";
-    const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL || "https://caela-reputation.vercel.app";
+    const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL || entity.siteUrl;
 
     const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
 

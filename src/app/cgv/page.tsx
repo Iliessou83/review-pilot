@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { entity } from "@/config/legal.config";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
@@ -15,7 +16,7 @@ const sections = [
 Caela Agency — Entreprise individuelle
 Représentée par Iliès Bourbouane
 Email : contact@caela.fr
-Site web : https://caela-reputation.fr
+Site web : ${entity.siteUrl}
 
 Le service est hébergé par Vercel Inc. (infrastructure applicative), Supabase Inc. (base de données) et Oracle Cloud Infrastructure (automatisation). Pour plus de détails : voir nos Mentions légales.`,
   },
@@ -23,7 +24,7 @@ Le service est hébergé par Vercel Inc. (infrastructure applicative), Supabase 
     title: "2. Définitions",
     content: `Dans les présentes conditions, les termes suivants désignent :
 
-— « Service » : la plateforme SaaS Caela Réputation accessible depuis caela-reputation.fr, incluant le dashboard, les APIs, les automatisations et les emails associés.
+— « Service » : la plateforme SaaS Caela Réputation accessible depuis ${entity.siteUrl}, incluant le dashboard, les APIs, les automatisations et les emails associés.
 — « Client » : toute personne physique ou morale utilisant le Service dans un cadre professionnel.
 — « Établissement » : la fiche Google Business Profile ou Trustpilot gérée par le Client via le Service.
 — « Avis » : tout contenu publié par un client de l'Établissement sur Google Maps ou Trustpilot.
