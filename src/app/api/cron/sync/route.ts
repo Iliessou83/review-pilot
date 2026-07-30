@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
 import { businesses, reviews } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -83,9 +84,8 @@ async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
   return created;
 }
 
-export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+async function handler(request: Request) {
+  if (!cronAutorise(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -139,3 +139,5 @@ async function runSync() {
 
   return NextResponse.json({ ok: true, results });
 }
+
+export const GET = avecSignalement("/api/cron/sync", handler);

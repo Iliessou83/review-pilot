@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq, gte } from "drizzle-orm";
@@ -10,9 +11,8 @@ import { escapeHtml } from "@/lib/escape-html";
 
 
 // Runs every Monday at 8h via Vercel cron
-export async function GET(request: Request) {
-  const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+async function handler(request: Request) {
+  if (!cronAutorise(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -129,3 +129,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
+
+export const GET = avecSignalement("/api/cron/weekly-report", handler);

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
 import { pendingResponses, reviews, businesses } from "@/db/schema";
 import { eq, and, lt, gt } from "drizzle-orm";
@@ -10,9 +11,8 @@ import { escapeHtml } from "@/lib/escape-html";
 
 // Sends ONE reminder per pending — only items in the 24h-48h window are picked up.
 // Items < 24h: too fresh. Items > 48h: already reminded, skip.
-export async function GET(request: Request) {
-  const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+async function handler(request: Request) {
+  if (!cronAutorise(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -79,3 +79,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
+
+export const GET = avecSignalement("/api/cron/reminders", handler);

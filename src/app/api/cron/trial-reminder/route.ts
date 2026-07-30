@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
 import { subscriptions } from "@/db/schema";
 import { and, eq, gt, lt, isNull } from "drizzle-orm";
@@ -14,9 +15,8 @@ import { billing } from "@/config/legal.config";
  * dans la fenêtre [J+2, J+3] et qui n'ont pas encore reçu de rappel.
  * Tourne 1x/jour (voir vercel.json).
  */
-export async function GET(request: Request) {
-  const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+async function handler(request: Request) {
+  if (!cronAutorise(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -90,3 +90,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ checked: due.length, sent });
 }
+
+export const GET = avecSignalement("/api/cron/trial-reminder", handler);
