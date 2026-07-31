@@ -2,25 +2,14 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, createToken } from "@/lib/auth";
-import { rateLimit, dbRateLimit, getClientIp } from "@/lib/rate-limit";
+import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   // 5 tentatives / 15 min par IP — compteur partagé en base (login_attempts),
   // pas en mémoire : sur Vercel chaque instance serverless a sa propre mémoire,
   // un Map ne bloquait donc rien en pratique en prod (voir rate-limit.ts).
   const ip = getClientIp(request);
-  let allowed: boolean;
-  try {
-    allowed = await dbRateLimit(`login:${ip}`, 5, 15 * 60 * 1000);
-  } catch (err) {
-    // Table login_attempts pas encore créée (migration manuelle non exécutée) ou
-    // base indisponible : on ne bloque pas tout le monde, on retombe sur le
-    // compteur en mémoire (protection partielle mais mieux que rien) et on log
-    // pour qu'Ilies voie qu'il faut lancer la migration.
-    console.error("dbRateLimit failed, falling back to in-memory rate limit:", err);
-    allowed = rateLimit(`login:${ip}`, 5, 15 * 60 * 1000);
-  }
-  if (!allowed) {
+  if (!(await limitePartagee(`login:${ip}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Trop de tentatives. Réessayez dans 15 minutes." }, { status: 429 });
   }
 

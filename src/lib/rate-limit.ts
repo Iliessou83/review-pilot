@@ -67,6 +67,37 @@ export async function dbRateLimit(key: string, limit: number, windowMs: number):
   return count <= limit;
 }
 
+/**
+ * Les deux étages, à utiliser partout plutôt que rateLimit() seul.
+ *
+ * Étage 1, la mémoire : gratuit, arrête une rafale qui tombe sur l'instance
+ * courante. Étage 2, la base : le seul qui compte, puisque Vercel démarre
+ * autant d'instances neuves que l'attaquant en provoque, chacune avec sa Map
+ * vide (`pannes-silencieuses` entrée 19).
+ *
+ * Repli permissif si la base hoquette : la sécurité ne doit jamais enfermer
+ * dehors un vrai client. Mais on trace bruyamment, parce que ce repli camoufle
+ * aussi le cas « table absente » — exactement ce qui s'était produit ici : la
+ * migration login_attempts était écrite et commitée depuis le 20 juillet et
+ * n'avait jamais été exécutée, donc login et forgot-password n'étaient protégés
+ * par rien du tout (entrée 34). Exécutée le 2026-07-31.
+ *
+ * Renvoie true = autorisé, false = quota dépassé.
+ */
+export async function limitePartagee(
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<boolean> {
+  if (!rateLimit(key, limit, windowMs)) return false;
+  try {
+    return await dbRateLimit(key, limit, windowMs);
+  } catch (err) {
+    console.error("[RATE] compteur en base indisponible, mémoire seule :", err);
+    return true;
+  }
+}
+
 export function getClientIp(req: NextRequest): string {
   return (
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||

@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createToken, ADMIN_EMAILS } from "@/lib/auth";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { getSuggestedExtensions } from "@/lib/hubExtensions";
 
@@ -14,7 +14,7 @@ import { getSuggestedExtensions } from "@/lib/hubExtensions";
 // super-admins en dur (ADMIN_EMAILS), qui restent réservés.
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  if (!rateLimit(`register:${ip}`, 5, 15 * 60 * 1000)) {
+  if (!(await limitePartagee(`register:${ip}`, 5, 15 * 60 * 1000))) {
     return NextResponse.json({ error: "Trop de tentatives. Réessayez dans 15 minutes." }, { status: 429 });
   }
 

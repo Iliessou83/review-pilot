@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { wheelConfigs, wheelSpins } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 
 function isPhone(v: unknown): v is string {
   return typeof v === "string" && v.replace(/[\s.\-()]/g, "").length >= 8;
@@ -30,7 +30,7 @@ function isEmail(v: unknown): v is string {
 export async function POST(request: NextRequest) {
   // Anti-spam / anti-farming de lots : 10 tours / heure / IP.
   const ip = getClientIp(request);
-  if (!rateLimit(`spin:${ip}`, 10, 60 * 60 * 1000)) {
+  if (!(await limitePartagee(`spin:${ip}`, 10, 60 * 60 * 1000))) {
     return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
   }
 

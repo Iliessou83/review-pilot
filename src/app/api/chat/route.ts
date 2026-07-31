@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 
 const client = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -75,7 +75,7 @@ RÈGLES DE TON:
 export async function POST(request: NextRequest) {
   // 20 messages per minute per IP
   const ip = getClientIp(request);
-  if (!rateLimit(`chat:${ip}`, 20, 60 * 1000)) {
+  if (!(await limitePartagee(`chat:${ip}`, 20, 60 * 1000))) {
     return NextResponse.json({ reply: "Trop de messages. Patientez une minute." });
   }
 

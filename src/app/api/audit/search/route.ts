@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   // 10 searches per minute per IP
   const ip = getClientIp(request);
-  if (!rateLimit(`audit-search:${ip}`, 10, 60 * 1000)) {
+  if (!(await limitePartagee(`audit-search:${ip}`, 10, 60 * 1000))) {
     return NextResponse.json({ error: "Trop de requêtes. Réessayez dans une minute." }, { status: 429 });
   }
 

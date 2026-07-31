@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { envoyer, EXPEDITEUR } from "@/lib/email";
 import { entity } from "@/config/legal.config";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 import { escapeHtml } from "@/lib/escape-html";
 
 const claude = process.env.ANTHROPIC_API_KEY
@@ -339,7 +339,7 @@ function buildEmailHtml(p: {
 export async function POST(request: NextRequest) {
   // 3 audits per hour per IP (each audit = up to 2 API calls + 1 email)
   const ip = getClientIp(request);
-  if (!rateLimit(`audit:${ip}`, 3, 60 * 60 * 1000)) {
+  if (!(await limitePartagee(`audit:${ip}`, 3, 60 * 60 * 1000))) {
     return NextResponse.json({ error: "Trop de demandes. Réessayez dans une heure." }, { status: 429 });
   }
 
