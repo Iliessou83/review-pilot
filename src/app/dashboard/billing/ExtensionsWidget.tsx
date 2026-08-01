@@ -15,6 +15,10 @@ type Extension = {
   openUrl?: string;
   previewImage?: string;
   landingUrl?: string;
+  serviceMode?: boolean;
+  priceLabel?: string;
+  ctaLabel?: string;
+  requestUrl?: string;
 };
 
 const EMOJI: Record<string, string> = {
@@ -152,6 +156,19 @@ function ExtCard({ ext, busy, onActivate, promoCode }: { ext: Extension; busy: s
                   Ouvrir {ext.produit}
                 </a>
               )}
+            </>
+          ) : ext.serviceMode ? (
+            <>
+              <p style={{ fontSize: "13px", fontWeight: 700, color: "#202124", margin: "0 0 4px" }}>{ext.priceLabel || `À partir de ${ext.price}€`}</p>
+              <p style={{ fontSize: "11px", color: "#5f6368", margin: "0 0 8px", lineHeight: 1.5 }}>Une prestation à la demande, pas un abonnement de plus.</p>
+              <a
+                href={ext.requestUrl || ext.landingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: "block", borderRadius: "8px", padding: "9px 12px", fontSize: "13px", fontWeight: 700, textAlign: "center", textDecoration: "none", background: ext.accent, color: "#fff", fontFamily: "inherit" }}
+              >
+                {ext.ctaLabel || `Demander ${ext.produit}`}
+              </a>
             </>
           ) : (
             <>

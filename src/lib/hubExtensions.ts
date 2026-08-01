@@ -25,6 +25,10 @@ export interface HubExtension {
   openUrl?: string;
   previewImage?: string;
   landingUrl?: string;
+  serviceMode?: boolean;
+  priceLabel?: string;
+  ctaLabel?: string;
+  requestUrl?: string;
 }
 
 // Renvoie [] si le Hub est indisponible ou le secret absent : la page marche
