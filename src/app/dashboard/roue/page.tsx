@@ -138,8 +138,8 @@ export default function RouePage() {
       <DelegateBanner
         storageKey="roue"
         icon="🎡"
-        title="Pas à l'aise avec le design des lots ou l'affiche à imprimer ?"
-        body="Caela Agency peut créer vos visuels de roue et votre affiche/QR à afficher en caisse, assortis à votre enseigne. Prestation payante, sur devis."
+        title="Pas à l'aise avec le design des lots ?"
+        body="Caela Agency peut créer vos visuels de roue (illustrations, habillage) assortis à votre enseigne. Prestation payante, sur devis. Le QR à afficher en caisse, lui, est généré automatiquement ci-dessous, gratuitement."
         ctaLabel="En discuter →"
         mailSubject="Déléguer la création des visuels de ma roue à avis"
         kind="visuel"
@@ -235,12 +235,33 @@ export default function RouePage() {
               🎡 {w.spins} tours · ⭐ {w.reviewClicks} clics avis
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => toggleActive(w)} style={{ border: "1px solid #D1D5DB", background: w.active ? "#ECFDF5" : "#F3F4F6", color: w.active ? "#059669" : "#6B7280", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 13 }}>
-              {w.active ? "Active" : "Inactive"}
-            </button>
-            <button onClick={() => edit(w)} style={{ border: "1px solid #D1D5DB", background: "#fff", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 13 }}>Modifier</button>
-            <button onClick={() => del(w)} style={{ border: "none", background: "#FEE2E2", color: "#B91C1C", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 13 }}>Supprimer</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <img
+                src={`/api/wheel/${w.id}/qr`}
+                alt={`QR code de la roue ${w.businessName}`}
+                width={72}
+                height={72}
+                style={{ borderRadius: 8, border: "1px solid #E5E7EB", display: "block" }}
+              />
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>QR à afficher en caisse</div>
+                <a
+                  href={`/api/wheel/${w.id}/qr?dl=1`}
+                  download={`roue-${w.slug}-qr.png`}
+                  style={{ fontSize: 13, color: "#1A73E8" }}
+                >
+                  Télécharger (PNG) ↓
+                </a>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => toggleActive(w)} style={{ border: "1px solid #D1D5DB", background: w.active ? "#ECFDF5" : "#F3F4F6", color: w.active ? "#059669" : "#6B7280", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 13 }}>
+                {w.active ? "Active" : "Inactive"}
+              </button>
+              <button onClick={() => edit(w)} style={{ border: "1px solid #D1D5DB", background: "#fff", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 13 }}>Modifier</button>
+              <button onClick={() => del(w)} style={{ border: "none", background: "#FEE2E2", color: "#B91C1C", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontSize: 13 }}>Supprimer</button>
+            </div>
           </div>
         </div>
       ))}

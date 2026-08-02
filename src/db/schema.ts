@@ -107,6 +107,10 @@ export const wheelConfigs = pgTable("wheel_configs", {
   consentText: text("consent_text"),
   active: boolean("active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  // URL de scan du QR dynamique Caela QR pour cette roue (https://caela-qr.vercel.app/r/<slug>),
+  // créé UNE SEULE FOIS via getOrCreateDynamicQr (src/lib/caelaQr.ts) puis persisté ici.
+  // Voir drizzle/manual/2026-08-01_add_qr_scan_url.sql.
+  qrScanUrl: text("qr_scan_url"),
 });
 
 export const wheelSpins = pgTable("wheel_spins", {
