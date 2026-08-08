@@ -141,6 +141,42 @@ Prénom client: ${firstName}
   return content.text.trim();
 }
 
+/**
+ * Prépare un jeu de questions/réponses type pour la section "Questions et
+ * réponses" de la fiche Google du commerce. Objectif : les poser SOI-MÊME
+ * avant qu'un client hostile ne le fasse, et répondre avec les infos qui
+ * comptent (horaires, réservation, accessibilité, moyens de paiement...).
+ * Ce n'est PAS auto-publié sur Google (API Q&A publique trop instable) —
+ * l'équipe relit et poste à la main, voir qna_strategies.items[].postedOnGoogle.
+ */
+export async function generateQnaSuggestions(
+  businessName: string,
+  businessType: string,
+  factContext?: FactContext
+): Promise<{ question: string; reponse: string }[]> {
+  const message = await getClient().messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1200,
+    system: `Tu prépares la section "Questions et réponses" de la fiche Google Business Profile de ${businessName} (secteur : ${businessType}).
+
+${buildFactBlock(factContext)}
+
+Génère 8 questions que de VRAIS clients potentiels se poseraient avant de venir (horaires, réservation, accessibilité, parking, moyens de paiement, spécificités du secteur), avec une réponse courte, factuelle, chaleureuse. Ne réponds JAMAIS pour un fait non confirmé dans la fiche de référence — reste générique si l'info n'est pas donnée.
+
+Réponds UNIQUEMENT avec un tableau JSON, aucun texte autour : [{"question": "...", "reponse": "..."}, ...]`,
+    messages: [{ role: "user", content: `Génère les 8 questions/réponses pour ${businessName}.` }],
+  });
+
+  const content = message.content[0];
+  if (content.type !== "text") throw new Error("Unexpected response type");
+  const match = content.text.match(/\[[\s\S]*\]/);
+  if (!match) throw new Error("Réponse IA sans JSON exploitable");
+  const parsed = JSON.parse(match[0]) as { question?: string; reponse?: string }[];
+  return parsed
+    .filter((p) => p.question && p.reponse)
+    .map((p) => ({ question: String(p.question), reponse: String(p.reponse) }));
+}
+
 export async function generateResponseSuggestions(
   reviewText: string,
   authorName: string,

@@ -4,6 +4,7 @@ import { getStripe, getWebhookSecret } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { subscriptions } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { markFirstPayment } from "@/lib/referral";
 
 /**
  * Webhook Stripe : seule source de vérité de l'état d'abonnement.
@@ -131,6 +132,13 @@ async function writeSubscription(
         updatedAt: new Date(),
       },
     });
+
+  // Filleul (voir src/lib/referral.ts) : "active" = essai terminé et premier
+  // prélèvement réussi. markFirstPayment est idempotent (IS NULL en garde),
+  // donc rejouable sans risque à chaque webhook "updated" suivant.
+  if (sub.status === "active") {
+    await markFirstPayment(email).catch((err) => console.error("[billing/webhook] markFirstPayment", err));
+  }
 }
 
 // Stripe envoie du raw body : pas de parsing automatique.

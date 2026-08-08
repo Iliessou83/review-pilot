@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ChatBot from "@/components/ChatBot";
 
@@ -90,6 +90,59 @@ function GMBCard() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Mockup visuel de la plaque NFC (SVG maison — pas de vraie photo produit
+// disponible pour l'instant). Sert à faire comprendre l'objet en un coup
+// d'œil dans la section NFC, sans attendre un vrai shooting produit.
+function NFCPlateVisual({ size = 220 }: { size?: number }) {
+  return (
+    <svg width={size} height={size * 0.62} viewBox="0 0 220 136" style={{ display: "block", filter: "drop-shadow(0 8px 20px rgba(26,115,232,0.25))" }}>
+      <defs>
+        <linearGradient id="rpPlate" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#2A2E33" />
+          <stop offset="55%" stopColor="#1B1E22" />
+          <stop offset="100%" stopColor="#0F1113" />
+        </linearGradient>
+        <linearGradient id="rpSheen" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.16" />
+          <stop offset="40%" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="212" height="128" rx="16" fill="url(#rpPlate)" stroke="#3A3F45" strokeWidth="1.5" />
+      <rect x="4" y="4" width="212" height="128" rx="16" fill="url(#rpSheen)" />
+      {/* logo Caela */}
+      <g transform="translate(20,20)">
+        <circle cx="0" cy="0" r="4" fill={G.blue} />
+        <circle cx="11" cy="0" r="4" fill={G.red} />
+        <circle cx="22" cy="0" r="4" fill={G.yellow} />
+        <circle cx="33" cy="0" r="4" fill={G.green} />
+      </g>
+      {/* ondes NFC */}
+      <g transform="translate(178,30)" stroke="#fff" fill="none" strokeLinecap="round">
+        <path d="M-6,10 a10,10 0 0 1 12,0" strokeWidth="2.4" opacity="0.9" />
+        <path d="M-11,14 a17,17 0 0 1 22,0" strokeWidth="2.2" opacity="0.6" />
+        <path d="M-16,18 a24,24 0 0 1 32,0" strokeWidth="2" opacity="0.35" />
+        <circle cx="0" cy="14" r="2.2" fill="#fff" />
+      </g>
+      {/* texte */}
+      <text x="20" y="70" fill="#fff" fontSize="15" fontWeight="700" fontFamily="system-ui, sans-serif">Restaurant Le Cèdre</text>
+      <text x="20" y="88" fill="#9AA0A6" fontSize="10" fontFamily="system-ui, sans-serif">Tapez pour laisser un avis</text>
+      {/* QR de secours, coin bas droit */}
+      <g transform="translate(160,86)">
+        <rect width="34" height="34" rx="4" fill="#fff" />
+        {[0,1,2,3,4].map(r => (
+          <g key={r}>
+            {[0,1,2,3,4].map(c => (
+              ((r + c) % 3 === 0 || (r === 0 && c === 0) || (r === 4 && c === 4)) && (
+                <rect key={c} x={3 + c * 5.6} y={3 + r * 5.6} width="4.6" height="4.6" fill="#0F1113" />
+              )
+            ))}
+          </g>
+        ))}
+      </g>
+    </svg>
   );
 }
 
@@ -231,7 +284,7 @@ const PLANS = [
       "Dashboard centralisé",
     ],
     missing: ["Auto-réponse automatique"],
-    cta: "Démarrer l'essai 14 jours",
+    cta: "Essai gratuit 14 jours",
     highlight: false,
   },
   {
@@ -249,7 +302,7 @@ const PLANS = [
       "Rappels avis sans réponse",
     ],
     missing: [],
-    cta: "Choisir Solo",
+    cta: "Essai gratuit → Solo",
     highlight: true,
   },
   {
@@ -267,7 +320,7 @@ const PLANS = [
       "Support prioritaire",
     ],
     missing: [],
-    cta: "Choisir Pro",
+    cta: "Essai gratuit → Pro",
     highlight: false,
   },
 ];
@@ -290,23 +343,58 @@ const COMPETITORS = [
   { name: "Uberall 🇩🇪", solo: "~200€", business: "~400€", agency: "Custom", aiAuto: false, fr: false, gmb: true, trial: false, highlight: false },
 ];
 
+// Bundle vidéos explicatif décidé le 2026-08-07, pour se différencier des
+// concurrents sur la pédagogie. Scripts complets dans le PDF fourni à Ilies —
+// tant que le tournage n'est pas fait, la section reste un teaser "bientôt",
+// jamais présentée comme déjà disponible (règle : ne rien afficher qui n'existe pas).
+const VIDEO_TOPICS = [
+  { icon: "🎯", title: "Pourquoi vos réponses aux avis pèsent plus que vous ne pensez", duration: "1 min 30" },
+  { icon: "⚙️", title: "Caela Réputation en 2 minutes : de l'avis à la réponse publiée", duration: "2 min" },
+  { icon: "⚖️", title: "Le faire soi-même vs Caela Réputation : le vrai calcul", duration: "2 min 30" },
+  { icon: "📶", title: "Les plaques NFC : comment ça marche, concrètement", duration: "1 min 45" },
+  { icon: "🏪", title: "Créer et optimiser sa fiche Google Business Profile", duration: "2 min 15" },
+  { icon: "🩹", title: "Un avis 1★ n'est pas une catastrophe : comment le désamorcer", duration: "2 min" },
+  { icon: "🎁", title: "Le parrainage Caela expliqué en une vidéo", duration: "1 min" },
+  { icon: "🔒", title: "RGPD, sécurité, CGU Google : on répond à vos questions", duration: "2 min 30" },
+];
+
 const TESTIMONIALS = [
   { name: "Karim B.", role: "Gérant — Restaurant Le Bosphore, Lyon", rating: 5, text: "J'avais 47 avis sans aucune réponse. En 2 semaines Caela Réputation a tout rattrapé. Ma note est passée de 4.1 à 4.6 et je reçois plus d'appels depuis." },
   { name: "Nathalie R.", role: "Propriétaire — Salon Nath'Beauté, Paris 15e", rating: 5, text: "Un client m'a mis 1 étoile injustement. Caela Réputation m'a proposé 3 réponses. J'ai cliqué sur la version empathique depuis mon téléphone. Le client a rappelé pour s'excuser." },
   { name: "Sofiane M.", role: "Directeur — Groupe 4 snacks, Marseille", rating: 5, text: "4 établissements, plus de 200 avis par mois. Avant je passais mes dimanches à répondre. Maintenant c'est automatique. Je gagne 3h par semaine minimum." },
 ];
 
+// Fusion décidée le 2026-08-04 : les 4 prestations séparées (création,
+// optimisation, suivi, gestion des avis) faisaient hésiter entre quatre
+// cartes au lieu d'un choix clair. Deux paliers : un pack de lancement
+// (one-shot) et un pack de croissance (abonnement géré).
+//
+// Revu le 2026-08-07 : la gestion des avis fait partie intégrante de
+// l'optimisation mensuelle (Pack Croissance), pas un lot séparé — mais tous
+// les clients ne veulent pas l'optimisation des posts chaque mois. D'où un
+// 3e palier allégé, avis seuls, pour ceux qui veulent juste ce filet de
+// sécurité sans l'abonnement complet. Pack Croissance passé à 149€/mois
+// (au lieu de 199) pour rester au-dessus du Pack Avis sans écraser sa valeur.
 const GMB_SERVICES = [
-  { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Création de fiche GMB", tag: "Prestation unique", price: "199€", desc: "Fiche créée de zéro: catégories optimisées, horaires, description SEO local, zones de chalandise. Opérationnel en 48h." },
-  { color: G.green, bg: "#E6F4EA", icon: "📈", title: "Optimisation de fiche", tag: "Le plus demandé", price: "299€", desc: "Audit complet + rewriting SEO. Photos, posts, Q&A, attributs. Top 3 Google Maps sur votre zone sous 30 jours.", highlight: true },
-  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Suivi mensuel", tag: "Abonnement", price: "149€/mois", desc: "Rapport performance, mise à jour des posts, veille concurrentielle locale, gestion des photos." },
-  { color: G.red, bg: "#FCE8E6", icon: "🔔", title: "Gestion des avis", tag: "Service premium", price: "Sur devis", desc: "Réponse manuelle aux avis complexes, stratégie de collecte, formation équipe. Note améliorée sous 60 jours." },
+  { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€", oldPrice: "498€", desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.", highlight: false },
+  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "~350€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle aux avis complexes, stratégie de collecte, formation de votre équipe).", highlight: true },
+  { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "89€/mois", desc: "Vous ne voulez pas l'optimisation mensuelle des posts ? Prenez juste la gestion des avis : réponse manuelle aux avis complexes, stratégie de collecte, formation de votre équipe. Rien d'autre.", highlight: false },
 ];
 
+// Paliers revus le 2026-08-04 : dégressivité affichée explicitement
+// (prix unitaire + économie vs. achat à l'unité), au lieu d'un simple prix.
 const NFC_PACKS = [
-  { name: "Plaque Solo", price: "19€", qty: "1 plaque", color: G.blue, features: ["NFC + QR code de secours", "Design personnalisé (votre logo)", "Cible au choix : Google, Insta, TikTok…", "Résistant eau et chaleur"] },
-  { name: "Pack Établissement", price: "79€", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"], highlight: true },
-  { name: "Pack Réseau", price: "299€", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR de secours", "Design multi-établissements", "Cible modifiable à distance (roue ou lien direct)", "Configuration centralisée"], },
+  { name: "Plaque Solo", price: "19€", unit: "19€/plaque", qty: "1 plaque", color: G.blue, features: ["NFC + QR code de secours", "Design personnalisé (votre logo)", "Cible au choix : Google, Insta, TikTok…", "Résistant eau et chaleur"] },
+  { name: "Pack Établissement", price: "69€", oldPrice: "95€", unit: "13,80€/plaque", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"], highlight: true },
+  { name: "Pack Réseau", price: "199€", oldPrice: "475€", unit: "7,96€/plaque", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR de secours", "Design multi-établissements", "Cible modifiable à distance (roue ou lien direct)", "Configuration centralisée"], },
+];
+
+// Réalisations réelles de l'agence, vérifiées en ligne le 2026-08-07 (200 OK)
+// avant publication — jamais de faux exemples sur une page qui vend le service.
+const LANDING_EXAMPLES = [
+  { name: "Caelenda", desc: "Réservation en ligne pour salons & instituts", url: "https://caelenda.fr", color: G.blue },
+  { name: "Anhaya Studio", desc: "Plateforme événementielle & billetterie", url: "https://anhaya-studio.vercel.app", color: "#7C3AED" },
+  { name: "Maison Ninour", desc: "E-commerce, univers éditorial soigné", url: "https://maison-ninour.vercel.app", color: G.green },
 ];
 
 const NFC_REASSURANCE = [
@@ -314,6 +402,7 @@ const NFC_REASSURANCE = [
   { icon: "📱", title: "iOS + Android", desc: "Compatible iPhone et Android. QR de secours pour les vieux téléphones." },
   { icon: "🌐", title: "Multi-réseaux", desc: "Google, Instagram, TikTok, WhatsApp : vous choisissez la cible." },
   { icon: "🔄", title: "Cible pilotable", desc: "Plaque reliée à votre page Caela : changez la destination depuis le dashboard, sans racheter." },
+  { icon: "🚚", title: "Livraison gratuite", desc: "Offerte dès 69€ d'achat (Pack Établissement et Pack Réseau)." },
 ];
 
 // Chemin de retour après connexion (?next=/link-account?ticket=...), whitelisté
@@ -341,6 +430,8 @@ export default function HomeClient() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [next, setNext] = useState("/dashboard");
+  const [navVisible, setNavVisible] = useState(true);
+  const [showEcoBanner, setShowEcoBanner] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 860px)");
@@ -350,7 +441,51 @@ export default function HomeClient() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
+  // Topbar : masquée au défilement vers le bas, réaffichée immédiatement
+  // au premier pixel remonté. Toujours visible tout en haut de page.
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y <= 80) setNavVisible(true);
+      else if (y > lastY) setNavVisible(false);
+      else if (y < lastY) setNavVisible(true);
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   useEffect(() => { setNext(safeNext()); }, []);
+
+  // Bannière écosystème (Gagnify/Rewards) : apparaît une fois qu'on a montré
+  // de l'engagement (scroll profond), jamais dès l'arrivée sur la page.
+  // Un dismiss est retenu 7 jours en localStorage pour ne pas harceler un
+  // visiteur qui revient plusieurs fois dans la semaine.
+  //
+  // Bug corrigé le 08/08 : le listener de scroll restait actif après une
+  // fermeture. Sur mobile, le moindre rebond de défilement (iOS "rubber
+  // band") redéclenchait setShowEcoBanner(true) juste après le clic sur la
+  // croix — la bannière revenait aussitôt, perçue comme un bandeau cookies
+  // qui « insiste ». Un ref suit maintenant l'état fermé en temps réel et
+  // le handler s'arrête net dès la fermeture, sans attendre un remount.
+  const ecoDismissedRef = useRef(false);
+  useEffect(() => {
+    const DISMISS_KEY = "rp_eco_banner_dismissed_until";
+    const dismissedUntil = Number(localStorage.getItem(DISMISS_KEY) || 0);
+    if (Date.now() < dismissedUntil) { ecoDismissedRef.current = true; return; }
+    const onScroll = () => {
+      if (!ecoDismissedRef.current && window.scrollY > 900) setShowEcoBanner(true);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  function dismissEcoBanner() {
+    ecoDismissedRef.current = true;
+    localStorage.setItem("rp_eco_banner_dismissed_until", String(Date.now() + 7 * 86400_000));
+    setShowEcoBanner(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -376,7 +511,7 @@ export default function HomeClient() {
   }
 
   return (
-    <div style={{ background: "#fff", color: "#202124" }}>
+    <div style={{ background: "#fff", color: "#202124", paddingBottom: showEcoBanner && isMobile ? "60px" : 0 }}>
 
       {/* ── TRUST STRIP ── */}
       <div style={{ background: G.blue, padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
@@ -395,7 +530,12 @@ export default function HomeClient() {
       </div>
 
       {/* ── NAV ── */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "#fff", borderBottom: "1px solid #DADCE0", padding: isMobile ? "0 16px" : "0 40px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <nav style={{
+        position: "sticky", top: 0, zIndex: 100, background: "#fff", borderBottom: "1px solid #DADCE0",
+        padding: isMobile ? "0 16px" : "0 40px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        transform: navVisible ? "translateY(0)" : "translateY(-100%)",
+        transition: "transform 0.25s ease",
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flexShrink: 1 }}>
           <GDots size={9} />
           <span style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Caela Réputation</span>
@@ -408,7 +548,12 @@ export default function HomeClient() {
         {!isMobile && (
           <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
             {NAV_LINKS.map(([href, label]) => (
-              <a key={href} href={href} style={{ padding: "8px 14px", fontSize: "14px", fontWeight: 500, color: "#5F6368", textDecoration: "none", borderRadius: "24px" }}>{label}</a>
+              <a
+                key={href} href={href}
+                style={{ padding: "8px 14px", fontSize: "14px", fontWeight: 500, color: "#5F6368", textDecoration: "none", borderRadius: "24px", transition: "color 0.15s ease, background 0.15s ease" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = G.blue; e.currentTarget.style.background = "#E8F0FE"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#5F6368"; e.currentTarget.style.background = "transparent"; }}
+              >{label}</a>
             ))}
             <a href="#login" style={{ padding: "9px 16px", fontSize: "14px", fontWeight: 600, color: G.blue, textDecoration: "none", borderRadius: "6px", marginLeft: "8px" }}>
               Se connecter
@@ -446,6 +591,28 @@ export default function HomeClient() {
           </div>
         )}
       </nav>
+
+      {/* CTA persistant : quand la nav se masque au défilement, "Se connecter"
+          et "Essai gratuit" restent joignables via ce mini-groupe flottant —
+          jamais de moment où le visiteur scrolle sans pouvoir agir. */}
+      <div style={{
+        position: "fixed", top: "12px", right: isMobile ? "12px" : "40px", zIndex: 101,
+        display: "flex", alignItems: "center", gap: "6px",
+        opacity: navVisible ? 0 : 1,
+        pointerEvents: navVisible ? "none" : "auto",
+        transition: "opacity 0.25s ease",
+        background: "#fff", border: "1px solid #DADCE0", borderRadius: "24px",
+        padding: "5px 5px 5px 14px", boxShadow: SHADOW_MD,
+      }}>
+        {!isMobile && (
+          <a href="#login" style={{ padding: "6px 10px", fontSize: "13px", fontWeight: 600, color: G.blue, textDecoration: "none" }}>
+            Se connecter
+          </a>
+        )}
+        <a href="/signup" style={{ padding: "7px 16px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "20px", whiteSpace: "nowrap" }}>
+          Essai gratuit
+        </a>
+      </div>
 
       {/* Mobile: panneau déroulant */}
       {isMobile && menuOpen && (
@@ -686,6 +853,34 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* ── VIDÉOS EXPLICATIVES (bientôt) ── */}
+      <section style={{ padding: "80px 40px" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "36px" }}>
+            <div style={{ display: "inline-block", padding: "4px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+              🎬 Bientôt disponible
+            </div>
+            <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
+              8 vidéos de quelques minutes pour tout comprendre
+            </h2>
+            <p style={{ margin: "0 auto", maxWidth: "540px", fontSize: "14px", color: "#5F6368", lineHeight: 1.6 }}>
+              Un sujet, une réponse claire. De la gestion des avis aux plaques NFC, en passant par le comparatif honnête avec le faire-soi-même. En cours de tournage.
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px" }}>
+            {VIDEO_TOPICS.map(v => (
+              <div key={v.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px", boxShadow: SHADOW_SM, position: "relative" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "22px" }}>{v.icon}</span>
+                  <span style={{ fontSize: "10px", fontWeight: 700, color: G.blue, background: "#E8F0FE", padding: "2px 8px", borderRadius: "10px" }}>{v.duration}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "#202124", lineHeight: 1.45 }}>{v.title}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── TESTIMONIALS ── */}
       <section style={{ padding: "80px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
@@ -746,22 +941,53 @@ export default function HomeClient() {
                 <div style={{ fontSize: "10px", fontWeight: 600, color: s.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>{s.tag}</div>
                 <h3 style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>{s.title}</h3>
                 <p style={{ margin: "0 0 14px", fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>{s.desc}</p>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "18px", fontWeight: 700, color: s.color }}>{s.price}</span>
-                  <a href="mailto:contact@caela.fr" style={{ padding: "6px 12px", background: s.bg, borderRadius: "6px", color: s.color, textDecoration: "none", fontSize: "12px", fontWeight: 600 }}>Contacter →</a>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "12px" }}>
+                  <span style={{ fontSize: "20px", fontWeight: 700, color: s.color }}>{s.price}</span>
+                  {s.oldPrice && <span style={{ fontSize: "13px", color: "#80868B", textDecoration: "line-through" }}>{s.oldPrice}</span>}
                 </div>
+                <a href="mailto:contact@caela.fr" style={{ display: "block", textAlign: "center", padding: "10px", background: s.highlight ? s.color : s.bg, borderRadius: "6px", color: s.highlight ? "#fff" : s.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>Contacter →</a>
               </div>
             ))}
           </div>
           <div style={{ marginTop: "18px", background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}><GDots size={8} /><span style={{ fontSize: "12px", fontWeight: 600, color: "#5F6368" }}>Offre découverte</span></div>
-              <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>Pack complet Google Business</h3>
-              <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Caela Réputation + Optimisation fiche + Suivi mensuel. Un seul interlocuteur. Résultats garantis 30 jours.</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}><GDots size={8} /><span style={{ fontSize: "12px", fontWeight: 600, color: "#5F6368" }}>Client de l&apos;un de nos 3 packs GMB</span></div>
+              <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>-20% sur vos plaques NFC</h3>
+              <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Tout client Pack Lancement, Pack Croissance ou Pack Avis bénéficie de -20% sur un pack de plaques NFC (voir plus bas). Code envoyé par email à la souscription.</p>
             </div>
             <a href="mailto:contact@caela.fr" style={{ padding: "11px 24px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40`, whiteSpace: "nowrap" }}>
               Demander un audit gratuit
             </a>
+          </div>
+
+          {/* Option complémentaire, discrète : proposition à valider avant de la
+              pousser plus fort (visuel dédié, prix figé, checkout). */}
+          <div style={{ marginTop: "12px", background: "#fff", border: "1px dashed #DADCE0", borderRadius: "12px", padding: "20px 24px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ fontSize: "22px" }}>🖥️</span>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124" }}>Option : landing page pour votre établissement</div>
+                  <div style={{ fontSize: "12px", color: "#5F6368" }}>Une page qui centralise vos avis, vos infos pratiques et le lien vers votre fiche Google — utile pour vos réseaux et votre bio Instagram.</div>
+                </div>
+              </div>
+              <a href="mailto:contact@caela.fr?subject=Option%20landing%20page" style={{ padding: "9px 18px", border: `1px solid ${G.blue}`, color: G.blue, textDecoration: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, whiteSpace: "nowrap" }}>
+                En discuter →
+              </a>
+            </div>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>Ce qu&apos;on a déjà livré</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+              {LANDING_EXAMPLES.map(ex => (
+                <a key={ex.name} href={ex.url} target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "12px 14px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "10px", textDecoration: "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "3px" }}>
+                    <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: ex.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#202124" }}>{ex.name}</span>
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#5F6368", marginBottom: "2px" }}>{ex.desc}</div>
+                  <div style={{ fontSize: "11px", color: ex.color, fontWeight: 500 }}>Voir le site →</div>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -779,6 +1005,9 @@ export default function HomeClient() {
             <p style={{ margin: "0 auto", maxWidth: "500px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
               Posez la plaque sur votre comptoir. Votre client tape avec son téléphone. Il est directement sur votre fiche Google. Il laisse un avis en 30 secondes.
             </p>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "28px" }}>
+              <NFCPlateVisual size={240} />
+            </div>
           </div>
 
           {/* How it works */}
@@ -828,7 +1057,7 @@ export default function HomeClient() {
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>La plaque + le moteur Caela Réputation</div>
                 {[
                   "Collecte les avis ET les exploite : l'IA répond en 30 secondes.",
-                  "Roue de la fortune : le client laisse son email/SMS avant de jouer. Vous gardez le contact.",
+                  "Roue de la fortune (propulsée par Gagnify) : le client laisse son email/SMS avant de jouer. Vous gardez le contact.",
                   "Les mécontents sont invités à vous écrire en privé d'abord.",
                   "Chaque avis négatif : 3 réponses prêtes, 1 clic pour publier.",
                   "Dashboard : note, volume, tendance, rapport hebdo par email.",
@@ -850,7 +1079,18 @@ export default function HomeClient() {
                 {p.highlight && <div style={{ position: "absolute", top: "13px", right: "13px", padding: "2px 10px", background: p.color + "15", borderRadius: "20px", fontSize: "10px", fontWeight: 700, color: p.color }}>Le plus populaire</div>}
                 <div style={{ fontSize: "11px", fontWeight: 600, color: p.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>{p.qty}</div>
                 <h3 style={{ margin: "0 0 6px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>{p.name}</h3>
-                <div style={{ fontSize: "26px", fontWeight: 800, color: p.color, marginBottom: "16px" }}>{p.price}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+                  <span style={{ fontSize: "26px", fontWeight: 800, color: p.color }}>{p.price}</span>
+                  {p.oldPrice && <span style={{ fontSize: "14px", color: "#80868B", textDecoration: "line-through" }}>{p.oldPrice}</span>}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+                  <span style={{ fontSize: "12px", color: "#5F6368" }}>{p.unit}</span>
+                  {p.oldPrice && (
+                    <span style={{ padding: "1px 7px", background: p.color + "15", borderRadius: "10px", fontSize: "10px", fontWeight: 700, color: p.color }}>
+                      Économisez {parseInt(p.oldPrice) - parseInt(p.price)}€
+                    </span>
+                  )}
+                </div>
                 {p.features.map(f => (
                   <div key={f} style={{ display: "flex", gap: "8px", marginBottom: "7px" }}>
                     <span style={{ color: p.color, fontWeight: 700, fontSize: "12px" }}>✓</span>
@@ -864,10 +1104,12 @@ export default function HomeClient() {
             ))}
           </div>
 
-          {/* Bande de réassurance — aligne nos garanties sur les concurrents hardware */}
-          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+          {/* Bande de réassurance — aligne nos garanties sur les concurrents hardware.
+              Une seule ligne qui défile horizontalement : 5 items en grid retombaient
+              sur 2 rangées inégales (4 + 1), moins lisible qu'un scroll. */}
+          <div style={{ marginTop: "16px", display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "6px", scrollbarWidth: "thin" }}>
             {NFC_REASSURANCE.map(r => (
-              <div key={r.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 18px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <div key={r.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 18px", display: "flex", gap: "12px", alignItems: "flex-start", flexShrink: 0, width: "260px" }}>
                 <span style={{ fontSize: "20px", flexShrink: 0 }}>{r.icon}</span>
                 <div>
                   <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124", marginBottom: "3px" }}>{r.title}</div>
@@ -881,6 +1123,7 @@ export default function HomeClient() {
             <span style={{ fontSize: "20px" }}>💡</span>
             <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>
               <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + Caela Réputation (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.
+              {" "}<strong style={{ color: G.green }}>-20% sur ce pack</strong> si vous êtes déjà client Pack Lancement ou Pack Croissance (voir ci-dessus).
             </p>
           </div>
         </div>
@@ -896,7 +1139,11 @@ export default function HomeClient() {
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               Tarifs simples. Dès 29€/mois.
             </h2>
-            <p style={{ margin: "0 0 22px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
+            <p style={{ margin: "0 0 14px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 16px", background: "#E6F4EA", borderRadius: "20px", marginBottom: "18px" }}>
+              <span style={{ fontSize: "16px" }}>✨</span>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E7A3D" }}>14 jours d&apos;essai gratuit — votre première réponse IA à un avis négatif, offerte dès le premier jour</span>
+            </div>
             <div style={{ display: "inline-flex", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", padding: "3px", gap: "2px", boxShadow: SHADOW_SM }}>
               {(["monthly", "annual"] as const).map(b => (
                 <button key={b} onClick={() => setBilling(b)} style={{ padding: "8px 18px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 500, background: billing === b ? G.blue : "transparent", color: billing === b ? "#fff" : "#5F6368", fontFamily: "inherit" }}>
@@ -984,8 +1231,17 @@ export default function HomeClient() {
             </span>
           </div>
 
+          {/* Parrainage */}
+          <div style={{ marginTop: "20px", padding: "14px 20px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+            <span style={{ fontSize: "16px" }}>🎁</span>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 600, color: "#7A5C00", marginBottom: "2px" }}>Parrainez, économisez à deux</div>
+              <div style={{ fontSize: "12px", color: "#5F6368" }}>Chaque client a son code de parrainage personnel, accessible depuis son dashboard. <strong>1 mois offert</strong> pour vous, <strong>-15% sur son premier mois</strong> pour la personne que vous parrainez. <a href="/parrainage" style={{ color: "#7A5C00", fontWeight: 600, textDecoration: "underline" }}>En savoir plus →</a></div>
+            </div>
+          </div>
+
           {/* Safety note */}
-          <div style={{ marginTop: "20px", padding: "14px 20px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+          <div style={{ marginTop: "12px", padding: "14px 20px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
             <span style={{ fontSize: "16px" }}>🔒</span>
             <div>
               <div style={{ fontSize: "13px", fontWeight: 600, color: G.blue, marginBottom: "2px" }}>Zéro risque pour votre fiche Google</div>
@@ -1057,18 +1313,79 @@ export default function HomeClient() {
       </section>
 
       {/* ── ÉCOSYSTÈME CAELA ── */}
-      <section style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "48px 40px" }}>
+      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "48px 40px" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto", textAlign: "center" }}>
           <h2 style={{ margin: "0 0 10px", fontSize: "16px", fontWeight: 700, color: "#202124" }}>
             Fait partie de l&apos;écosystème Caela
           </h2>
           <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>
-            Un compte, tous vos outils : Réservation (Caelenda) · Fidélité (Rewards) · Jeux (Gagnify) · Campagnes (Pulse) · QR dynamique (CaelaQR).
+            Un compte, tous vos outils : Réservation (Caelenda) · Fidélité (Rewards) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (Pulse) · QR dynamique (CaelaQR).
             <br />
             Connexion unique entre tous les produits.
           </p>
         </div>
       </section>
+
+      {/* ── BANNIÈRE ÉCOSYSTÈME (Gagnify / Rewards) ──
+          Corrigé le 08/08 : la version carte (2 paragraphes + 2 boutons)
+          recouvrait le tableau comparatif sur mobile — chevauchement de
+          contenu, contraire à la règle "zéro superposition". Sur mobile,
+          c'est maintenant une barre fine sur une ligne, qui laisse une
+          réserve à droite pour ne jamais chevaucher la bulle ChatBot
+          (bas-droite, ~56px). Sur desktop la carte reste, l'espace ne
+          manque pas et rien ne se superpose. */}
+      {showEcoBanner && (
+        isMobile ? (
+          <div className="rp-banner-enter" style={{
+            position: "fixed", bottom: "10px", left: "10px", right: "78px",
+            zIndex: 90, background: "#202124", borderRadius: "14px", padding: "10px 12px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.35)", display: "flex", gap: "8px", alignItems: "center",
+          }}>
+            <span className="rp-bounce-icon" style={{ fontSize: "18px", flexShrink: 0 }}>🎡</span>
+            <p style={{ margin: 0, flex: 1, fontSize: "11px", color: "#fff", lineHeight: 1.35 }}>
+              Gagnify + Rewards inclus dans votre compte Caela
+            </p>
+            <a href="#ecosysteme" onClick={() => setShowEcoBanner(false)} style={{ padding: "6px 10px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "16px", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
+                Voir →
+            </a>
+            <button
+              onClick={dismissEcoBanner}
+              aria-label="Fermer"
+              style={{ flexShrink: 0, width: "20px", height: "20px", borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", color: "#BDC1C6", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+            >×</button>
+          </div>
+        ) : (
+          <div className="rp-banner-enter" style={{
+            position: "fixed", bottom: "24px", left: "24px",
+            zIndex: 90, maxWidth: "320px",
+            background: "#202124", borderRadius: "16px", padding: "16px 18px",
+            boxShadow: "0 12px 32px rgba(0,0,0,0.35)", display: "flex", gap: "12px", alignItems: "flex-start",
+          }}>
+            <span className="rp-bounce-icon" style={{ fontSize: "26px", flexShrink: 0 }}>🎡</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: "0 0 6px", fontSize: "13px", fontWeight: 700, color: "#fff", lineHeight: 1.4 }}>
+                Le saviez-vous ? Votre compte Caela débloque une roue de la fortune (Gagnify) et un programme de fidélité (Rewards).
+              </p>
+              <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#BDC1C6", lineHeight: 1.5 }}>
+                De quoi transformer chaque avis collecté en client qui revient.
+              </p>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <a href="#ecosysteme" onClick={() => setShowEcoBanner(false)} style={{ padding: "7px 14px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "20px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap" }}>
+                  Découvrir →
+                </a>
+                <button onClick={dismissEcoBanner} style={{ background: "none", border: "none", color: "#80868B", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", padding: "6px" }}>
+                  Plus tard
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={dismissEcoBanner}
+              aria-label="Fermer"
+              style={{ position: "absolute", top: "8px", right: "8px", width: "22px", height: "22px", borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", color: "#BDC1C6", fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+            >×</button>
+          </div>
+        )
+      )}
 
       <ChatBot />
 
@@ -1088,7 +1405,12 @@ export default function HomeClient() {
                 { label: "Cookies", href: "/politique-de-cookies" },
                 { label: "Support", href: "mailto:contact@caela.fr" },
               ].map(link => (
-                <a key={link.label} href={link.href} style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>{link.label}</a>
+                <a
+                  key={link.label} href={link.href}
+                  style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none", transition: "color 0.15s ease" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = G.blue; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#5F6368"; }}
+                >{link.label}</a>
               ))}
             </div>
           </div>

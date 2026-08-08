@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Trop de tentatives. Réessayez dans 15 minutes." }, { status: 429 });
   }
 
-  let body: { email?: string; password?: string; name?: string; confirmSeparate?: boolean };
+  let body: { email?: string; password?: string; name?: string; confirmSeparate?: boolean; referralCode?: string };
   try {
     body = await request.json();
   } catch {
@@ -56,14 +56,36 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Code de parrainage saisi à l'inscription (optionnel). Résolu AVANT la
+  // création du compte : un code invalide bloque l'inscription avec un
+  // message clair plutôt que d'être ignoré en silence (le prospect croirait
+  // avoir bénéficié d'une réduction qui n'existe pas).
+  const referralCodeInput = body.referralCode ? String(body.referralCode).trim() : "";
+  let referrerEmail: string | null = null;
+  if (referralCodeInput) {
+    const { resolveReferrer } = await import("@/lib/referral");
+    referrerEmail = await resolveReferrer(referralCodeInput, email);
+    if (!referrerEmail) {
+      return NextResponse.json({ error: "Code de parrainage invalide." }, { status: 400 });
+    }
+  }
+
   const bcrypt = await import("bcryptjs");
   const passwordHash = await bcrypt.hash(password, 12);
 
+  let newUserId: number;
   try {
-    await db.insert(users).values({ email, passwordHash, name, role: "client" });
+    const [row] = await db.insert(users).values({ email, passwordHash, name, role: "client" }).returning({ id: users.id });
+    newUserId = row.id;
   } catch {
     // Course entre deux inscriptions simultanées (contrainte unique).
     return NextResponse.json({ error: "Un compte existe déjà avec cet email." }, { status: 409 });
+  }
+
+  const { ensureReferralCode, recordReferral } = await import("@/lib/referral");
+  await ensureReferralCode(newUserId, null);
+  if (referrerEmail) {
+    await recordReferral(referrerEmail, email, referralCodeInput.toUpperCase());
   }
 
   // Fédération au cerveau Caela : le compte apparaît dans le Hub dès sa

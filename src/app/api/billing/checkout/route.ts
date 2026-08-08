@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe, priceIdFor } from "@/lib/stripe";
+import { getStripe, priceIdFor, ensureReferralCoupon } from "@/lib/stripe";
 import { planById, billing, trialDisclosure } from "@/config/legal.config";
 import { db } from "@/lib/db";
 import { subscriptions } from "@/db/schema";
+import { pendingReferralDiscount } from "@/lib/referral";
 
 /**
  * Crée une session Stripe Checkout en mode abonnement avec :
@@ -29,10 +30,24 @@ export async function POST(request: NextRequest) {
     const stripe = getStripe();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
 
+    // Filleul parrainé (voir src/lib/referral.ts) : -15% sur le premier mois,
+    // via un coupon Stripe "once" (s'applique à la première facture réelle,
+    // donc après l'essai). Best-effort : une erreur Stripe sur le coupon ne
+    // doit jamais empêcher quelqu'un de payer.
+    let discounts: { coupon: string }[] | undefined;
+    try {
+      if (await pendingReferralDiscount(email)) {
+        discounts = [{ coupon: await ensureReferralCoupon(stripe) }];
+      }
+    } catch (err) {
+      console.error("[billing/checkout] coupon parrainage non appliqué", err);
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer_email: email,
       line_items: [{ price: priceIdFor(plan.priceEnv), quantity: 1 }],
+      ...(discounts ? { discounts } : {}),
 
       // CB obligatoire même pendant l'essai. Sans ça, Stripe peut sauter la
       // collecte de carte sur un trial -> on perdrait le prélèvement auto.

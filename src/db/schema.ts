@@ -43,6 +43,53 @@ export const businesses = pgTable("businesses", {
   // /api/reviews/sync). Affiché tel quel dans la NavBar — jamais l'heure de
   // chargement de la page, qui ne prouve aucune synchro réelle.
   lastSyncedAt: timestamp("last_synced_at"),
+  // Combien de posts Google Business Profile on vise par mois pour ce
+  // commerce (défaut 4, voir cron content-reminder qui compare au réel).
+  postsTargetPerMonth: integer("posts_target_per_month").default(4).notNull(),
+  // Jeton du lien public "envoyez-nous vos photos/vidéos" (page /media/[token]).
+  // Distinct de reviewLink : celui-là sert à collecter du CONTENU, pas des avis.
+  mediaUploadToken: text("media_upload_token"),
+  // Empêche le cron de relancer le client plusieurs fois dans le même mois.
+  lastContentReminderAt: timestamp("last_content_reminder_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Une question/réponse type que l'équipe prépare pour la section Q&A de la
+// fiche Google du commerce (posée manuellement sur Google, l'API Q&A GMB est
+// trop instable pour être automatisée fiablement — voir doc GMB_QNA.md).
+export type QnaItem = {
+  question: string;
+  reponse: string;
+  postedOnGoogle: boolean; // coché une fois vraiment posée sur la fiche
+};
+
+export const qnaStrategies = pgTable("qna_strategies", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  items: json("items").$type<QnaItem[]>().default([]).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  mediaUrl: text("media_url"),
+  mediaType: text("media_type", { enum: ["image", "video"] }),
+  // "client" = déposé via le lien public d'upload, brouillon en attente de
+  // relecture avant publication. "equipe" = créé/publié directement.
+  source: text("source", { enum: ["client", "equipe"] }).default("equipe").notNull(),
+  status: text("status", { enum: ["brouillon", "pret", "publie", "echec"] }).default("brouillon").notNull(),
+  scheduledAt: timestamp("scheduled_at"),
+  publishedAt: timestamp("published_at"),
+  // Rendu par l'API Google Business Profile (localPosts) à la publication —
+  // la preuve qu'un post existe vraiment côté Google, pas juste en base.
+  googlePostId: text("google_post_id"),
+  errorMessage: text("error_message"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -137,11 +184,31 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   name: text("name"),
   role: text("role", { enum: ["admin", "client"] }).default("client").notNull(),
+  // Code de parrainage personnel (ex: "CAELA-7K2F9Q"), généré à l'inscription.
+  // Voir drizzle/manual/2026-08-04_add_referrals.sql.
+  referralCode: text("referral_code"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+
+// --- Parrainage (2026-08-04) ---
+// Une ligne par filleul (referred_email unique : un compte n'a qu'un seul
+// parrain). Le webhook Stripe pose referredFirstPaymentAt, le cron
+// referral-reward pose referrerRewardedAt 21 jours plus tard.
+export const referrals = pgTable("referrals", {
+  id: serial("id").primaryKey(),
+  referrerEmail: text("referrer_email").notNull(),
+  referredEmail: text("referred_email").notNull().unique(),
+  code: text("code").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  referredFirstPaymentAt: timestamp("referred_first_payment_at"),
+  referrerRewardedAt: timestamp("referrer_rewarded_at"),
+});
+
+export type Referral = typeof referrals.$inferSelect;
+export type NewReferral = typeof referrals.$inferInsert;
 
 // --- Boucle de collecte d'avis (SMS / WhatsApp) ---
 // Réutilise les numéros captés (Roue, saisie, import) pour relancer le client
@@ -242,6 +309,9 @@ export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
+export type QnaStrategy = typeof qnaStrategies.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
 export type PendingResponse = typeof pendingResponses.$inferSelect;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -25,6 +25,15 @@ export default function SignupClient() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [existingModules, setExistingModules] = useState<string[] | null>(null);
+  const [referralCode, setReferralCode] = useState("");
+
+  // Pré-remplit depuis un lien de parrainage partagé (?ref=CAELA-XXXXXX).
+  // Lu côté client uniquement (comme safeNext() sur la page d'accueil) pour
+  // ne pas forcer cette page en rendu dynamique côté serveur.
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) setReferralCode(ref.toUpperCase());
+  }, []);
 
   async function handleSubmit(e: React.FormEvent, confirmSeparate = false) {
     e.preventDefault();
@@ -34,7 +43,7 @@ export default function SignupClient() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, confirmSeparate }),
+        body: JSON.stringify({ name, email, password, confirmSeparate, referralCode: referralCode || undefined }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -129,6 +138,20 @@ export default function SignupClient() {
                 />
               </div>
             ))}
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#202124", marginBottom: 5 }}>
+                Code de parrainage <span style={{ color: "#80868B", fontWeight: 400 }}>(facultatif, -15% sur votre 1er mois)</span>
+              </label>
+              <input
+                type="text" value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="CAELA-XXXXXX"
+                style={{ width: "100%", padding: "11px 14px", border: "1px solid #DADCE0", borderRadius: 8, fontSize: 14, color: "#202124", outline: "none", boxSizing: "border-box", fontFamily: "inherit", textTransform: "uppercase" }}
+                onFocus={(e) => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
+                onBlur={(e) => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
+              />
+            </div>
 
             {error && (
               <div style={{ padding: "10px 14px", background: "#FCE8E6", borderRadius: 8, color: G.red, fontSize: 13, marginBottom: 14 }}>⚠ {error}</div>

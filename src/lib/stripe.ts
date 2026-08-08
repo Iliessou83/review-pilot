@@ -27,3 +27,22 @@ export function priceIdFor(priceEnv: string): string {
   if (!id) throw new Error(`Price ID manquant: env ${priceEnv} non défini`);
   return id;
 }
+
+// -15% sur le premier mois d'un filleul (voir src/lib/referral.ts). Un seul
+// coupon partagé par tout l'écosystème de parrainage, id fixe pour être
+// idempotent (create-or-fetch, jamais recréé en double).
+const REFERRAL_COUPON_ID = "referral-15-once";
+
+export async function ensureReferralCoupon(stripe: Stripe): Promise<string> {
+  try {
+    await stripe.coupons.retrieve(REFERRAL_COUPON_ID);
+  } catch {
+    await stripe.coupons.create({
+      id: REFERRAL_COUPON_ID,
+      percent_off: 15,
+      duration: "once",
+      name: "Parrainage -15% premier mois",
+    });
+  }
+  return REFERRAL_COUPON_ID;
+}

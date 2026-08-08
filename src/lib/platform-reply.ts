@@ -43,6 +43,40 @@ export async function postTrustpilotReply(
   if (!response.ok) throw new Error(`Trustpilot reply failed: ${response.status}`);
 }
 
+/**
+ * Publication réelle d'un post GMB (Local Posts API v4, même famille que les
+ * avis). `locationPath` = businesses.platform_id, déjà au format
+ * "accounts/X/locations/Y" (voir google-link.ts). Rend l'ID du post créé —
+ * c'est la preuve qu'il existe vraiment sur la fiche, pas juste en base.
+ */
+export async function postGoogleLocalPost(
+  locationPath: string,
+  content: string,
+  token: string,
+  media?: { url: string; type: "image" | "video" }
+): Promise<string> {
+  const body: Record<string, unknown> = {
+    languageCode: "fr-FR",
+    summary: content,
+    topicType: "STANDARD",
+  };
+  if (media) {
+    body.media = [{ mediaFormat: media.type === "video" ? "VIDEO" : "PHOTO", sourceUrl: media.url }];
+  }
+  const response = await fetch(`https://mybusiness.googleapis.com/v4/${locationPath}/localPosts`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Google local post failed: ${response.status} ${detail.slice(0, 200)}`);
+  }
+  const data = (await response.json()) as { name?: string };
+  if (!data.name) throw new Error("Google local post: réponse sans identifiant");
+  return data.name; // "accounts/X/locations/Y/localPosts/Z"
+}
+
 /** Publie sur la bonne plateforme selon `review.platform`. Lève en cas d'échec. */
 export async function publishReply(
   review: Pick<Review, "platform" | "platformReviewId">,

@@ -11,6 +11,7 @@ html,
 body {
   max-width: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 img,
@@ -35,4 +36,23 @@ canvas {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Bannière écosystème (Rewards/Gagnify) : sautillement discret sur l'icône,
+   pas sur toute la bannière (un bloc entier qui bondit en continu fatigue
+   l'œil plus qu'il n'attire l'attention). */
+@keyframes rp-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.rp-bounce-icon {
+  display: inline-block;
+  animation: rp-bounce 1.6s ease-in-out infinite;
+}
+@keyframes rp-slide-up {
+  from { transform: translateY(120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.rp-banner-enter {
+  animation: rp-slide-up 0.4s ease-out;
 }

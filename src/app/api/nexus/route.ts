@@ -52,6 +52,23 @@ export async function GET(req: NextRequest) {
         (select count(*)::int from wheel_spins where created_at > now() - interval '30 days') as tirages_30j
     `);
 
+    // Par fiche : combien d'avis n'ont pas encore de réponse. Nexus veut le
+    // repérer établissement par établissement, pas juste le total global.
+    const parFicheBrut = await db.execute(sql`
+      select b.id, b.name, count(r.id)::int as avis_en_attente
+      from businesses b
+      left join reviews r on r.business_id = b.id and r.responded = false
+      group by b.id, b.name
+      order by avis_en_attente desc
+    `);
+    const parFicheEnveloppe = parFicheBrut as unknown as { rows?: Record<string, unknown>[] } | Record<string, unknown>[];
+    const parFicheLignes = Array.isArray(parFicheEnveloppe) ? parFicheEnveloppe : (parFicheEnveloppe?.rows ?? []);
+    const parFiche = parFicheLignes.map((l) => ({
+      id: Number(l.id),
+      nom: String(l.name ?? ""),
+      avis_en_attente: Number(l.avis_en_attente ?? 0),
+    }));
+
     // Selon le pilote, `execute` rend un tableau ou un objet à `rows`.
     const enveloppe = brut as unknown as { rows?: Record<string, unknown>[] } | Record<string, unknown>[];
     const r = (Array.isArray(enveloppe) ? enveloppe[0] : enveloppe?.rows?.[0]) ?? {};
@@ -70,6 +87,7 @@ export async function GET(req: NextRequest) {
         { cle: "etablissements", libelle: "Établissements suivis", valeur: n("etablissements") },
         { cle: "tirages_30j", libelle: "Tirages de roue (30 j)", valeur: n("tirages_30j") },
       ],
+      par_fiche: parFiche,
     });
   } catch (e) {
     return NextResponse.json({ erreur: String(e).slice(0, 300) }, { status: 500 });

@@ -1,17 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { entity } from "@/config/legal.config";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 2px 8px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 
+type ReferralState =
+  | { status: "loading" }
+  | { status: "anon" }
+  | { status: "ineligible" }
+  | { status: "ready"; code: string; referredCount: number; rewardedCount: number };
+
 export default function ParrainageClient() {
-  const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
-  const [code] = useState("CAELA-" + Math.random().toString(36).substring(2, 8).toUpperCase());
+  // Le code vient TOUJOURS de /api/referral/me (persisté en base côté
+  // compte connecté) — jamais généré côté client. Trois états distincts
+  // (chargement / non connecté / prêt) pour ne jamais confondre "vide" et
+  // "pas encore chargé".
+  const [state, setState] = useState<ReferralState>({ status: "loading" });
+
+  useEffect(() => {
+    fetch("/api/referral/me")
+      .then(async (res) => {
+        if (res.status === 401) return setState({ status: "anon" });
+        const data = await res.json();
+        if (!data.eligible) return setState({ status: "ineligible" });
+        setState({ status: "ready", code: data.code, referredCount: data.referredCount, rewardedCount: data.rewardedCount });
+      })
+      .catch(() => setState({ status: "anon" }));
+  }, []);
+
+  const code = state.status === "ready" ? state.code : "";
 
   function copyCode() {
+    if (!code) return;
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -78,30 +101,54 @@ export default function ParrainageClient() {
 
         {/* Code card */}
         <div style={{ background: "#fff", border: "2px solid #DADCE0", borderRadius: "16px", padding: "28px", boxShadow: SHADOW, marginBottom: "32px" }}>
-          <div style={{ fontSize: "14px", fontWeight: 600, color: "#5F6368", marginBottom: "12px" }}>Votre code parrainage personnel :</div>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "16px" }}>
-            <div style={{ flex: 1, padding: "14px 20px", background: "#F8F9FA", borderRadius: "10px", border: "2px dashed #DADCE0", fontFamily: "monospace", fontSize: "22px", fontWeight: 800, color: "#202124", letterSpacing: "2px", textAlign: "center" }}>
-              {code}
-            </div>
-            <button onClick={copyCode} style={{
-              padding: "14px 20px", background: copied ? G.green : G.blue, color: "#fff", border: "none",
-              borderRadius: "10px", fontWeight: 700, fontSize: "14px", cursor: "pointer", fontFamily: "inherit",
-              flexShrink: 0, transition: "background 0.2s",
-            }}>
-              {copied ? "✓ Copié !" : "Copier"}
-            </button>
-          </div>
+          {state.status === "loading" && (
+            <div style={{ padding: "24px 0", textAlign: "center", fontSize: "14px", color: "#80868B" }}>Chargement de votre code…</div>
+          )}
 
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {[
-              { label: "📱 WhatsApp", href: `https://wa.me/?text=J'utilise Caela Réputation pour gérer mes avis Google automatiquement. Essaie avec mon code ${code} pour -15% : ${entity.siteUrl}` },
-              { label: "📧 Email", href: `mailto:?subject=Un outil pour tes avis Google&body=Utilise mon code ${code} pour -15% sur Caela Réputation.` },
-            ].map(s => (
-              <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{ padding: "8px 16px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", textDecoration: "none", fontSize: "13px", color: "#202124", fontWeight: 500 }}>
-                {s.label}
-              </a>
-            ))}
-          </div>
+          {state.status === "anon" && (
+            <div style={{ textAlign: "center", padding: "12px 0" }}>
+              <div style={{ fontSize: "14px", color: "#5F6368", marginBottom: "16px" }}>Connectez-vous pour récupérer votre code de parrainage personnel.</div>
+              <a href="/signup" style={{ display: "inline-block", padding: "12px 24px", background: G.blue, color: "#fff", borderRadius: "8px", textDecoration: "none", fontWeight: 600, fontSize: "14px", marginRight: "10px" }}>Créer un compte</a>
+              <a href="/#login" style={{ display: "inline-block", padding: "12px 24px", background: "#F8F9FA", color: "#202124", borderRadius: "8px", textDecoration: "none", fontWeight: 600, fontSize: "14px", border: "1px solid #DADCE0" }}>Se connecter</a>
+            </div>
+          )}
+
+          {state.status === "ineligible" && (
+            <div style={{ textAlign: "center", padding: "12px 0", fontSize: "14px", color: "#5F6368" }}>Le parrainage s&apos;applique aux comptes clients, pas aux comptes agence.</div>
+          )}
+
+          {state.status === "ready" && (
+            <>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#5F6368", marginBottom: "12px" }}>Votre code parrainage personnel :</div>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "16px" }}>
+                <div style={{ flex: 1, padding: "14px 20px", background: "#F8F9FA", borderRadius: "10px", border: "2px dashed #DADCE0", fontFamily: "monospace", fontSize: "22px", fontWeight: 800, color: "#202124", letterSpacing: "2px", textAlign: "center" }}>
+                  {code}
+                </div>
+                <button onClick={copyCode} style={{
+                  padding: "14px 20px", background: copied ? G.green : G.blue, color: "#fff", border: "none",
+                  borderRadius: "10px", fontWeight: 700, fontSize: "14px", cursor: "pointer", fontFamily: "inherit",
+                  flexShrink: 0, transition: "background 0.2s",
+                }}>
+                  {copied ? "✓ Copié !" : "Copier"}
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
+                {[
+                  { label: "📱 WhatsApp", href: `https://wa.me/?text=J'utilise Caela Réputation pour gérer mes avis Google automatiquement. Essaie avec mon code ${code} pour -15% : ${entity.siteUrl}` },
+                  { label: "📧 Email", href: `mailto:?subject=Un outil pour tes avis Google&body=Utilise mon code ${code} pour -15% sur Caela Réputation.` },
+                ].map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{ padding: "8px 16px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", textDecoration: "none", fontSize: "13px", color: "#202124", fontWeight: 500 }}>
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+
+              <div style={{ fontSize: "12px", color: "#80868B" }}>
+                {state.referredCount} filleul{state.referredCount !== 1 ? "s" : ""} inscrit{state.referredCount !== 1 ? "s" : ""} · {state.rewardedCount} mois offert{state.rewardedCount !== 1 ? "s" : ""} crédité{state.rewardedCount !== 1 ? "s" : ""}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Rules */}

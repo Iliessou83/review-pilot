@@ -37,8 +37,10 @@ const NAV_LINKS: Array<{
 
   { href: "/dashboard/analytics", label: "Analytics", short: "Stats", icon: "📈", exact: false, section: "Pilotage", color: "amber" },
   { href: "/dashboard/insights", label: "Insights IA", short: "Insights", icon: "🧠", exact: false, section: "Pilotage", color: "amber" },
+  { href: "/dashboard/content", label: "Contenu GMB", short: "Contenu", icon: "📸", exact: false, section: "Pilotage", color: "amber" },
 
   { href: "/dashboard/widget", label: "Widget", short: "Widget", icon: "🔗", exact: false, section: "Compte", color: "slate" },
+  { href: "/parrainage", label: "Parrainage", short: "Parrain.", icon: "🎁", exact: false, section: "Compte", color: "slate" },
   { href: "/dashboard/settings", label: "Paramètres", short: "Réglages", icon: "⚙️", exact: false, section: "Compte", color: "slate" },
 ];
 
