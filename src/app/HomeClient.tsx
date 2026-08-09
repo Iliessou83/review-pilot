@@ -29,6 +29,55 @@ function GL({ size = 22 }: { size?: number }) {
   );
 }
 
+// Anime le texte lettre par lettre en boucle (effet machine à écrire), pour
+// attirer l'œil sur le badge "objection" avant la section qui la démonte.
+function TypewriterText({ text }: { text: string }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let i = 0;
+    let deleting = false;
+    const id = setInterval(() => {
+      if (!deleting) {
+        i++;
+        setCount(i);
+        if (i >= text.length) {
+          deleting = true;
+          setTimeout(() => { deleting = true; }, 0);
+          clearInterval(id);
+          setTimeout(runDelete, 1800);
+        }
+      }
+    }, 55);
+    function runDelete() {
+      const del = setInterval(() => {
+        i--;
+        setCount(i);
+        if (i <= 0) {
+          clearInterval(del);
+          setTimeout(runType, 500);
+        }
+      }, 30);
+    }
+    function runType() {
+      const typ = setInterval(() => {
+        i++;
+        setCount(i);
+        if (i >= text.length) {
+          clearInterval(typ);
+          setTimeout(runDelete, 1800);
+        }
+      }, 55);
+    }
+    return () => clearInterval(id);
+  }, [text]);
+  return (
+    <span>
+      {text.slice(0, count)}
+      <span style={{ borderRight: "2px solid currentColor", marginLeft: "1px", opacity: 0.6 }}>&nbsp;</span>
+    </span>
+  );
+}
+
 function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
     <span>{[1,2,3,4,5].map(i => (
@@ -151,7 +200,7 @@ function ROICalculator() {
   const timeMin = reviews * 4;
   const timeH = (timeMin / 60).toFixed(1);
   const timeCost = Math.round(timeMin / 60 * 50);
-  const plan = reviews <= 30 ? { name: "Starter", price: 29 } : reviews <= 100 ? { name: "Solo", price: 69 } : reviews <= 300 ? { name: "Pro", price: 149 } : { name: "Studio", price: 299 };
+  const plan = reviews <= 30 ? { name: "Starter", price: 39 } : reviews <= 100 ? { name: "Solo", price: 69 } : reviews <= 300 ? { name: "Pro", price: 149 } : { name: "Studio", price: 299 };
   const savings = timeCost - plan.price;
   const roi = Math.round((savings / plan.price) * 100);
 
@@ -222,45 +271,64 @@ function ROICalculator() {
 
 function ReviewFlow() {
   const steps = [
-    { icon: "⭐", color: G.red, label: "Avis 2★ détecté", sub: "Sync automatique toutes les heures", timing: "0 sec" },
+    { icon: "⭐", color: G.red, label: "Avis 2⭐ détecté", sub: "Sync automatique toutes les heures", timing: "0 sec" },
     { icon: "🧠", color: G.blue, label: "IA génère 3 suggestions", sub: "Empathique, Direct, Solution, Détaillé, Pro", timing: "+8 sec" },
     { icon: "📧", color: G.yellow, label: "Email envoyé avec boutons", sub: "1 clic = réponse choisie, directement dans le mail", timing: "+10 sec" },
     { icon: "✅", color: G.green, label: "Publié sur Google", sub: "La réponse apparaît sous le nom du restaurant", timing: "+2 sec" },
   ];
+  // Révèle les 4 étapes une à une (au lieu de tout afficher d'un bloc) dès
+  // que la carte entre dans le viewport — un seul déclenchement, via un ref
+  // observé une fois (pas de reset au re-scroll, pour rester sobre).
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "32px", boxShadow: SHADOW_SM }}>
+    <div ref={ref} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "32px", boxShadow: SHADOW_SM }}>
       <div style={{ textAlign: "center", marginBottom: "28px" }}>
-        <h3 style={{ margin: "0 0 6px", fontSize: "18px", fontWeight: 700, color: "#202124" }}>
-          Un avis 2★ arrive. Voici ce qui se passe.
+        <h3 style={{ margin: "0 0 6px", fontSize: "19px", fontWeight: 700, color: "#202124" }}>
+          Un avis 2⭐ arrive. Voici ce qui se passe.
         </h3>
-        <p style={{ margin: 0, fontSize: "13px", color: "#5F6368" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>
           Votre rôle total : <strong>8 secondes.</strong> Taper sur un bouton dans votre email.
         </p>
       </div>
-      <div style={{ display: "flex", gap: "0", alignItems: "stretch" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "6px" }}>
         {steps.map((step, i) => (
-          <div key={step.label} style={{ flex: 1, position: "relative" }}>
+          <div key={step.label} style={{
+            position: "relative",
+            opacity: inView ? 1 : 0,
+            transform: inView ? "translateY(0)" : "translateY(16px)",
+            transition: `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`,
+          }}>
             {i < steps.length - 1 && (
-              <div style={{ position: "absolute", top: "28px", right: "-1px", zIndex: 1, width: "20px", height: "2px", background: "#DADCE0" }} />
+              <div style={{ position: "absolute", top: "30px", right: "-4px", zIndex: 1, width: "8px", height: "2px", background: "#DADCE0" }} />
             )}
-            <div style={{ padding: "16px 12px", textAlign: "center" }}>
+            <div style={{ padding: "16px 8px", textAlign: "center" }}>
               <div style={{
-                width: "48px", height: "48px", borderRadius: "50%",
+                width: "52px", height: "52px", borderRadius: "50%",
                 background: step.color + "15",
                 border: `2px solid ${step.color}30`,
-                margin: "0 auto 8px",
+                margin: "0 auto 10px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "20px",
+                fontSize: "22px",
               }}>{step.icon}</div>
-              <div style={{ fontSize: "10px", fontWeight: 700, color: step.color, marginBottom: "4px", letterSpacing: "0.3px" }}>{step.timing}</div>
-              <div style={{ fontSize: "12px", fontWeight: 600, color: "#202124", marginBottom: "3px" }}>{step.label}</div>
-              <div style={{ fontSize: "11px", color: "#5F6368", lineHeight: 1.4 }}>{step.sub}</div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: step.color, marginBottom: "5px", letterSpacing: "0.3px" }}>{step.timing}</div>
+              <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#202124", marginBottom: "4px" }}>{step.label}</div>
+              <div style={{ fontSize: "12px", color: "#5F6368", lineHeight: 1.45 }}>{step.sub}</div>
             </div>
           </div>
         ))}
       </div>
       <div style={{ marginTop: "16px", padding: "12px 16px", background: "#E8F0FE", borderRadius: "8px", textAlign: "center" }}>
-        <span style={{ fontSize: "13px", color: G.blue, fontWeight: 600 }}>
+        <span style={{ fontSize: "13.5px", color: G.blue, fontWeight: 600 }}>
           Pas besoin de se connecter au dashboard. Tout se passe dans votre email. Sur téléphone ou ordinateur.
         </span>
       </div>
@@ -271,8 +339,8 @@ function ReviewFlow() {
 const PLANS = [
   {
     name: "Starter",
-    price: "29",
-    annual: "23",
+    price: "39",
+    annual: "31",
     desc: "1 établissement",
     color: G.green,
     best: "Moins de 30 avis/mois — débutez sans risque",
@@ -296,7 +364,7 @@ const PLANS = [
     best: "Restaurant, commerce — le plus populaire",
     features: [
       "1 établissement connecté",
-      "Auto-réponse 4-5★ en 30 secondes",
+      "Auto-réponse 4-5⭐ en 30 secondes",
       "3 suggestions IA + email 1-clic",
       "Rapport hebdomadaire par email",
       "Rappels avis sans réponse",
@@ -326,12 +394,12 @@ const PLANS = [
 ];
 
 const DIY_ARGS = [
-  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h à rédiger des réponses. À 50€/h de valeur gérant, c'est 150€ gaspillés. Caela Réputation Solo = 69€." },
-  { color: G.blue, bg: "#E8F0FE", icon: "📍", stat: "+12% de vues Maps", title: "La vitesse impacte ton SEO Google", desc: "Google Maps favorise les fiches avec taux de réponse >90%. Répondre en 30 minutes = signal fort pour l'algorithme." },
-  { color: G.yellow, bg: "#FEF7E0", icon: "🧠", stat: "45% reconvertis", title: "Les avis négatifs mal gérés coûtent cher", desc: "Une réponse professionnelle à un avis 1★ reconvertit 45% des clients insatisfaits. Une réponse à chaud brise la réputation." },
-  { color: G.green, bg: "#E6F4EA", icon: "👀", stat: "89% lisent tes réponses", title: "Tes réponses convertissent avant l'appel", desc: "89% des consommateurs lisent les réponses du propriétaire avant de contacter. Une bonne réponse = client gagné." },
-  { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Pendant les rush, les vacances, les périodes chargées — les avis s'accumulent. L'IA ne rate jamais une seule entrée." },
-  { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. Caela Réputation gère 30 fiches comme une seule." },
+  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h à rédiger. À 50€/h, ça fait 150€ gaspillés. Solo = 69€." },
+  { color: G.blue, bg: "#E8F0FE", icon: "📍", stat: "+12% de vues Maps", title: "La vitesse impacte ton SEO Google", desc: "Google Maps favorise les fiches qui répondent vite. Un signal fort pour l'algorithme." },
+  { color: G.yellow, bg: "#FEF7E0", icon: "🧠", stat: "45% reconvertis", title: "Les avis négatifs mal gérés coûtent cher", desc: "Une réponse pro à un avis 1⭐ reconvertit 45% des clients. À chaud, tu brises ta réputation." },
+  { color: G.green, bg: "#E6F4EA", icon: "👀", stat: "89% lisent tes réponses", title: "Tes réponses convertissent avant l'appel", desc: "89% lisent tes réponses avant de contacter. Une bonne réponse = client gagné." },
+  { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Rush, vacances, périodes chargées : les avis s'accumulent. L'IA n'en rate jamais un." },
+  { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. On gère 30 fiches comme une." },
 ];
 
 const COMPETITORS = [
@@ -353,15 +421,20 @@ const VIDEO_TOPICS = [
   { icon: "⚖️", title: "Le faire soi-même vs Caela Réputation : le vrai calcul", duration: "2 min 30" },
   { icon: "📶", title: "Les plaques NFC : comment ça marche, concrètement", duration: "1 min 45" },
   { icon: "🏪", title: "Créer et optimiser sa fiche Google Business Profile", duration: "2 min 15" },
-  { icon: "🩹", title: "Un avis 1★ n'est pas une catastrophe : comment le désamorcer", duration: "2 min" },
+  { icon: "🩹", title: "Un avis 1⭐ n'est pas une catastrophe : comment le désamorcer", duration: "2 min" },
   { icon: "🎁", title: "Le parrainage Caela expliqué en une vidéo", duration: "1 min" },
   { icon: "🔒", title: "RGPD, sécurité, CGU Google : on répond à vos questions", duration: "2 min 30" },
 ];
 
-const TESTIMONIALS = [
-  { name: "Karim B.", role: "Gérant — Restaurant Le Bosphore, Lyon", rating: 5, text: "J'avais 47 avis sans aucune réponse. En 2 semaines Caela Réputation a tout rattrapé. Ma note est passée de 4.1 à 4.6 et je reçois plus d'appels depuis." },
-  { name: "Nathalie R.", role: "Propriétaire — Salon Nath'Beauté, Paris 15e", rating: 5, text: "Un client m'a mis 1 étoile injustement. Caela Réputation m'a proposé 3 réponses. J'ai cliqué sur la version empathique depuis mon téléphone. Le client a rappelé pour s'excuser." },
-  { name: "Sofiane M.", role: "Directeur — Groupe 4 snacks, Marseille", rating: 5, text: "4 établissements, plus de 200 avis par mois. Avant je passais mes dimanches à répondre. Maintenant c'est automatique. Je gagne 3h par semaine minimum." },
+// Refait le 08/08 : l'ancienne version présentait ces textes comme des
+// témoignages clients (nom, rôle, ville, 5 étoiles à propos de Caela
+// Réputation) — trompeur pour un produit en lancement, et hors-sujet par
+// rapport au titre de la section ("le type de réponses générées"). Remplacé
+// par de vrais couples avis-reçu → réponse-IA, sans identité inventée.
+const REPLY_EXAMPLES = [
+  { rating: 1, business: "Restaurant", incoming: "Service très lent, on a attendu 40 minutes pour être servis un samedi soir.", reply: "Merci pour ce retour, et désolé pour l'attente. Le samedi soir est notre créneau le plus chargé, ce n'est pas une excuse mais on travaille dessus. On aimerait vraiment vous accueillir à nouveau dans de meilleures conditions." },
+  { rating: 5, business: "Salon de coiffure", incoming: "Coupe parfaite, accueil chaleureux, je recommande à 100%.", reply: "Merci beaucoup pour ce retour, ça nous touche ! On a hâte de vous accueillir à nouveau pour votre prochaine coupe." },
+  { rating: 2, business: "Garage", incoming: "Réparation qui a pris deux fois plus de temps que prévu, sans être prévenu.", reply: "Vous avez raison, on aurait dû vous tenir informé du délai. C'est un manquement de notre part et on va corriger ça pour la suite. N'hésitez pas à nous recontacter directement si besoin." },
 ];
 
 // Fusion décidée le 2026-08-04 : les 4 prestations séparées (création,
@@ -375,18 +448,29 @@ const TESTIMONIALS = [
 // 3e palier allégé, avis seuls, pour ceux qui veulent juste ce filet de
 // sécurité sans l'abonnement complet. Pack Croissance passé à 149€/mois
 // (au lieu de 199) pour rester au-dessus du Pack Avis sans écraser sa valeur.
+// Pack Avis seul baissé à 49,90€/mois le 08/08 pour être une vraie porte
+// d'entrée basse (avant : 89€, trop proche du Pack Croissance à 149€).
+// Ajout de la suppression d'avis faux/frauduleux : incluse dans les 3 packs,
+// et proposée à l'unité (sans abonnement) pour un besoin ponctuel.
 const GMB_SERVICES = [
   { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€", oldPrice: "498€", desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.", highlight: false },
-  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "~350€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle aux avis complexes, stratégie de collecte, formation de votre équipe).", highlight: true },
-  { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "89€/mois", desc: "Vous ne voulez pas l'optimisation mensuelle des posts ? Prenez juste la gestion des avis : réponse manuelle aux avis complexes, stratégie de collecte, formation de votre équipe. Rien d'autre.", highlight: false },
+  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "~350€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte, signalement des faux avis).", highlight: true },
+  { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois", desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte, signalement des avis faux ou frauduleux auprès de Google. Rien d'autre.", highlight: false },
 ];
 
-// Paliers revus le 2026-08-04 : dégressivité affichée explicitement
-// (prix unitaire + économie vs. achat à l'unité), au lieu d'un simple prix.
+const FAKE_REVIEW_REMOVAL = {
+  title: "Un faux avis, un avis diffamatoire ou posté par un concurrent ?",
+  desc: "On monte le dossier et on le signale à Google pour vous : capture, argumentaire, suivi jusqu'à la décision. Inclus dans les 3 packs GMB ci-dessus, ou à l'unité si vous n'êtes pas encore client.",
+  price: "19,90€ / signalement",
+};
+
+// Paliers revus le 08/08 : 1, 3 et 5 plaques (au lieu de 1, 5, 25) — mieux
+// alignés sur le besoin réel d'un commerce local (une seule enseigne, rarement
+// plus de 5 points de contact physiques).
 const NFC_PACKS = [
   { name: "Plaque Solo", price: "19€", unit: "19€/plaque", qty: "1 plaque", color: G.blue, features: ["NFC + QR code de secours", "Design personnalisé (votre logo)", "Cible au choix : Google, Insta, TikTok…", "Résistant eau et chaleur"] },
-  { name: "Pack Établissement", price: "69€", oldPrice: "95€", unit: "13,80€/plaque", qty: "5 plaques", color: G.green, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"], highlight: true },
-  { name: "Pack Réseau", price: "199€", oldPrice: "475€", unit: "7,96€/plaque", qty: "25 plaques", color: G.red, features: ["25 plaques NFC + QR de secours", "Design multi-établissements", "Cible modifiable à distance (roue ou lien direct)", "Configuration centralisée"], },
+  { name: "Pack Trio", price: "47€", oldPrice: "57€", unit: "15,67€/plaque", qty: "3 plaques", color: G.green, features: ["3 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"], highlight: true },
+  { name: "Pack Établissement", price: "69€", oldPrice: "95€", unit: "13,80€/plaque", qty: "5 plaques", color: G.red, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"] },
 ];
 
 // Réalisations réelles de l'agence, vérifiées en ligne le 2026-08-07 (200 OK)
@@ -432,6 +516,8 @@ export default function HomeClient() {
   const [next, setNext] = useState("/dashboard");
   const [navVisible, setNavVisible] = useState(true);
   const [showEcoBanner, setShowEcoBanner] = useState(false);
+  const [loginWidgetOpen, setLoginWidgetOpen] = useState(false);
+  const [widgetMode, setWidgetMode] = useState<"signup" | "login">("signup");
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 860px)");
@@ -511,7 +597,7 @@ export default function HomeClient() {
   }
 
   return (
-    <div style={{ background: "#fff", color: "#202124", paddingBottom: showEcoBanner && isMobile ? "60px" : 0 }}>
+    <div style={{ background: "#fff", color: "#202124", paddingBottom: isMobile ? (showEcoBanner ? "120px" : "46px") : 0 }}>
 
       {/* ── TRUST STRIP ── */}
       <div style={{ background: G.blue, padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
@@ -555,7 +641,7 @@ export default function HomeClient() {
                 onMouseLeave={(e) => { e.currentTarget.style.color = "#5F6368"; e.currentTarget.style.background = "transparent"; }}
               >{label}</a>
             ))}
-            <a href="#login" style={{ padding: "9px 16px", fontSize: "14px", fontWeight: 600, color: G.blue, textDecoration: "none", borderRadius: "6px", marginLeft: "8px" }}>
+            <a href="#login" onClick={(e) => { e.preventDefault(); setWidgetMode("login"); setLoginWidgetOpen(true); }} style={{ padding: "9px 16px", fontSize: "14px", fontWeight: 600, color: G.blue, textDecoration: "none", borderRadius: "6px", marginLeft: "8px", cursor: "pointer" }}>
               Se connecter
             </a>
             <a href="/signup" style={{ padding: "9px 20px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
@@ -605,7 +691,7 @@ export default function HomeClient() {
         padding: "5px 5px 5px 14px", boxShadow: SHADOW_MD,
       }}>
         {!isMobile && (
-          <a href="#login" style={{ padding: "6px 10px", fontSize: "13px", fontWeight: 600, color: G.blue, textDecoration: "none" }}>
+          <a href="#login" onClick={(e) => { e.preventDefault(); setWidgetMode("login"); setLoginWidgetOpen(true); }} style={{ padding: "6px 10px", fontSize: "13px", fontWeight: 600, color: G.blue, textDecoration: "none", cursor: "pointer" }}>
             Se connecter
           </a>
         )}
@@ -630,7 +716,7 @@ export default function HomeClient() {
               textDecoration: "none",
             }}>{label}</a>
           ))}
-          <a href="#login" onClick={() => setMenuOpen(false)} style={{
+          <a href="#login" onClick={(e) => { e.preventDefault(); setMenuOpen(false); setWidgetMode("login"); setLoginWidgetOpen(true); }} style={{
             marginTop: "6px", padding: "13px 14px",
             border: "1px solid #DADCE0", borderRadius: "10px",
             fontSize: "15px", fontWeight: 600, color: G.blue,
@@ -641,19 +727,26 @@ export default function HomeClient() {
         </div>
       )}
 
-      {/* ── HERO ── */}
-      <section style={{ background: "linear-gradient(180deg, #F8F9FA 0%, #fff 100%)", padding: "80px 40px 96px", maxWidth: "1200px", margin: "0 auto", display: "flex", alignItems: "center", gap: "64px", flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: "300px" }}>
+      {/* ── HERO ──
+          Restructurée le 08/08 : le dégradé occupe maintenant TOUTE la largeur
+          de l'écran (fini les bandes blanches sur grand écran), et le contenu
+          vit dans un conteneur intérieur à largeur raisonnable — avant, la
+          colonne de texte avait flex:1 dans une section à 1680px, elle
+          s'étirait donc bien au-delà de son contenu réel et laissait un grand
+          vide avant l'illustration. */}
+      <section style={{ background: "linear-gradient(180deg, #F8F9FA 0%, #fff 100%)", padding: "80px 40px 96px" }}>
+      <div style={{ maxWidth: "1240px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "72px", flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 460px", maxWidth: "560px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 14px", background: "#E8F0FE", borderRadius: "24px", marginBottom: "28px" }}>
             <GDots size={7} />
             <span style={{ fontSize: "13px", fontWeight: 600, color: G.blue }}>Spécialiste Google Business Profile</span>
           </div>
-          <h1 style={{ margin: "0 0 20px", fontSize: "clamp(36px, 5vw, 58px)", fontWeight: 700, letterSpacing: "-1.5px", lineHeight: 1.1, color: "#202124" }}>
-            Vos avis <GL size={44} /><br />
-            répondus. <span style={{ color: G.green }}>Automatiquement.</span>
+          <h1 style={{ margin: "0 0 20px", fontSize: "clamp(30px, 4.3vw, 50px)", fontWeight: 700, letterSpacing: "-1.2px", lineHeight: 1.15, color: "#202124" }}>
+            Vos avis <GL size={38} /> répondus.<br />
+            <span style={{ color: G.green }}>Automatiquement.</span>
           </h1>
           <p style={{ margin: "0 0 36px", fontSize: "18px", lineHeight: 1.65, color: "#5F6368", maxWidth: "480px" }}>
-            Caela Réputation détecte chaque avis, répond aux 4-5★ en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
+            Caela Réputation détecte chaque avis, répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
             <a href="/signup" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
@@ -688,6 +781,7 @@ export default function HomeClient() {
           </div>
           <GMBCard />
         </div>
+      </div>
       </section>
 
       {/* ── METRICS ── */}
@@ -707,23 +801,23 @@ export default function HomeClient() {
         </div>
       </div>
 
-      {/* ── CALCULATOR ── */}
-      <section id="calculator" style={{ padding: "80px 40px", maxWidth: "860px", margin: "0 auto" }}>
-        <ROICalculator />
-      </section>
-
-      {/* ── FLOW 2★ ── */}
-      <section style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              Comment ça fonctionne
-            </h2>
-            <p style={{ margin: 0, fontSize: "15px", color: "#5F6368" }}>
-              Vous recevez la réponse dans votre email. 1 clic. Publié sur Google.
-            </p>
+      {/* ── CALCULATOR + FLOW 2★ (côte à côte pour raccourcir la page, fusion 2026-08-08) ── */}
+      <section id="calculator" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
+        <div style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", gap: "32px", alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 460px", minWidth: "320px" }}>
+            <ROICalculator />
           </div>
-          <ReviewFlow />
+          <div style={{ flex: "1 1 460px", minWidth: "320px" }}>
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <h2 style={{ margin: "0 0 10px", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 700, letterSpacing: "-0.7px", color: "#202124" }}>
+                Comment ça fonctionne
+              </h2>
+              <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>
+                Vous recevez la réponse dans votre email. 1 clic. Publié sur Google.
+              </p>
+            </div>
+            <ReviewFlow />
+          </div>
         </div>
       </section>
 
@@ -731,13 +825,13 @@ export default function HomeClient() {
       <section style={{ padding: "80px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
-            <div style={{ display: "inline-block", padding: "4px 14px", background: "#FCE8E6", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-              "Je peux le faire moi-même"
+            <div style={{ display: "inline-block", padding: "4px 14px", background: "#FCE8E6", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px", minHeight: "1.4em" }}>
+              <TypewriterText text={'"Je peux le faire moi-même"'} />
             </div>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               Techniquement oui. Intelligemment non.
             </h2>
-            <p style={{ margin: "0 auto", maxWidth: "480px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
+            <p style={{ margin: "0 auto", maxWidth: isMobile ? "300px" : "620px", fontSize: isMobile ? "13px" : "15px", color: "#5F6368", lineHeight: 1.6, whiteSpace: isMobile ? "normal" : "nowrap" }}>
               Répondre manuellement c&apos;est gratuit. Jusqu&apos;à ce que tu calcules ce que ça coûte vraiment.
             </p>
           </div>
@@ -750,7 +844,7 @@ export default function HomeClient() {
                   <span style={{ fontSize: "18px", fontWeight: 700, color: a.color }}>{a.stat}</span>
                 </div>
                 <h3 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 600, color: "#202124" }}>{a.title}</h3>
-                <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>{a.desc}</p>
+                <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</p>
               </div>
             ))}
           </div>
@@ -760,7 +854,7 @@ export default function HomeClient() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
               <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
-                {["Tu réalises à J+3 qu'un avis 1★ attend une réponse", "Tu écris la même réponse générique pour la 12ème fois", "Tu réponds énervé. Ça se voit et ça coûte des clients", "3h/semaine perdues sur les avis au lieu de gérer", "Ta note stagne. Les concurrents qui répondent vite te dépassent"].map(item => (
+                {["Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", "Tu écris la même réponse générique pour la 12ème fois", "Tu réponds énervé. Ça se voit et ça coûte des clients", "3h/semaine perdues sur les avis au lieu de gérer", "Ta note stagne. Les concurrents qui répondent vite te dépassent"].map(item => (
                   <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
                     <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
                     <span style={{ fontSize: "13px", color: "#5F6368" }}>{item}</span>
@@ -863,25 +957,25 @@ export default function HomeClient() {
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               8 vidéos de quelques minutes pour tout comprendre
             </h2>
-            <p style={{ margin: "0 auto", maxWidth: "540px", fontSize: "14px", color: "#5F6368", lineHeight: 1.6 }}>
+            <p style={{ margin: "0 auto", maxWidth: "560px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
               Un sujet, une réponse claire. De la gestion des avis aux plaques NFC, en passant par le comparatif honnête avec le faire-soi-même. En cours de tournage.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
             {VIDEO_TOPICS.map(v => (
-              <div key={v.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px", boxShadow: SHADOW_SM, position: "relative" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                  <span style={{ fontSize: "22px" }}>{v.icon}</span>
-                  <span style={{ fontSize: "10px", fontWeight: 700, color: G.blue, background: "#E8F0FE", padding: "2px 8px", borderRadius: "10px" }}>{v.duration}</span>
+              <div key={v.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "20px", boxShadow: SHADOW_SM, position: "relative" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <span style={{ fontSize: "26px" }}>{v.icon}</span>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: G.blue, background: "#E8F0FE", padding: "3px 9px", borderRadius: "10px" }}>{v.duration}</span>
                 </div>
-                <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "#202124", lineHeight: 1.45 }}>{v.title}</p>
+                <p style={{ margin: 0, fontSize: "14.5px", fontWeight: 600, color: "#202124", lineHeight: 1.5 }}>{v.title}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
+      {/* ── EXEMPLES DE RÉPONSES ── */}
       <section style={{ padding: "80px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
@@ -889,31 +983,31 @@ export default function HomeClient() {
               Exemples de réponses
             </div>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              Le type de réponses générées
+              L&apos;avis reçu, la réponse générée
             </h2>
-            <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>Scénarios illustratifs. Caela Réputation est en lancement.</p>
+            <p style={{ margin: 0, fontSize: "15px", color: "#5F6368" }}>Exemples illustratifs du ton de l&apos;IA. Caela Réputation est en lancement — aucun de ces avis n&apos;est réel.</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-            {TESTIMONIALS.map(t => (
-              <div key={t.name} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", padding: "26px", boxShadow: SHADOW_SM }}>
-                <div style={{ display: "flex", gap: "3px", marginBottom: "14px" }}>
-                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "14px", color: i <= t.rating ? G.yellow : "#DADCE0" }}>★</span>)}
+            {REPLY_EXAMPLES.map(ex => (
+              <div key={ex.incoming} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", padding: "22px", boxShadow: SHADOW_SM }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.5px" }}>{ex.business} · Avis Google</span>
+                  <div style={{ display: "flex", gap: "2px" }}>
+                    {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "13px", color: i <= ex.rating ? G.yellow : "#DADCE0" }}>★</span>)}
+                  </div>
                 </div>
-                <p style={{ margin: "0 0 18px", fontSize: "14px", color: "#202124", lineHeight: 1.7, fontStyle: "italic" }}>
-                  &ldquo;{t.text}&rdquo;
+                <p style={{ margin: "0 0 16px", fontSize: "14px", color: "#202124", lineHeight: 1.6, fontStyle: "italic" }}>
+                  &ldquo;{ex.incoming}&rdquo;
                 </p>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: G.blue + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: G.blue }}>
-                    {t.name[0]}
+                <div style={{ background: "#E8F4EA", borderLeft: `3px solid ${G.green}`, borderRadius: "0 8px 8px 0", padding: "12px 14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "5px" }}>
+                    <div style={{ width: "14px", height: "14px", background: G.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontSize: "8px", color: "#fff", fontWeight: 700 }}>✓</span>
+                    </div>
+                    <span style={{ fontSize: "10.5px", fontWeight: 700, color: G.green, textTransform: "uppercase", letterSpacing: "0.4px" }}>Réponse générée par l&apos;IA</span>
                   </div>
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124" }}>{t.name}</div>
-                    <div style={{ fontSize: "11px", color: "#5F6368" }}>{t.role}</div>
-                  </div>
-                  <div style={{ marginLeft: "auto" }}>
-                    <GDots size={6} />
-                  </div>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#1E6B38", lineHeight: 1.55 }}>{ex.reply}</p>
                 </div>
               </div>
             ))}
@@ -949,7 +1043,23 @@ export default function HomeClient() {
               </div>
             ))}
           </div>
-          <div style={{ marginTop: "18px", background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          {/* Retrait des faux avis, ajouté le 08/08 : demande fréquente côté clients,
+              inclus dans les packs mais aussi vendable à l'unité sans abonnement. */}
+          <div style={{ marginTop: "16px", background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <span style={{ fontSize: "24px" }}>🚫</span>
+              <div>
+                <h3 style={{ margin: "0 0 3px", fontSize: "15px", fontWeight: 700, color: "#202124" }}>{FAKE_REVIEW_REMOVAL.title}</h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "#5F6368", maxWidth: "520px" }}>{FAKE_REVIEW_REMOVAL.desc}</p>
+              </div>
+            </div>
+            <div style={{ textAlign: "center", flexShrink: 0 }}>
+              <div style={{ fontSize: "13px", fontWeight: 700, color: G.red, whiteSpace: "nowrap", marginBottom: "6px" }}>{FAKE_REVIEW_REMOVAL.price}</div>
+              <a href="mailto:contact@caela.fr?subject=Signalement%20avis" style={{ display: "block", padding: "8px 16px", background: G.red, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap" }}>Signaler un avis →</a>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "12px", background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}><GDots size={8} /><span style={{ fontSize: "12px", fontWeight: 600, color: "#5F6368" }}>Client de l&apos;un de nos 3 packs GMB</span></div>
               <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>-20% sur vos plaques NFC</h3>
@@ -1072,59 +1182,73 @@ export default function HomeClient() {
             </div>
           </div>
 
-          {/* NFC Packs */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
+        </div>
+
+        {/* NFC Packs — sort volontairement du conteneur maxWidth:1100 pour
+            défiler d'un bord d'écran à l'autre (demandé le 08/08), cartes
+            agrandies. Défilement manuel (pas de marquee auto : ce sont des
+            offres à lire et cliquer, pas de la réassurance passive). */}
+        <div style={{ overflowX: "auto", paddingBottom: "10px" }}>
+          <div style={{ display: "flex", gap: "20px", padding: "0 40px", width: "max-content", margin: "0 auto" }}>
             {NFC_PACKS.map(p => (
-              <div key={p.name} style={{ background: "#fff", border: p.highlight ? `2px solid ${p.color}` : "1px solid #DADCE0", borderRadius: "12px", padding: "24px", boxShadow: p.highlight ? `0 4px 16px ${p.color}20` : SHADOW_SM, position: "relative" }}>
-                {p.highlight && <div style={{ position: "absolute", top: "13px", right: "13px", padding: "2px 10px", background: p.color + "15", borderRadius: "20px", fontSize: "10px", fontWeight: 700, color: p.color }}>Le plus populaire</div>}
-                <div style={{ fontSize: "11px", fontWeight: 600, color: p.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>{p.qty}</div>
-                <h3 style={{ margin: "0 0 6px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>{p.name}</h3>
-                <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-                  <span style={{ fontSize: "26px", fontWeight: 800, color: p.color }}>{p.price}</span>
-                  {p.oldPrice && <span style={{ fontSize: "14px", color: "#80868B", textDecoration: "line-through" }}>{p.oldPrice}</span>}
+              <div key={p.name} style={{ width: "340px", flexShrink: 0, background: "#fff", border: p.highlight ? `2px solid ${p.color}` : "1px solid #DADCE0", borderRadius: "14px", padding: "30px", boxShadow: p.highlight ? `0 4px 16px ${p.color}20` : SHADOW_SM, position: "relative" }}>
+                {p.highlight && <div style={{ position: "absolute", top: "16px", right: "16px", padding: "3px 12px", background: p.color + "15", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: p.color }}>Le plus populaire</div>}
+                <div style={{ fontSize: "12px", fontWeight: 600, color: p.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "5px" }}>{p.qty}</div>
+                <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 700, color: "#202124" }}>{p.name}</h3>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "9px" }}>
+                  <span style={{ fontSize: "32px", fontWeight: 800, color: p.color }}>{p.price}</span>
+                  {p.oldPrice && <span style={{ fontSize: "16px", color: "#80868B", textDecoration: "line-through" }}>{p.oldPrice}</span>}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-                  <span style={{ fontSize: "12px", color: "#5F6368" }}>{p.unit}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
+                  <span style={{ fontSize: "13px", color: "#5F6368" }}>{p.unit}</span>
                   {p.oldPrice && (
-                    <span style={{ padding: "1px 7px", background: p.color + "15", borderRadius: "10px", fontSize: "10px", fontWeight: 700, color: p.color }}>
+                    <span style={{ padding: "2px 8px", background: p.color + "15", borderRadius: "10px", fontSize: "11px", fontWeight: 700, color: p.color }}>
                       Économisez {parseInt(p.oldPrice) - parseInt(p.price)}€
                     </span>
                   )}
                 </div>
                 {p.features.map(f => (
-                  <div key={f} style={{ display: "flex", gap: "8px", marginBottom: "7px" }}>
-                    <span style={{ color: p.color, fontWeight: 700, fontSize: "12px" }}>✓</span>
-                    <span style={{ fontSize: "13px", color: "#5F6368" }}>{f}</span>
+                  <div key={f} style={{ display: "flex", gap: "9px", marginBottom: "9px" }}>
+                    <span style={{ color: p.color, fontWeight: 700, fontSize: "13px" }}>✓</span>
+                    <span style={{ fontSize: "14px", color: "#5F6368" }}>{f}</span>
                   </div>
                 ))}
-                <a href="mailto:contact@caela.fr" style={{ display: "block", textAlign: "center", marginTop: "18px", padding: "10px", background: p.highlight ? p.color : p.color + "15", border: `1px solid ${p.color}30`, borderRadius: "6px", color: p.highlight ? "#fff" : p.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
+                <a href="mailto:contact@caela.fr" style={{ display: "block", textAlign: "center", marginTop: "20px", padding: "12px", background: p.highlight ? p.color : p.color + "15", border: `1px solid ${p.color}30`, borderRadius: "8px", color: p.highlight ? "#fff" : p.color, textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
                   Commander →
                 </a>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Bande de réassurance — aligne nos garanties sur les concurrents hardware.
-              Une seule ligne qui défile horizontalement : 5 items en grid retombaient
-              sur 2 rangées inégales (4 + 1), moins lisible qu'un scroll. */}
-          <div style={{ marginTop: "16px", display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "6px", scrollbarWidth: "thin" }}>
-            {NFC_REASSURANCE.map(r => (
-              <div key={r.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 18px", display: "flex", gap: "12px", alignItems: "flex-start", flexShrink: 0, width: "260px" }}>
-                <span style={{ fontSize: "20px", flexShrink: 0 }}>{r.icon}</span>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124", marginBottom: "3px" }}>{r.title}</div>
-                  <div style={{ fontSize: "12px", color: "#5F6368", lineHeight: 1.5 }}>{r.desc}</div>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          {/* Bande de réassurance — défile automatiquement (marquee), en boucle,
+              pause au survol/tap pour rester lisible. Contenu dupliqué x2 pour
+              une boucle sans à-coup (translateX(-50%) = exactement un set). */}
+          <div className="rp-marquee-mask" style={{ marginTop: "16px", overflow: "hidden", paddingBottom: "6px" }}>
+            <div className="rp-marquee-track" style={{ display: "flex", gap: "12px", width: "max-content" }}>
+              {[...NFC_REASSURANCE, ...NFC_REASSURANCE].map((r, i) => (
+                <div key={r.title + i} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 18px", display: "flex", gap: "12px", alignItems: "flex-start", flexShrink: 0, width: "260px" }}>
+                  <span style={{ fontSize: "20px", flexShrink: 0 }}>{r.icon}</span>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#202124", marginBottom: "3px" }}>{r.title}</div>
+                    <div style={{ fontSize: "12px", color: "#5F6368", lineHeight: 1.5 }}>{r.desc}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div style={{ marginTop: "12px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ marginTop: "12px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "10px", padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
             <span style={{ fontSize: "20px" }}>💡</span>
-            <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>
-              <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + Caela Réputation (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.
-              {" "}<strong style={{ color: G.green }}>-20% sur ce pack</strong> si vous êtes déjà client Pack Lancement ou Pack Croissance (voir ci-dessus).
-            </p>
+            <div>
+              <p style={{ margin: "0 0 6px", fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>
+                <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + Caela Réputation (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.
+              </p>
+              <p style={{ margin: 0, fontSize: "13px", color: G.green, fontWeight: 700, lineHeight: 1.5 }}>
+                -20% sur ce pack si vous êtes déjà client Pack Lancement ou Pack Croissance (voir ci-dessus).
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -1139,17 +1263,19 @@ export default function HomeClient() {
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               Tarifs simples. Dès 29€/mois.
             </h2>
-            <p style={{ margin: "0 0 14px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 16px", background: "#E6F4EA", borderRadius: "20px", marginBottom: "18px" }}>
-              <span style={{ fontSize: "16px" }}>✨</span>
-              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E7A3D" }}>14 jours d&apos;essai gratuit — votre première réponse IA à un avis négatif, offerte dès le premier jour</span>
-            </div>
-            <div style={{ display: "inline-flex", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", padding: "3px", gap: "2px", boxShadow: SHADOW_SM }}>
-              {(["monthly", "annual"] as const).map(b => (
-                <button key={b} onClick={() => setBilling(b)} style={{ padding: "8px 18px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 500, background: billing === b ? G.blue : "transparent", color: billing === b ? "#fff" : "#5F6368", fontFamily: "inherit" }}>
-                  {b === "monthly" ? "Mensuel" : <span>Annuel <span style={{ color: billing === b ? "#bef7d7" : G.green, fontSize: "11px", fontWeight: 700 }}>-20%</span></span>}
-                </button>
-              ))}
+            <p style={{ margin: "0 0 18px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 16px", background: "#E6F4EA", borderRadius: "20px", maxWidth: "440px" }}>
+                <span style={{ fontSize: "16px", flexShrink: 0 }}>✨</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E7A3D" }}>14 jours d&apos;essai gratuit — votre première réponse IA à un avis négatif, offerte dès le premier jour</span>
+              </div>
+              <div style={{ display: "inline-flex", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", padding: "3px", gap: "2px", boxShadow: SHADOW_SM }}>
+                {(["monthly", "annual"] as const).map(b => (
+                  <button key={b} onClick={() => setBilling(b)} style={{ padding: "8px 18px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 500, background: billing === b ? G.blue : "transparent", color: billing === b ? "#fff" : "#5F6368", fontFamily: "inherit" }}>
+                    {b === "monthly" ? "Mensuel" : <span>Annuel <span style={{ color: billing === b ? "#bef7d7" : G.green, fontSize: "11px", fontWeight: 700 }}>-20%</span></span>}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1203,13 +1329,15 @@ export default function HomeClient() {
             })}
           </div>
 
-          {/* Mention légale de facturation (art. L221-5 Code conso) — anti dark pattern */}
-          <div style={{ marginTop: "20px", maxWidth: "720px", margin: "20px auto 0", textAlign: "center" }}>
-            <p style={{ fontSize: "12px", lineHeight: 1.6, color: "#80868B", margin: 0 }}>
-              Essai gratuit de 14 jours, <strong>carte bancaire requise</strong>. À la fin de l&apos;essai,
-              votre abonnement démarre automatiquement au tarif affiché, <strong>sauf résiliation avant la fin de l&apos;essai</strong>.
-              Résiliable à tout moment en ligne en 2 clics. Un email de rappel vous est envoyé 3 jours avant le premier prélèvement.
-              Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
+          {/* Mention légale de facturation (art. L221-5 Code conso) — anti dark pattern.
+              Condensée le 08/08 pour tenir en 2 lignes tout en gardant les mentions
+              obligatoires : durée, CB requise, prix au tarif affiché sauf résiliation,
+              résiliation en 2 clics, rappel avant prélèvement. */}
+          <div style={{ marginTop: "20px", maxWidth: "620px", margin: "20px auto 0", textAlign: "center" }}>
+            <p style={{ fontSize: "12px", lineHeight: 1.7, color: "#80868B", margin: 0 }}>
+              Essai gratuit 14 jours, <strong>carte bancaire requise</strong> — au tarif affiché à la fin de l&apos;essai <strong>sauf résiliation avant son terme</strong>.
+              <br />
+              Résiliable en 2 clics, rappel email 3 jours avant le 1er prélèvement. Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
             </p>
           </div>
 
@@ -1251,66 +1379,10 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* ── LOGIN ── */}
-      <section id="login" style={{ padding: "80px 40px", background: "#F8F9FA", borderTop: "1px solid #DADCE0" }}>
-        <div style={{ maxWidth: "400px", margin: "0 auto" }}>
-          <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "40px", boxShadow: SHADOW_MD, textAlign: "center" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}><GDots size={11} /></div>
-            <h2 style={{ margin: "0 0 5px", fontSize: "21px", fontWeight: 700, color: "#202124" }}>Se connecter</h2>
-            <p style={{ margin: "0 0 26px", color: "#5F6368", fontSize: "14px" }}>Accéder à votre dashboard Caela Réputation</p>
-
-            <form onSubmit={handleSubmit} style={{ textAlign: "left" }}>
-              {[
-                { label: "Adresse email", type: "email", value: email, setter: setEmail, placeholder: "vous@exemple.fr" },
-                { label: "Mot de passe", type: "password", value: password, setter: setPassword, placeholder: "••••••••" },
-              ].map(field => (
-                <div key={field.label} style={{ marginBottom: "14px" }}>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#202124", marginBottom: "5px" }}>{field.label}</label>
-                  <input
-                    type={field.type} value={field.value}
-                    onChange={(e) => field.setter(e.target.value)}
-                    placeholder={field.placeholder} required
-                    style={{ width: "100%", padding: "11px 14px", border: "1px solid #DADCE0", borderRadius: "6px", fontSize: "14px", color: "#202124", outline: "none", boxSizing: "border-box", background: "#fff", fontFamily: "inherit" }}
-                    onFocus={(e) => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
-                    onBlur={(e) => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
-                  />
-                </div>
-              ))}
-
-              {error && <div style={{ padding: "10px 14px", background: "#FCE8E6", borderRadius: "6px", color: G.red, fontSize: "13px", marginBottom: "14px" }}>⚠ {error}</div>}
-
-              <button type="submit" disabled={loading} style={{ width: "100%", padding: "12px", background: loading ? `${G.blue}80` : G.blue, border: "none", borderRadius: "6px", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
-                {loading ? "Connexion..." : "Se connecter"}
-              </button>
-              <div style={{ textAlign: "center", marginTop: "12px" }}>
-                <a href="/mot-de-passe-oublie" style={{ fontSize: "13px", color: G.blue, fontWeight: 600, textDecoration: "none" }}>Mot de passe oublié ?</a>
-              </div>
-            </form>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
-              <div style={{ flex: 1, height: "1px", background: "#DADCE0" }} />
-              <span style={{ fontSize: "12px", color: "#80868B", fontWeight: 500 }}>Ou</span>
-              <div style={{ flex: 1, height: "1px", background: "#DADCE0" }} />
-            </div>
-
-            <a
-              href="https://caela-hub.vercel.app/api/sso/avis"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", padding: "11px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "6px", color: "#202124", fontSize: "14px", fontWeight: 600, textDecoration: "none", boxSizing: "border-box", fontFamily: "inherit" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#F8F9FA"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
-            >
-              <GDots size={7} />
-              Se connecter avec Caela
-            </a>
-
-            <p style={{ textAlign: "center", marginTop: "18px", fontSize: "13px", color: "#5F6368" }}>
-              Pas encore de compte ?{" "}
-              <a href="/signup" style={{ color: G.blue, fontWeight: 600, textDecoration: "none" }}>Créer un compte</a>
-            </p>
-            <p style={{ textAlign: "center", marginTop: "10px", fontSize: "11px", color: "#80868B" }}>Caela Réputation by Caela Agency</p>
-          </div>
-        </div>
-      </section>
+      {/* ancre discrète pour les liens "Se connecter" qui pointaient sur
+          #login (scroll-behavior smooth global) — le widget lui-même est en
+          position fixed plus bas et s'ouvre via setLoginWidgetOpen. */}
+      <div id="login" />
 
       {/* ── ÉCOSYSTÈME CAELA ── */}
       <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "48px 40px" }}>
@@ -1319,7 +1391,7 @@ export default function HomeClient() {
             Fait partie de l&apos;écosystème Caela
           </h2>
           <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>
-            Un compte, tous vos outils : Réservation (Caelenda) · Fidélité (Rewards) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (Pulse) · QR dynamique (CaelaQR).
+            Un compte, tous vos outils : Réservation (<a href="https://caelenda.fr" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Caelenda</a>) · Fidélité (<a href="https://caela-rewards.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Rewards</a>) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (<a href="https://caela-pulse.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Pulse</a>) · QR dynamique (<a href="https://caela-qr.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>CaelaQR</a>).
             <br />
             Connexion unique entre tous les produits.
           </p>
@@ -1387,6 +1459,113 @@ export default function HomeClient() {
         )
       )}
 
+      {/* ── WIDGET S'INSCRIRE / SE CONNECTER ──
+          Remplace le 08/08 l'ancienne section "Se connecter" statique et
+          permanente au milieu de la page. Maintenant : un onglet qui dépasse
+          en bas d'écran avec un CTA intriguant, qui s'ouvre au survol
+          (desktop) ou au clic (tactile). L'inscription est mise en avant ;
+          la connexion reste accessible via un lien secondaire, sans jamais
+          être le mode par défaut.
+          Centré sur desktop. Sur mobile, décalé à gauche avec la même
+          réserve que la bannière écosystème (right:78) pour ne jamais
+          chevaucher la bulle ChatBot (bas-droite) — un widget centré pleine
+          largeur passerait pile dessus. */}
+      <div
+        onMouseEnter={() => !isMobile && setLoginWidgetOpen(true)}
+        onMouseLeave={() => !isMobile && setLoginWidgetOpen(false)}
+        style={{
+          position: "fixed",
+          // Décalé au-dessus de la bannière écosystème mobile quand elle est
+          // affichée (toutes deux fixed en bas, sinon superposition garantie
+          // sur petit écran).
+          bottom: isMobile && showEcoBanner ? "62px" : 0,
+          ...(isMobile
+            ? { left: "10px", right: "78px", transform: `translateY(${loginWidgetOpen ? "0" : "calc(100% - 46px)"})` }
+            : { left: "50%", width: "360px", maxWidth: "94vw", transform: `translateX(-50%) translateY(${loginWidgetOpen ? "0" : "calc(100% - 46px)"})` }),
+          transition: "bottom 0.25s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1)",
+          zIndex: 92,
+        }}
+      >
+        <div style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "16px", borderTopRightRadius: "16px", boxShadow: "0 -8px 28px rgba(32,33,36,0.18)", overflow: "hidden" }}>
+          {/* Poignée toujours visible, même repliée */}
+          <button
+            onClick={() => setLoginWidgetOpen(o => !o)}
+            style={{
+              width: "100%", padding: "12px 16px", background: "#202124", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "inherit",
+            }}
+          >
+            <span className="rp-bounce-icon" style={{ fontSize: "15px", flexShrink: 0 }}>🚀</span>
+            <span style={{ fontSize: isMobile ? "12px" : "13px", fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {widgetMode === "login" ? "Se connecter" : (isMobile ? "Vos avis sans réponse coûtent cher" : "Combien vous coûtent vos avis sans réponse ?")}
+            </span>
+          </button>
+
+          <div style={{ padding: "22px 24px 24px" }}>
+            {widgetMode === "signup" ? (
+              <>
+                <p style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: 700, color: "#202124" }}>2 minutes pour tester, sans y penser ensuite.</p>
+                <p style={{ margin: "0 0 16px", fontSize: "12.5px", color: "#5F6368", lineHeight: 1.5 }}>
+                  L&apos;IA détecte, répond, publie. 14 jours d&apos;essai, résiliable en 2 clics.
+                </p>
+                <a href="/signup" style={{ display: "block", textAlign: "center", padding: "13px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 700, boxShadow: `0 2px 10px ${G.blue}40`, marginBottom: "14px" }}>
+                  Créer un compte gratuit →
+                </a>
+                <p style={{ textAlign: "center", margin: 0, fontSize: "12.5px", color: "#80868B" }}>
+                  Déjà client ?{" "}
+                  <button onClick={() => setWidgetMode("login")} style={{ background: "none", border: "none", padding: 0, color: G.blue, fontWeight: 600, fontSize: "12.5px", cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
+                    Se connecter
+                  </button>
+                </p>
+              </>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} style={{ textAlign: "left" }}>
+                  {[
+                    { label: "Adresse email", type: "email", value: email, setter: setEmail, placeholder: "vous@exemple.fr" },
+                    { label: "Mot de passe", type: "password", value: password, setter: setPassword, placeholder: "••••••••" },
+                  ].map(field => (
+                    <div key={field.label} style={{ marginBottom: "10px" }}>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#202124", marginBottom: "4px" }}>{field.label}</label>
+                      <input
+                        type={field.type} value={field.value}
+                        onChange={(e) => field.setter(e.target.value)}
+                        placeholder={field.placeholder} required
+                        style={{ width: "100%", padding: "10px 12px", border: "1px solid #DADCE0", borderRadius: "6px", fontSize: "13px", color: "#202124", outline: "none", boxSizing: "border-box", background: "#fff", fontFamily: "inherit" }}
+                        onFocus={(e) => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
+                        onBlur={(e) => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
+                      />
+                    </div>
+                  ))}
+                  {error && <div style={{ padding: "8px 12px", background: "#FCE8E6", borderRadius: "6px", color: G.red, fontSize: "12px", marginBottom: "10px" }}>⚠ {error}</div>}
+                  <button type="submit" disabled={loading} style={{ width: "100%", padding: "11px", background: loading ? `${G.blue}80` : G.blue, border: "none", borderRadius: "6px", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                    {loading ? "Connexion..." : "Se connecter"}
+                  </button>
+                </form>
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
+                  <a href="/mot-de-passe-oublie" style={{ fontSize: "12px", color: G.blue, fontWeight: 600, textDecoration: "none" }}>Mot de passe oublié ?</a>
+                  <button onClick={() => setWidgetMode("signup")} style={{ background: "none", border: "none", padding: 0, color: "#5F6368", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
+                    Pas de compte ?
+                  </button>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "14px 0" }}>
+                  <div style={{ flex: 1, height: "1px", background: "#DADCE0" }} />
+                  <span style={{ fontSize: "11px", color: "#80868B", fontWeight: 500 }}>Ou</span>
+                  <div style={{ flex: 1, height: "1px", background: "#DADCE0" }} />
+                </div>
+                <a
+                  href="https://caela-hub.vercel.app/api/sso/avis"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", padding: "10px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "6px", color: "#202124", fontSize: "13px", fontWeight: 600, textDecoration: "none", boxSizing: "border-box", fontFamily: "inherit" }}
+                >
+                  <GDots size={7} />
+                  Se connecter avec Caela
+                </a>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
       <ChatBot />
 
       {/* ── FOOTER ── */}
@@ -1416,7 +1595,7 @@ export default function HomeClient() {
           </div>
           <div style={{ borderTop: "1px solid #DADCE0", paddingTop: "14px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
             <p style={{ margin: 0, fontSize: "11px", color: "#80868B" }}>
-              © 2026 Caela Agency · contact@caela.fr · Tous droits réservés
+              © 2026 Caela Agency · <a href="mailto:contact@caela.fr" style={{ color: "#80868B", textDecoration: "underline" }}>contact@caela.fr</a> · Tous droits réservés
             </p>
             <p style={{ margin: 0, fontSize: "11px", color: "#80868B" }}>
               Caela Réputation est un outil indépendant, non affilié à Google LLC. &quot;Google&quot; et &quot;Google Business Profile&quot; sont des marques de Google LLC.

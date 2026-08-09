@@ -152,13 +152,36 @@ export default function CollectePage() {
             Collecte d&apos;avis
           </h1>
           <p style={{ margin: 0, color: "#5F6368", fontSize: 14 }}>
-            Relancez vos clients par SMS pour récolter des avis. Un lien direct, un clic, un avis.
+            Plus vous demandez d&apos;avis, plus votre note et votre visibilité Google Maps progressent. Un SMS, un lien direct, un avis.
           </p>
         </div>
         <Link href="/dashboard" style={{ padding: "8px 16px", background: "#fff", border: "1px solid #DADCE0", borderRadius: 8, textDecoration: "none", fontSize: 13, color: "#5F6368", boxShadow: SHADOW }}>
           ← Dashboard
         </Link>
       </div>
+
+      {/* Résume le circuit complet en un coup d'œil — la Roue (en caisse) et
+          cette page (SMS) alimentent la même liste de contacts, ce qui n'était
+          pas évident tant que les deux vivaient sur des pages séparées. */}
+      <Card style={{ padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#F8F9FA", boxShadow: "none" }}>
+        {[
+          { icon: "🎡", label: "Roue en caisse", sub: "le client scanne, laisse son numéro" },
+          { icon: "📇", label: "Contacts ici", sub: "importés ou ajoutés à la main" },
+          { icon: "📩", label: "SMS envoyé", sub: "lien direct vers votre fiche Google" },
+          { icon: "⭐", label: "Avis posté", sub: "et Caela Réputation y répond" },
+        ].map((s, i, arr) => (
+          <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <span style={{ fontSize: 15 }}>{s.icon}</span>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#202124" }}>{s.label}</div>
+                <div style={{ fontSize: 10.5, color: "#80868B" }}>{s.sub}</div>
+              </div>
+            </div>
+            {i < arr.length - 1 && <span style={{ color: "#BDC1C6", fontSize: 13 }}>→</span>}
+          </div>
+        ))}
+      </Card>
 
       <DelegateBanner
         storageKey="collecte"

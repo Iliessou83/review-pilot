@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { entity } from "@/config/legal.config";
+import Linkify from "@/components/Linkify";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
@@ -133,7 +134,7 @@ export default function MentionsLegalesPage() {
               {section.title}
             </h2>
             <div style={{ fontSize: "14px", color: "#5F6368", lineHeight: 1.8, whiteSpace: "pre-line" }}>
-              {section.content}
+              <Linkify text={section.content} />
             </div>
           </div>
         ))}

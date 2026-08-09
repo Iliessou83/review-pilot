@@ -56,3 +56,21 @@ canvas {
 .rp-banner-enter {
   animation: rp-slide-up 0.4s ease-out;
 }
+
+/* Bande de réassurance NFC : défilement continu, en pause au survol/tap. */
+@keyframes rp-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.rp-marquee-track {
+  animation: rp-marquee 24s linear infinite;
+}
+.rp-marquee-mask:hover .rp-marquee-track,
+.rp-marquee-mask:active .rp-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rp-marquee-track {
+    animation: none;
+  }
+}

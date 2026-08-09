@@ -17,6 +17,24 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
   return <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: 12, boxShadow: SHADOW, padding: 20, ...style }}>{children}</div>;
 }
 
+// Chaque bloc explique désormais QUOI + POURQUOI en une ligne — avant, les
+// titres seuls ("Lien pour recevoir photos/vidéos") ne disaient rien du
+// bénéfice, jugé "pas assez compréhensible" côté client.
+function CardHeader({ icon, bg, title, why, action }: { icon: string; bg: string; title: string; why: string; action?: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ width: 36, height: 36, borderRadius: 9, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>{icon}</div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14.5, color: "#202124" }}>{title}</div>
+          <div style={{ fontSize: 12, color: "#5F6368", marginTop: 2 }}>{why}</div>
+        </div>
+      </div>
+      {action}
+    </div>
+  );
+}
+
 const STATUS_LABEL: Record<Post["status"], { text: string; color: string; bg: string }> = {
   brouillon: { text: "Brouillon", color: "#7A5900", bg: "#FEF7E0" },
   pret: { text: "Prêt à publier", color: G.blue, bg: "#E8F0FE" },
@@ -140,17 +158,27 @@ export default function ContentPage() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 20px" }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, color: "#202124", marginBottom: 4 }}>Contenu GMB</h1>
-      <p style={{ color: "#5F6368", fontSize: 14, marginBottom: 20 }}>
-        Posts Google, lien d&apos;envoi photos/vidéos pour vos clients, stratégie Q&amp;A.
+      <p style={{ color: "#5F6368", fontSize: 14, marginBottom: 8, maxWidth: 640 }}>
+        Une fiche Google active (photos récentes, posts réguliers, Q&amp;A répondues) sort mieux sur Maps qu&apos;une fiche muette. Tout ce qui l&apos;alimente est ici.
+      </p>
+      <p style={{ color: "#80868B", fontSize: 12, marginBottom: 20 }}>
+        Client d&apos;un pack GMB avec l&apos;agence ? Ce que vous voyez ici, c&apos;est exactement ce qu&apos;on fait pour vous — rien de caché.
       </p>
 
-      <select
-        value={selected ?? ""}
-        onChange={(e) => setSelected(Number(e.target.value))}
-        style={{ marginBottom: 20, padding: "8px 12px", borderRadius: 8, border: "1px solid #DADCE0" }}
-      >
-        {businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-      </select>
+      {businesses.length === 0 ? (
+        <div style={{ marginBottom: 20, padding: "20px", borderRadius: 12, border: "1px dashed #DADCE0", textAlign: "center" }}>
+          <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600, color: "#202124" }}>Aucun établissement connecté</p>
+          <p style={{ margin: 0, fontSize: 13 }}><a href="/businesses" style={{ color: G.blue }}>Ajoutez-en un →</a> pour gérer ses posts et son Q&amp;A ici.</p>
+        </div>
+      ) : (
+        <select
+          value={selected ?? ""}
+          onChange={(e) => setSelected(Number(e.target.value))}
+          style={{ marginBottom: 20, padding: "8px 12px", borderRadius: 8, border: "1px solid #DADCE0" }}
+        >
+          {businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+        </select>
+      )}
 
       {msg && (
         <div style={{ marginBottom: 16, padding: 12, borderRadius: 8, background: msg.ok ? "#E6F4EA" : "#FCE8E6", color: msg.ok ? G.green : G.red, fontSize: 13 }}>
@@ -159,18 +187,20 @@ export default function ContentPage() {
       )}
 
       <Card style={{ marginBottom: 20 }}>
-        <div style={{ fontWeight: 700, marginBottom: 8 }}>Lien pour recevoir photos/vidéos</div>
+        <CardHeader icon="🔗" bg="#E8F0FE" title="Lien pour recevoir photos/vidéos"
+          why="Envoyez-le par SMS à votre client : il dépose ses médias sans créer de compte, ça atterrit directement ci-dessous, prêt à publier." />
         {uploadToken ? (
-          <div style={{ fontSize: 13, wordBreak: "break-all", color: G.blue }}>{appUrl}/media/{uploadToken}</div>
+          <div style={{ fontSize: 13, wordBreak: "break-all", color: G.blue, background: "#F8F9FA", padding: "10px 12px", borderRadius: 8 }}>{appUrl}/media/{uploadToken}</div>
         ) : (
           <button onClick={getLink} disabled={busy === "lien"} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: G.blue, color: "#fff", fontSize: 13, fontWeight: 600 }}>
-            {busy === "lien" ? "…" : "Obtenir le lien"}
+            {busy === "lien" ? "…" : "Générer le lien à envoyer"}
           </button>
         )}
       </Card>
 
       <Card style={{ marginBottom: 20 }}>
-        <div style={{ fontWeight: 700, marginBottom: 12 }}>Nouveau post</div>
+        <CardHeader icon="📸" bg="#E6F4EA" title="Nouveau post Google"
+          why="Une fiche qui poste régulièrement (offre du moment, nouveauté, coulisses) sort mieux sur Maps qu'une fiche figée." />
         <textarea
           value={newContent}
           onChange={(e) => setNewContent(e.target.value)}
@@ -184,7 +214,8 @@ export default function ContentPage() {
       </Card>
 
       <Card style={{ marginBottom: 20 }}>
-        <div style={{ fontWeight: 700, marginBottom: 12 }}>Posts ({posts.length})</div>
+        <CardHeader icon="🗂️" bg="#FEF7E0" title={`Historique des posts (${posts.length})`}
+          why="Brouillon → Publier : la publication passe par l'API Google officielle, en un clic." />
         {posts.length === 0 && <div style={{ color: "#5F6368", fontSize: 13 }}>Aucun post pour l&apos;instant.</div>}
         {posts.map((p) => {
           const s = STATUS_LABEL[p.status];
@@ -193,7 +224,11 @@ export default function ContentPage() {
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: s.bg, color: s.color, marginRight: 8 }}>{s.text}</span>
-                  {p.source === "client" && <span style={{ fontSize: 11, color: "#5F6368" }}>déposé par le client</span>}
+                  {p.source === "client" ? (
+                    <span style={{ fontSize: 11, color: "#5F6368" }}>déposé par le client</span>
+                  ) : (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: G.blue }}>✦ ajouté par l&apos;agence Caela</span>
+                  )}
                   <div style={{ fontSize: 14, marginTop: 6 }}>{p.content}</div>
                   {p.mediaUrl && <div style={{ fontSize: 12, marginTop: 4 }}>{p.mediaType === "video" ? "🎬" : "🖼️"} <a href={p.mediaUrl} target="_blank" rel="noreferrer">média</a></div>}
                   {p.errorMessage && <div style={{ fontSize: 12, color: G.red, marginTop: 4 }}>{p.errorMessage}</div>}
@@ -215,14 +250,15 @@ export default function ContentPage() {
       </Card>
 
       <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontWeight: 700 }}>Stratégie Q&amp;A</div>
-          <button onClick={generateQna} disabled={busy === "qna"} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: G.yellow, color: "#3C3000", fontSize: 12, fontWeight: 600 }}>
-            {busy === "qna" ? "…" : qna.length ? "Régénérer" : "Générer des suggestions"}
-          </button>
-        </div>
-        <p style={{ fontSize: 12, color: "#5F6368", marginBottom: 12 }}>
-          À poster manuellement dans la section &quot;Questions et réponses&quot; de la fiche Google (l&apos;API n&apos;est pas fiable pour l&apos;automatiser). Cochez une fois vraiment posé.
+        <CardHeader icon="💡" bg="#FEF7E0" title="Stratégie Q&A"
+          why="Une fiche avec des questions déjà répondues rassure le client avant même qu'il vous appelle."
+          action={
+            <button onClick={generateQna} disabled={busy === "qna"} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: G.yellow, color: "#3C3000", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
+              {busy === "qna" ? "…" : qna.length ? "🔁 Régénérer" : "✨ Générer des suggestions IA"}
+            </button>
+          } />
+        <p style={{ fontSize: 12, color: "#5F6368", marginBottom: 12, background: "#F8F9FA", padding: "10px 12px", borderRadius: 8 }}>
+          L&apos;IA propose des questions/réponses probables pour votre activité. Copiez-les dans la section &quot;Questions et réponses&quot; de votre fiche Google (Google n&apos;autorise pas de le faire automatiquement), puis cochez une fois vraiment posé.
         </p>
         {qna.map((item, i) => (
           <div key={i} style={{ padding: "10px 0", borderTop: "1px solid #F1F3F4" }}>

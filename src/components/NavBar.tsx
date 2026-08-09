@@ -147,10 +147,14 @@ export default function NavBar() {
           )}
         </div>
 
-        {/* Desktop: nav links centrés, groupés par section avec séparateurs */}
+        {/* Desktop: nav links centrés, groupés par section avec séparateurs.
+            "Compte" (Widget/Parrainage/Paramètres) est sorti de cette rangée
+            et rendu dans une 2e barre dédiée juste en dessous — avant, les 12
+            liens retombaient en flex-wrap sur une 2e ligne mal alignée (bug
+            visuel du 08/08), on en fait maintenant une rangée volontaire. */}
         {!isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: "2px", flex: 1, justifyContent: "center", flexWrap: "wrap" }}>
-            {sections.map((sec, si) => (
+            {sections.filter(sec => sec.name !== "Compte").map((sec, si) => (
               <div key={sec.name} style={{ display: "flex", alignItems: "center", gap: "2px" }}>
                 {si > 0 && (
                   <div style={{ width: "1px", height: "20px", background: "#DADCE0", margin: "0 8px" }} aria-hidden="true" />
@@ -256,6 +260,55 @@ export default function NavBar() {
           </button>
         )}
       </nav>
+
+      {/* 2e barre desktop, dédiée à "Compte" (Widget/Parrainage/Paramètres) —
+          plus discrète, alignée à droite, séparée visuellement de la nav
+          principale au lieu de tomber dessus en flex-wrap. */}
+      {!isMobile && (
+        <div style={{
+          background: "#F8F9FA",
+          borderBottom: "1px solid #DADCE0",
+          position: "sticky",
+          top: "60px",
+          zIndex: 49,
+          height: "38px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          padding: "0 24px",
+          gap: "2px",
+        }}>
+          <span style={{ fontSize: "10px", fontWeight: 700, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: "8px" }}>Compte</span>
+          {sections.find(sec => sec.name === "Compte")?.items.map((link) => {
+            const active = isActive(link);
+            const color = SECTION_COLOR[link.color];
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rp-nav-link${active ? " rp-nav-active" : ""}`}
+                style={{
+                  "--rp-nav-c": color,
+                  padding: "4px 10px",
+                  borderRadius: "7px",
+                  fontSize: "12px",
+                  fontWeight: active ? 600 : 400,
+                  color: active ? color : "#5F6368",
+                  background: active ? color + "15" : "transparent",
+                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  whiteSpace: "nowrap",
+                } as React.CSSProperties}
+              >
+                <span style={{ fontSize: "11px" }}>{link.icon}</span>
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {/* Mobile: panneau déroulant, groupé par section */}
       {isMobile && menuOpen && (

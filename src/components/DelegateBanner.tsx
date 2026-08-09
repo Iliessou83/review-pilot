@@ -51,6 +51,7 @@ export default function DelegateBanner({
   const mailtoHref = `mailto:contact@caela-agency.fr?subject=${encodeURIComponent(mailSubject)}`;
 
   return (
+    <>
     <div
       style={{
         position: "relative",
@@ -129,17 +130,23 @@ export default function DelegateBanner({
       >
         ✕
       </button>
-
-      {open && (
-        <DelegateForm
-          title={title}
-          kind={kind}
-          defaultBrief={defaultBrief || body}
-          mailtoHref={mailtoHref}
-          onClose={() => setOpen(false)}
-        />
-      )}
     </div>
+
+    {/* Rendu HORS du bloc ci-dessus : ce bloc a une animation qui pose un
+        transform, ce qui fait de lui le "containing block" de tout enfant en
+        position:fixed (règle CSS peu connue). La modale finissait donc piégée
+        dans les limites du bandeau au lieu de couvrir l'écran (bug du 08/08,
+        overlap visible sur mobile et desktop). */}
+    {open && (
+      <DelegateForm
+        title={title}
+        kind={kind}
+        defaultBrief={defaultBrief || body}
+        mailtoHref={mailtoHref}
+        onClose={() => setOpen(false)}
+      />
+    )}
+    </>
   );
 }
 

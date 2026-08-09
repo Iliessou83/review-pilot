@@ -41,20 +41,8 @@ export default function ParrainageClient() {
   }
 
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
-
-      {/* Nav */}
-      <nav style={{ borderBottom: "1px solid #DADCE0", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#fff", zIndex: 100 }}>
-        <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-          <div style={{ display: "flex", gap: "3px" }}>
-            {[G.blue, G.red, G.yellow, G.green].map((c, i) => <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />)}
-          </div>
-          <span style={{ fontWeight: 700, fontSize: "15px", color: "#202124" }}>Caela Réputation</span>
-        </a>
-        <a href="/dashboard" style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>← Mon dashboard</a>
-      </nav>
-
-      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "64px 24px" }}>
+    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", borderRadius: "16px", border: "1px solid #DADCE0" }}>
+      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "48px 24px" }}>
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: "56px" }}>
