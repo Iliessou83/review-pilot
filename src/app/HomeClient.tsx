@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ChatBot from "@/components/ChatBot";
+import { trackClic } from "@/lib/analytics/client";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW_SM = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
@@ -645,7 +646,7 @@ export default function HomeClient() {
             <a href="#login" onClick={(e) => { e.preventDefault(); setWidgetMode("login"); setLoginWidgetOpen(true); }} style={{ padding: "9px 16px", fontSize: "14px", fontWeight: 600, color: G.blue, textDecoration: "none", borderRadius: "6px", marginLeft: "8px", cursor: "pointer" }}>
               Se connecter
             </a>
-            <a href="/signup" style={{ padding: "9px 20px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
+            <a href="/signup" onClick={() => trackClic("bouton_essai-gratuit_nav")} style={{ padding: "9px 20px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
               Essai gratuit
             </a>
           </div>
@@ -654,7 +655,7 @@ export default function HomeClient() {
         {/* Mobile: CTA compact toujours visible + burger */}
         {isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            <a href="/signup" style={{ padding: "8px 14px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", whiteSpace: "nowrap" }}>
+            <a href="/signup" onClick={() => trackClic("bouton_essai-gratuit_nav-mobile")} style={{ padding: "8px 14px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", whiteSpace: "nowrap" }}>
               Essai gratuit
             </a>
             <button
@@ -696,7 +697,7 @@ export default function HomeClient() {
             Se connecter
           </a>
         )}
-        <a href="/signup" style={{ padding: "7px 16px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "20px", whiteSpace: "nowrap" }}>
+        <a href="/signup" onClick={() => trackClic("bouton_essai-gratuit_flottant")} style={{ padding: "7px 16px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "20px", whiteSpace: "nowrap" }}>
           Essai gratuit
         </a>
       </div>
@@ -750,7 +751,7 @@ export default function HomeClient() {
             Caela Réputation détecte chaque avis, répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
-            <a href="/signup" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
+            <a href="/signup" onClick={() => trackClic("bouton_essai-gratuit_hero")} style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
               Essai gratuit 14 jours
             </a>
             <a href="/audit" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
@@ -1322,7 +1323,7 @@ export default function HomeClient() {
                     ))}
                   </div>
 
-                  <a href="/signup" style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
+                  <a href="/signup" onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
                     {plan.cta}
                   </a>
                 </div>
@@ -1509,7 +1510,7 @@ export default function HomeClient() {
                 <p style={{ margin: "0 0 16px", fontSize: "12.5px", color: "#5F6368", lineHeight: 1.5 }}>
                   L&apos;IA détecte, répond, publie. 14 jours d&apos;essai, résiliable en 2 clics.
                 </p>
-                <a href="/signup" style={{ display: "block", textAlign: "center", padding: "13px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 700, boxShadow: `0 2px 10px ${G.blue}40`, marginBottom: "14px" }}>
+                <a href="/signup" onClick={() => trackClic("bouton_essai-gratuit_widget-flottant")} style={{ display: "block", textAlign: "center", padding: "13px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 700, boxShadow: `0 2px 10px ${G.blue}40`, marginBottom: "14px" }}>
                   Créer un compte gratuit →
                 </a>
                 <p style={{ textAlign: "center", margin: 0, fontSize: "12.5px", color: "#80868B" }}>

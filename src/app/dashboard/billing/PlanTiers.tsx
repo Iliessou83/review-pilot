@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "@/lib/analytics/client";
+import { EV } from "@/lib/analytics/events";
 
 const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", purple: "#7C3AED" };
 
@@ -75,6 +77,8 @@ export default function PlanTiers({ currentPlanId, email }: { currentPlanId?: st
   const [notice, setNotice] = useState(false);
 
   async function choose(planId: string) {
+    track(EV.CLIC, { nom: `bouton_choisir_plan_${planId}_billing` });
+    track(EV.PAIEMENT_COMMENCE, { offre: planId });
     setBusy(planId);
     setNotice(false);
     try {

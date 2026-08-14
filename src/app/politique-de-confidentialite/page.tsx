@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RefusMesure from "@/components/RefusMesure";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
@@ -210,17 +211,29 @@ export default function PolitiqueConfidentialitePage() {
           <p>Aucun cookie publicitaire, analytique tiers ou de traçage inter-sites n&apos;est déposé. Voir notre <Link href="/politique-de-cookies" style={{ color: G.blue }}>Politique de cookies</Link> complète.</p>
         </Section>
 
-        <Section title="8. Pages publiques et formulaires">
+        <Section title="8. Mesure d'audience">
+          <p style={{ marginBottom: "12px" }}>
+            Nous mesurons la fréquentation de ce site pour comprendre ce qui est consulté et améliorer ce qui fonctionne mal. Cette mesure n&apos;utilise aucun service publicitaire et ne demande pas votre consentement, car elle respecte les conditions d&apos;exemption fixées par la CNIL.
+          </p>
+          <p style={{ marginBottom: "16px" }}>
+            Concrètement : un identifiant aléatoire est déposé sur votre appareil pour ne pas compter deux fois la même visite. Il ne contient ni votre nom, ni votre email, ni aucune information vous concernant. Il est effacé au bout de 13 mois. Ces données ne sont jamais recoupées avec d&apos;autres traitements, ni transmises à des tiers, ni utilisées pour de la publicité.
+          </p>
+          <div style={{ padding: "16px 20px", background: "#F8F9FA", borderRadius: "8px", border: "1px solid #DADCE0" }}>
+            <RefusMesure />
+          </div>
+        </Section>
+
+        <Section title="9. Pages publiques et formulaires">
           <p>Le <strong>formulaire d&apos;audit gratuit</strong> (/audit) collecte l&apos;adresse email fournie volontairement pour envoyer le rapport d&apos;audit. Cette adresse est utilisée uniquement pour l&apos;envoi de ce rapport et n&apos;est pas ajoutée à une liste marketing sans consentement explicite.</p>
           <p style={{ marginTop: "12px" }}>Le <strong>formulaire de parrainage</strong> collecte les adresses email des contacts que vous souhaitez inviter. Ces personnes reçoivent un unique email d&apos;invitation. En utilisant cette fonctionnalité, vous certifiez avoir l&apos;accord de ces personnes pour leur transmettre cette invitation.</p>
         </Section>
 
-        <Section title="9. Modifications de cette politique">
+        <Section title="10. Modifications de cette politique">
           <p>Nous nous réservons le droit de modifier cette politique à tout moment. En cas de modification substantielle, vous serez informé par email (si vous êtes client) avec un préavis de <strong>15 jours</strong>. La version en vigueur est toujours accessible à l&apos;adresse <strong>/politique-de-confidentialite</strong>.</p>
           <p style={{ marginTop: "8px" }}>La poursuite de l&apos;utilisation du service après notification constitue une acceptation des modifications.</p>
         </Section>
 
-        <Section title="10. Contact et réclamations">
+        <Section title="11. Contact et réclamations">
           <p>Pour toute question relative à cette politique ou à vos données personnelles :</p>
           <div style={{ margin: "12px 0", padding: "16px 20px", background: "#F8F9FA", borderRadius: "8px", border: "1px solid #DADCE0" }}>
             <strong>Caela Agency — Traitement des données personnelles</strong><br />

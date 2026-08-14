@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
 import ChatBot from "@/components/ChatBot";
+import InstallerApp from "@/components/InstallerApp";
 
 export default async function DashboardLayout({
   children,
@@ -26,6 +27,12 @@ export default async function DashboardLayout({
         {children}
       </main>
       <ChatBot />
+      <InstallerApp
+        nomApp="Caela Réputation"
+        accroche="Installez le dashboard sur votre téléphone"
+        detail="Répondez à vos avis Google en un geste, sans repasser par le navigateur."
+        couleur="#1A73E8"
+      />
     </div>
   );
 }
