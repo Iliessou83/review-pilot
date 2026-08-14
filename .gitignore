@@ -22,5 +22,6 @@ dist/
 # misc
 .DS_Store
 *.pem
+*.tsbuildinfo
 .env*.local
 .env*
