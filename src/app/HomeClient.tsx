@@ -502,6 +502,7 @@ const NAV_LINKS: [string, string][] = [
   ["#nfc", "Plaques NFC"],
   ["#pricing", "Tarifs"],
   ["/audit", "Audit gratuit 🔍"],
+  ["/blog", "Blog"],
 ];
 
 export default function HomeClient() {
@@ -1578,6 +1579,7 @@ export default function HomeClient() {
             </div>
             <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
               {[
+                { label: "Blog", href: "/blog" },
                 { label: "Confidentialité", href: "/politique-de-confidentialite" },
                 { label: "Mentions légales", href: "/mentions-legales" },
                 { label: "CGV / CGU", href: "/cgv" },
