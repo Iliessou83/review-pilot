@@ -26,8 +26,12 @@ export async function getPlanForEmail(email: string): Promise<Plan | null> {
 
 /**
  * Peut-on ajouter un établissement supplémentaire pour ce client ?
- * Sans abonnement actif retrouvé : autorise 1 seul établissement (mode
- * essai/démo avant paiement) — le vrai verrou arrive avec Stripe branché.
+ * Sans abonnement actif retrouvé (payant ou "trialing" chez Stripe) : bloqué.
+ * L'inscription passe désormais obligatoirement par le Checkout Stripe (CB
+ * requise dès /signup, voir CGV art. 5) — un compte sans abonnement n'a donc
+ * jamais dû arriver ici en usage normal ; le bloquer ici est le filet qui
+ * empêche un établissement gratuit à vie si ce parcours est un jour contourné.
+ * Le super-admin (mode agence) n'est jamais bridé, voir l'appelant.
  */
 export async function checkBusinessQuota(ownerEmail: string): Promise<{
   allowed: boolean;
@@ -45,7 +49,7 @@ export async function checkBusinessQuota(ownerEmail: string): Promise<{
   const current = row?.value ?? 0;
 
   if (!plan) {
-    return { allowed: current < 1, current, max: 1, planName: null };
+    return { allowed: false, current, max: 0, planName: null };
   }
 
   const max = plan.maxBusinesses;

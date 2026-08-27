@@ -44,7 +44,7 @@ export async function linkGoogleBusiness(params: {
     if (!quota.allowed) {
       const message = quota.planName
         ? `Limite atteinte : le plan ${quota.planName} inclut ${quota.max} établissement(s) (${quota.current} déjà connecté(s)). Passez à un plan supérieur pour en ajouter.`
-        : `Aucun abonnement actif trouvé pour cet email. Un seul établissement est autorisé en essai.`;
+        : `Aucun abonnement actif trouvé pour cet email. Souscrivez un plan (essai gratuit 14 jours, carte bancaire requise) pour connecter un établissement.`;
       return { ok: false, reason: "quota", message };
     }
   }

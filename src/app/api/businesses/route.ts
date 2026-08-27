@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     if (!quota.allowed) {
       const message = quota.planName
         ? `Limite atteinte : le plan ${quota.planName} inclut ${quota.max} établissement(s) maximum (${quota.current} déjà connecté(s)). Passez à un plan supérieur pour en ajouter.`
-        : `Aucun abonnement actif trouvé pour cet email. Un seul établissement est autorisé en mode essai — souscrivez un plan pour en ajouter d'autres.`;
+        : `Aucun abonnement actif trouvé pour cet email. Souscrivez un plan (essai gratuit 14 jours, carte bancaire requise) depuis /dashboard/billing pour ajouter un établissement.`;
       return NextResponse.json({ error: message }, { status: 403 });
     }
   }

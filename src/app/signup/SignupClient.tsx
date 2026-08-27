@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
+const KNOWN_PLANS = ["starter", "solo", "pro", "studio"];
 
 function GDots({ size = 10 }: { size?: number }) {
   return (
@@ -18,7 +18,6 @@ function GDots({ size = 10 }: { size?: number }) {
 }
 
 export default function SignupClient() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,15 +25,26 @@ export default function SignupClient() {
   const [loading, setLoading] = useState(false);
   const [existingModules, setExistingModules] = useState<string[] | null>(null);
   const [referralCode, setReferralCode] = useState("");
+  const [planId, setPlanId] = useState("solo");
 
-  // Pré-remplit depuis un lien de parrainage partagé (?ref=CAELA-XXXXXX).
-  // Lu côté client uniquement (comme safeNext() sur la page d'accueil) pour
-  // ne pas forcer cette page en rendu dynamique côté serveur.
+  // Pré-remplit depuis un lien de parrainage partagé (?ref=CAELA-XXXXXX) et
+  // retient la formule choisie sur la page de tarifs (?plan=solo). Lu côté
+  // client uniquement (comme safeNext() sur la page d'accueil) pour ne pas
+  // forcer cette page en rendu dynamique côté serveur.
   useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref");
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
     if (ref) setReferralCode(ref.toUpperCase());
+    const plan = params.get("plan")?.toLowerCase();
+    if (plan && KNOWN_PLANS.includes(plan)) setPlanId(plan);
   }, []);
 
+  // Carte bancaire obligatoire dès l'inscription (voir CGV art. 5) : une fois
+  // le compte créé, on enchaîne directement sur le Checkout Stripe — jamais
+  // de retour au dashboard sans être passé par cette étape. Si la session
+  // Stripe ne peut pas être créée (clés absentes, panne réseau), on bloque
+  // avec un message clair plutôt que de laisser filer vers un accès gratuit
+  // non prévu par les CGV.
   async function handleSubmit(e: React.FormEvent, confirmSeparate = false) {
     e.preventDefault();
     setError("");
@@ -52,7 +62,25 @@ export default function SignupClient() {
           setLoading(false);
           return;
         }
-        router.push("/dashboard");
+        try {
+          const checkoutRes = await fetch("/api/billing/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ planId, email }),
+          });
+          const checkoutData = await checkoutRes.json().catch(() => ({}));
+          if (checkoutRes.ok && checkoutData.url) {
+            window.location.href = checkoutData.url;
+            return;
+          }
+          setError(
+            "Votre compte est créé, mais le paiement n'est pas disponible pour le moment. Connectez-vous et réessayez depuis Abonnement & facturation, ou écrivez-nous à support@caela.co."
+          );
+        } catch {
+          setError(
+            "Votre compte est créé, mais le paiement n'est pas disponible pour le moment. Connectez-vous et réessayez depuis Abonnement & facturation, ou écrivez-nous à support@caela.co."
+          );
+        }
       } else {
         setError(data.error || "Inscription impossible.");
       }
@@ -120,7 +148,7 @@ export default function SignupClient() {
             Créer votre compte
           </h1>
           <p style={{ margin: "0 0 24px", color: "#5F6368", fontSize: 14, textAlign: "center" }}>
-            14 jours d&apos;essai. Gérez vos avis Google en quelques minutes.
+            14 jours d&apos;essai gratuit, carte bancaire requise à l&apos;étape suivante. Aucun débit avant la fin de l&apos;essai.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -158,7 +186,7 @@ export default function SignupClient() {
             )}
 
             <button type="submit" disabled={loading} style={{ width: "100%", padding: 12, background: loading ? `${G.blue}80` : G.blue, border: "none", borderRadius: 8, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
-              {loading ? "Création…" : "Créer mon compte"}
+              {loading ? "Création…" : "Continuer vers le paiement →"}
             </button>
           </form>
 
