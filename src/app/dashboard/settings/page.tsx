@@ -47,6 +47,11 @@ type BusinessSettings = {
   escalationKeywords: string[];
   ownerEmail: string;
   reviewLink: string;
+  signatureName: string;
+  regulatedSector: boolean;
+  brandTone: string;
+  tutoiement: boolean;
+  ownerPhone: string;
 };
 
 const STATUS_LABELS: Record<ProductFact["status"], string> = {
@@ -121,6 +126,11 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
         productFacts: local.productFacts,
         escalationKeywords: local.escalationKeywords,
         reviewLink: local.reviewLink,
+        signatureName: local.signatureName,
+        regulatedSector: local.regulatedSector,
+        brandTone: local.brandTone,
+        tutoiement: local.tutoiement,
+        ownerPhone: local.ownerPhone,
       };
       if (local.ownerEmail !== biz.ownerEmail) payload.ownerEmail = local.ownerEmail;
 
@@ -284,6 +294,98 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
           </p>
         </div>
 
+        {/* Signature des réponses IA — jamais un prénom inventé (AI Act art. 50, 2 août 2026) */}
+        <div>
+          <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#202124", marginBottom: "6px" }}>
+            Signature des réponses IA
+          </label>
+          <input
+            type="text"
+            value={local.signatureName}
+            onChange={e => update("signatureName", e.target.value)}
+            placeholder="Ex: Sophie, gérante (laissez vide pour signer &laquo; L'équipe {votre établissement} &raquo;)"
+            style={{
+              width: "100%", padding: "10px 14px",
+              border: "1px solid #DADCE0", borderRadius: "8px",
+              fontSize: "14px", color: "#202124", outline: "none",
+              boxSizing: "border-box", fontFamily: "inherit",
+            }}
+            onFocus={e => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
+            onBlur={e => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
+          />
+          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#80868B" }}>
+            Un vrai prénom de votre équipe, ou laissez vide pour une signature neutre. L&apos;IA ne signe jamais d&apos;un prénom inventé.
+          </p>
+        </div>
+
+        {/* Profession réglementée */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", background: "#F8F9FA", borderRadius: "10px" }}>
+          <div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Profession réglementée</div>
+            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
+              Santé, droit, funéraire... Désactive la roue et le geste commercial, force une validation humaine sur chaque avis, même 5★.
+            </div>
+          </div>
+          <Toggle value={local.regulatedSector} onChange={v => update("regulatedSector", v)} color={G.red} />
+        </div>
+
+        {/* Voix de marque */}
+        <div>
+          <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#202124", marginBottom: "10px" }}>
+            Voix de marque
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+            {[
+              { value: "chaleureux", label: "Chaleureux" },
+              { value: "pro", label: "Sobre & pro" },
+              { value: "premium", label: "Premium" },
+            ].map(t => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => update("brandTone", t.value)}
+                style={{
+                  padding: "7px 14px", borderRadius: "8px",
+                  border: `2px solid ${local.brandTone === t.value ? G.blue : "#DADCE0"}`,
+                  background: local.brandTone === t.value ? "#E8F0FE" : "#fff",
+                  color: local.brandTone === t.value ? G.blue : "#5F6368",
+                  fontWeight: 500, fontSize: "13px", cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "#F8F9FA", borderRadius: "8px" }}>
+            <div style={{ fontSize: "13px", color: "#202124" }}>Tutoiement dans les réponses</div>
+            <Toggle value={local.tutoiement} onChange={v => update("tutoiement", v)} color={G.blue} />
+          </div>
+        </div>
+
+        {/* Alerte SMS immédiate sur avis négatif */}
+        <div>
+          <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#202124", marginBottom: "6px" }}>
+            Téléphone pour l&apos;alerte immédiate (avis 1-3★)
+          </label>
+          <input
+            type="tel"
+            value={local.ownerPhone}
+            onChange={e => update("ownerPhone", e.target.value)}
+            placeholder="06 XX XX XX XX"
+            style={{
+              width: "100%", padding: "10px 14px",
+              border: "1px solid #DADCE0", borderRadius: "8px",
+              fontSize: "14px", color: "#202124", outline: "none",
+              boxSizing: "border-box", fontFamily: "inherit",
+            }}
+            onFocus={e => { e.target.style.borderColor = G.blue; e.target.style.boxShadow = `0 0 0 2px ${G.blue}20`; }}
+            onBlur={e => { e.target.style.borderColor = "#DADCE0"; e.target.style.boxShadow = "none"; }}
+          />
+          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#80868B" }}>
+            Un SMS part dans la minute qui suit un avis négatif, en plus de l&apos;email. Nécessite l&apos;envoi SMS activé côté compte (sinon seul l&apos;email part).
+          </p>
+        </div>
+
         {/* Compensation */}
         <div style={{ border: "1px solid #DADCE0", borderRadius: "10px", overflow: "hidden" }}>
           <div style={{
@@ -293,13 +395,19 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
             <div>
               <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Geste commercial automatique</div>
               <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
-                Inclut une offre dans les réponses aux avis négatifs. +45% de reconversion.
+                {local.regulatedSector
+                  ? "Désactivé : établissement en profession réglementée."
+                  : "Inclut une offre dans les réponses aux avis négatifs. +45% de reconversion."}
               </div>
             </div>
-            <Toggle value={local.compensationEnabled} onChange={v => update("compensationEnabled", v)} color={G.green} />
+            <Toggle
+              value={local.compensationEnabled && !local.regulatedSector}
+              onChange={v => { if (!local.regulatedSector) update("compensationEnabled", v); }}
+              color={local.regulatedSector ? "#DADCE0" : G.green}
+            />
           </div>
 
-          {local.compensationEnabled && (
+          {local.compensationEnabled && !local.regulatedSector && (
             <div style={{ padding: "16px" }}>
               <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#202124", marginBottom: "6px" }}>
                 Votre geste commercial

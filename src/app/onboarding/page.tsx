@@ -174,6 +174,15 @@ export default async function OnboardingPage({
           >
             <GoogleGlyph /> Connecter ma fiche Google
           </a>
+          <a
+            href="/businesses"
+            style={{
+              display: "block", marginTop: 12, fontSize: 13, color: "#5F6368",
+              textDecoration: "underline",
+            }}
+          >
+            Ou ajouter mon commerce sans passer par Google →
+          </a>
           </>
         ) : (
           <div
@@ -185,13 +194,21 @@ export default async function OnboardingPage({
               padding: "13px 16px",
               fontSize: 14,
               fontWeight: 600,
+              textAlign: "left",
             }}
           >
-            La connexion Google se met en place. Écris-nous à{" "}
-            <a href="mailto:support@caela.co" style={{ color: "#B06000", fontWeight: 800 }}>
-              support@caela.co
-            </a>{" "}
-            et on rattache ta fiche à la main.
+            La connexion Google 1-clic n&apos;est pas encore active. Deux options :
+            <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontWeight: 500 }}>
+              <li>
+                <a href="/businesses" style={{ color: "#B06000", fontWeight: 800 }}>Ajouter mon commerce moi-même →</a>{" "}
+                (nécessite le Place ID Google, un peu technique)
+              </li>
+              <li style={{ marginTop: 4 }}>
+                Écris-nous à{" "}
+                <a href="mailto:support@caela.co" style={{ color: "#B06000", fontWeight: 800 }}>support@caela.co</a>{" "}
+                avec le nom de ton établissement — on le rattache pour toi sous 24h, gratuitement.
+              </li>
+            </ul>
           </div>
         )}
 

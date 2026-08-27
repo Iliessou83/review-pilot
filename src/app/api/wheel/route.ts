@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { wheelConfigs, wheelSpins, type WheelSegment } from "@/db/schema";
+import { wheelConfigs, wheelSpins, businesses, type WheelSegment } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
 import { eq, desc, sql, inArray } from "drizzle-orm";
@@ -99,6 +99,15 @@ export async function POST(request: NextRequest) {
   if (!scope.isAdmin && (!bizId || !(await ownsBusiness(scope, bizId)))) {
     return NextResponse.json({ error: "Commerce non autorisé" }, { status: 403 });
   }
+  // Profession réglementée (santé, droit, funéraire...) : la roue reste désactivée
+  // par défaut, jamais activable directement — voir manque #4 de l'audit
+  // "Avant Commercialisation" 2026-08-27.
+  if (bizId) {
+    const [biz] = await db.select({ regulatedSector: businesses.regulatedSector }).from(businesses).where(eq(businesses.id, bizId)).limit(1);
+    if (biz?.regulatedSector) {
+      return NextResponse.json({ error: "La roue est désactivée pour les établissements en profession réglementée. Contactez le support pour en discuter." }, { status: 403 });
+    }
+  }
 
   let slug = slugify(String(body.slug || businessName));
   if (!slug) slug = `roue-${Date.now().toString(36)}`;
@@ -144,14 +153,22 @@ export async function PUT(request: NextRequest) {
 
   // Cloisonnement : un client ne peut modifier qu'une roue de SON commerce.
   const scope = scopeFrom(session);
+  const [wForCheck] = await db
+    .select({ businessId: wheelConfigs.businessId })
+    .from(wheelConfigs)
+    .where(eq(wheelConfigs.id, id))
+    .limit(1);
   if (!scope.isAdmin) {
-    const [w] = await db
-      .select({ businessId: wheelConfigs.businessId })
-      .from(wheelConfigs)
-      .where(eq(wheelConfigs.id, id))
-      .limit(1);
-    if (!w || w.businessId == null || !(await ownsBusiness(scope, w.businessId))) {
+    if (!wForCheck || wForCheck.businessId == null || !(await ownsBusiness(scope, wForCheck.businessId))) {
       return NextResponse.json({ error: "Roue introuvable" }, { status: 404 });
+    }
+  }
+  // Profession réglementée : impossible de réactiver la roue — voir manque #4
+  // de l'audit "Avant Commercialisation" 2026-08-27.
+  if (body.active === true && wForCheck?.businessId != null) {
+    const [biz] = await db.select({ regulatedSector: businesses.regulatedSector }).from(businesses).where(eq(businesses.id, wForCheck.businessId)).limit(1);
+    if (biz?.regulatedSector) {
+      return NextResponse.json({ error: "La roue est désactivée pour les établissements en profession réglementée. Contactez le support pour en discuter." }, { status: 403 });
     }
   }
 

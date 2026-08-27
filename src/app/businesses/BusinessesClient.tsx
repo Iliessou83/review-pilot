@@ -207,9 +207,20 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
             borderRadius: "8px", marginBottom: "20px",
             fontSize: "13px", color: G.blue, lineHeight: 1.5,
           }}>
-            <strong>Configuration Google Business Profile :</strong> Vous aurez besoin de votre Place ID Google
-            (trouvable sur <strong>developers.google.com/maps/documentation/places</strong>) et d&apos;un token OAuth
-            obtenu via la Google Cloud Console.
+            <strong>Configuration Google Business Profile :</strong> vous aurez besoin de votre Place ID Google et
+            d&apos;un token OAuth obtenu via la Google Cloud Console. Pour trouver votre Place ID, tapez le nom de
+            votre établissement dans{" "}
+            <a
+              href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder"
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: G.blue, fontWeight: 600 }}
+            >
+              cet outil de recherche Google
+            </a>
+            . Ces deux champs demandent des connaissances techniques — si vous préférez, écrivez-nous à{" "}
+            <a href="mailto:support@caela.co" style={{ color: G.blue, fontWeight: 600 }}>support@caela.co</a> avec le
+            nom de votre établissement et on le rattache pour vous, gratuitement.
           </div>
 
           <form onSubmit={handleSubmit}>

@@ -57,13 +57,25 @@ export default function ReviewsClient({
 
   return (
     <div>
-      <div style={{ marginBottom: "24px" }}>
-        <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
-          Avis
-        </h1>
-        <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>
-          {reviews.length} avis correspondant aux filtres
-        </p>
+      <div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "16px", flexWrap: "wrap" }}>
+        <div>
+          <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
+            Avis
+          </h1>
+          <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>
+            {reviews.length} avis correspondant aux filtres
+          </p>
+        </div>
+        <a
+          href="/api/reviews/export"
+          style={{
+            padding: "9px 16px", background: "#fff", border: "1px solid #DADCE0",
+            borderRadius: "8px", color: "#202124", fontSize: "13px", fontWeight: 600,
+            textDecoration: "none", boxShadow: SHADOW,
+          }}
+        >
+          ⬇ Exporter en CSV
+        </a>
       </div>
 
       {/* Filters */}

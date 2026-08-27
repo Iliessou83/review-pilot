@@ -51,6 +51,22 @@ export const businesses = pgTable("businesses", {
   mediaUploadToken: text("media_upload_token"),
   // Empêche le cron de relancer le client plusieurs fois dans le même mois.
   lastContentReminderAt: timestamp("last_content_reminder_at"),
+  // Signature réelle affichée en bas des réponses IA (ex: "Sophie, gérante").
+  // Si vide, la réponse signe "L'équipe {name}" — jamais un prénom inventé
+  // non attribuable (voir audit "Avant Commercialisation" 2026-08-27, manque #1,
+  // renforcé par l'AI Act art. 50 entré en application le 2 août 2026 :
+  // tout contenu généré par IA doit être signalé comme tel).
+  signatureName: text("signature_name"),
+  // Profession réglementée (santé, droit, funéraire...) : désactive par défaut
+  // la roue, le geste commercial, et force la validation humaine sur TOUS les
+  // avis (jamais d'auto-publication, même 5★). Voir manque #4 de l'audit.
+  regulatedSector: boolean("regulated_sector").default(false).notNull(),
+  // Voix de marque injectée dans le prompt IA (manque #6 de l'audit).
+  brandTone: text("brand_tone", { enum: ["chaleureux", "pro", "premium"] }).default("chaleureux").notNull(),
+  tutoiement: boolean("tutoiement").default(false).notNull(),
+  // Numéro du commerçant pour l'alerte SMS immédiate sur avis négatif
+  // (manque #5 de l'audit) — dégrade proprement si vide ou si smsConfigured() est faux.
+  ownerPhone: text("owner_phone"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

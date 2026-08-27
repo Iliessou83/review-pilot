@@ -36,6 +36,11 @@ export async function GET(request: NextRequest) {
       escalationKeywords: b.escalationKeywords || [],
       ownerEmail: b.ownerEmail,
       reviewLink: b.reviewLink || "",
+      signatureName: b.signatureName || "",
+      regulatedSector: b.regulatedSector,
+      brandTone: b.brandTone,
+      tutoiement: b.tutoiement,
+      ownerPhone: b.ownerPhone || "",
     })),
   });
 }
@@ -55,6 +60,11 @@ export async function PUT(request: NextRequest) {
     escalationKeywords?: string[];
     ownerEmail?: string;
     reviewLink?: string;
+    signatureName?: string;
+    regulatedSector?: boolean;
+    brandTone?: string;
+    tutoiement?: boolean;
+    ownerPhone?: string;
   };
 
   try {
@@ -81,6 +91,20 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Modification réservée à l'administrateur" }, { status: 403 });
   }
 
+  // Profession réglementée : impossible d'activer le geste commercial (risque
+  // d'incitation à l'avis positif chez un professionnel de santé/droit) — voir
+  // manque #4 de l'audit "Avant Commercialisation" 2026-08-27. On lit l'état
+  // actuel plutôt que fields.regulatedSector, pour bloquer aussi le cas où les
+  // deux champs sont modifiés dans le même appel.
+  let isRegulated = false;
+  {
+    const [current] = await db.select({ regulatedSector: businesses.regulatedSector }).from(businesses).where(eq(businesses.id, businessId)).limit(1);
+    isRegulated = fields.regulatedSector ?? current?.regulatedSector ?? false;
+  }
+  if (fields.compensationEnabled === true && isRegulated) {
+    return NextResponse.json({ error: "Le geste commercial est désactivé pour les établissements en profession réglementée." }, { status: 403 });
+  }
+
   const update: Partial<typeof businesses.$inferInsert> = {};
   if (fields.businessType !== undefined) update.businessType = fields.businessType;
   if (fields.autoReply5Star !== undefined) update.autoReply5Star = fields.autoReply5Star;
@@ -91,6 +115,13 @@ export async function PUT(request: NextRequest) {
   if (fields.escalationKeywords !== undefined) update.escalationKeywords = fields.escalationKeywords;
   if (fields.ownerEmail !== undefined) update.ownerEmail = fields.ownerEmail;
   if (fields.reviewLink !== undefined) update.reviewLink = fields.reviewLink;
+  if (fields.signatureName !== undefined) update.signatureName = fields.signatureName.trim() || null;
+  if (fields.regulatedSector !== undefined) update.regulatedSector = fields.regulatedSector;
+  if (fields.brandTone !== undefined && ["chaleureux", "pro", "premium"].includes(fields.brandTone)) {
+    update.brandTone = fields.brandTone as "chaleureux" | "pro" | "premium";
+  }
+  if (fields.tutoiement !== undefined) update.tutoiement = fields.tutoiement;
+  if (fields.ownerPhone !== undefined) update.ownerPhone = fields.ownerPhone.trim() || null;
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Aucun champ à mettre à jour" }, { status: 400 });

@@ -13,6 +13,36 @@ export type FactContext = {
   compensationText?: string | null;
 };
 
+/** Voix de marque de l'établissement, injectée dans chaque prompt (jamais figée). */
+export type BrandVoice = {
+  signatureName?: string | null;
+  brandTone?: "chaleureux" | "pro" | "premium";
+  tutoiement?: boolean;
+};
+
+/**
+ * Une réponse signée d'un prénom inventé, non lié à une vraie personne, est
+ * interdite : depuis le 2 août 2026 l'AI Act (art. 50) impose de signaler tout
+ * contenu généré par IA, et un faux prénom brouille cette identité. Deux issues
+ * seulement : le prénom réel configuré par le commerçant, ou une signature
+ * neutre au nom de l'établissement.
+ */
+function resolveSignature(businessName: string, voice?: BrandVoice): string {
+  const real = voice?.signatureName?.trim();
+  return real ? real : `L'équipe ${businessName}`;
+}
+
+function buildVoiceBlock(voice?: BrandVoice): string {
+  const tone = voice?.brandTone || "chaleureux";
+  const toneLabel = tone === "pro" ? "Sobre, mesuré, professionnel — jamais familier."
+    : tone === "premium" ? "Élégant, soigné, vocabulaire choisi — image haut de gamme."
+    : "Chaleureux, humain, proche du client.";
+  const vouvoiement = voice?.tutoiement
+    ? "Tutoiement (sauf si le client vouvoie explicitement dans son avis)."
+    : "Vouvoiement systématique sauf si le client tutoie dans son avis.";
+  return `\nVOIX DE MARQUE DE CET ÉTABLISSEMENT:\n• Ton: ${toneLabel}\n• ${vouvoiement}`;
+}
+
 function buildFactBlock(ctx?: FactContext): string {
   if (!ctx) return "";
 
@@ -63,9 +93,8 @@ RÈGLES ABSOLUES — ne jamais enfreindre:
 • Ton humain. Jamais corporate, jamais robotique.
 • Mentionne AU MOINS 1 détail spécifique tiré de l'avis — prouve que tu l'as vraiment lu
 • Jamais défensif. Jamais d'excuse creuse sans action concrète.
-• Vouvoiement systématique sauf si le client tutoie dans son avis
-• Signe avec un prénom humain d'un membre de l'équipe (varie: Sophie, Thomas, Leila, Marc, etc.)
 • Réponds dans la même langue que l'avis
+• Signe UNIQUEMENT avec la signature fournie ci-dessous (SIGNATURE À UTILISER) — jamais un prénom inventé, jamais varié d'une réponse à l'autre.
 
 TECHNIQUES PSYCHOLOGIQUES:
 • Mirroir lexical: réutilise 1-2 mots exacts du client (connexion inconsciente, sentiment d'être compris)
@@ -101,10 +130,12 @@ export async function generateAutoResponse(
   authorName: string,
   businessName: string,
   rating: number,
-  factContext?: FactContext
+  factContext?: FactContext,
+  voice?: BrandVoice
 ): Promise<string> {
   const firstName = authorName.split(" ")[0];
   const context = detectContext(rating);
+  const signature = resolveSignature(businessName, voice);
 
   const message = await getClient().messages.create({
     model: "claude-sonnet-4-6",
@@ -112,6 +143,9 @@ export async function generateAutoResponse(
     system: `Tu es le responsable e-réputation de ${businessName}. Tu maîtrises la psychologie de la relation client à un niveau expert.
 
 ${CORE_RULES}
+${buildVoiceBlock(voice)}
+
+SIGNATURE À UTILISER (obligatoire, exacte, ne jamais en inventer une autre): "${signature}"
 
 STYLE:
 • Phrases courtes qui claquent. Alterne avec une phrase plus longue si le sens le demande.
@@ -182,10 +216,12 @@ export async function generateResponseSuggestions(
   authorName: string,
   businessName: string,
   rating: number,
-  factContext?: FactContext
+  factContext?: FactContext,
+  voice?: BrandVoice
 ): Promise<string[]> {
   const firstName = authorName.split(" ")[0];
   const context = detectContext(rating);
+  const signature = resolveSignature(businessName, voice);
 
   const message = await getClient().messages.create({
     model: "claude-sonnet-4-6",
@@ -193,7 +229,10 @@ export async function generateResponseSuggestions(
     system: `Tu es un expert en psychologie de la relation client et gestion de e-réputation pour ${businessName}.
 
 ${CORE_RULES}
+${buildVoiceBlock(voice)}
 ${buildFactBlock(factContext)}
+
+SIGNATURE À UTILISER pour LES TROIS suggestions (obligatoire, exacte, identique aux trois, jamais un prénom inventé): "${signature}"
 
 Tu vas générer 3 réponses radicalement distinctes — même fond, 3 approches psychologiques différentes:
 
@@ -207,7 +246,7 @@ RÈGLES POUR CHAQUE RÉPONSE:
 • En mode: ${context}
 • Vraiment différente des 2 autres par le TON et le CONTENU
 • Sous 150 mots maximum
-• Signée d'un prénom humain différent pour chaque suggestion
+• Signée EXACTEMENT "${signature}" (la même signature pour les trois — jamais un prénom inventé)
 
 Retourne UNIQUEMENT un tableau JSON valide de 3 strings. Aucun texte avant ou après.`,
     messages: [

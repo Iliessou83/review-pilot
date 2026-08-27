@@ -5,16 +5,25 @@
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { generateAutoResponse, generateResponseSuggestions, type FactContext } from "@/lib/claude";
+import { generateAutoResponse, generateResponseSuggestions, type FactContext, type BrandVoice } from "@/lib/claude";
 import { assessReviewRisk } from "@/lib/risk-detection";
 import { escapeHtml } from "@/lib/escape-html";
 import { envoyer, EXPEDITEUR_NOTIF } from "@/lib/email";
 import { SignJWT } from "jose";
 import { googleAccessToken } from "@/lib/google-oauth";
 import { decryptToken } from "@/lib/token-crypto";
+import { smsConfigured, sendSms, normalizePhoneFR } from "@/lib/sms";
 
 type Review = typeof reviews.$inferSelect;
 type Business = typeof businesses.$inferSelect;
+
+function voiceOf(business: Business): BrandVoice {
+  return {
+    signatureName: business.signatureName,
+    brandTone: business.brandTone as BrandVoice["brandTone"],
+    tutoiement: business.tutoiement,
+  };
+}
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -130,9 +139,11 @@ export async function processHighRatedReview(review: Review, business: Business)
   if (review.responded) return;
 
   const risk = assessReviewRisk(review.text, business.productFacts, business.escalationKeywords);
-  if (risk.escalate) {
-    // Sujet sensible malgré la bonne note (ex: 5★ qui évoque quand même un point santé/hygiène) :
-    // jamais d'auto-publication, toujours repasser par la validation humaine.
+  if (risk.escalate || business.regulatedSector) {
+    // Sujet sensible malgré la bonne note (ex: 5★ qui évoque quand même un point santé/hygiène),
+    // OU établissement en profession réglementée (santé, droit, funéraire...) : jamais
+    // d'auto-publication, toujours repasser par la validation humaine. Voir manque #4 de
+    // l'audit "Avant Commercialisation" 2026-08-27.
     await processLowRatedReview(review, business, risk);
     return;
   }
@@ -146,7 +157,7 @@ export async function processHighRatedReview(review: Review, business: Business)
 
   let responseText: string;
   try {
-    responseText = await generateAutoResponse(review.text, review.authorName, business.name, review.rating, factContext);
+    responseText = await generateAutoResponse(review.text, review.authorName, business.name, review.rating, factContext, voiceOf(business));
   } catch (err) {
     console.error(`Auto-response generation failed for review ${review.id}:`, err);
     return;
@@ -195,7 +206,7 @@ export async function processLowRatedReview(
 
   let suggestions: string[];
   try {
-    suggestions = await generateResponseSuggestions(review.text, review.authorName, business.name, review.rating, factContext);
+    suggestions = await generateResponseSuggestions(review.text, review.authorName, business.name, review.rating, factContext, voiceOf(business));
   } catch (err) {
     console.error(`Suggestion generation failed for review ${review.id}:`, err);
     return;
@@ -219,5 +230,23 @@ export async function processLowRatedReview(
     );
   } catch (err) {
     console.error(`Notification email failed for review ${review.id}:`, err);
+  }
+
+  // Alerte immédiate par SMS sur avis réellement négatif (1-3★), en plus de
+  // l'email : dégrade proprement si aucun fournisseur SMS n'est configuré ou
+  // si le commerçant n'a pas renseigné son numéro. Voir manque #5 de l'audit
+  // "Avant Commercialisation" 2026-08-27 — un avis 1★ ne doit plus attendre
+  // le prochain passage du cron pour être vu.
+  const ownerPhoneE164 = business.ownerPhone ? normalizePhoneFR(business.ownerPhone) : null;
+  if (review.rating <= 3 && smsConfigured() && ownerPhoneE164) {
+    try {
+      const res = await sendSms(
+        ownerPhoneE164,
+        `⚠️ Avis ${review.rating}★ chez ${business.name} : "${review.text.slice(0, 80)}${review.text.length > 80 ? "…" : ""}" — réponds vite: ${appUrl}/pending`
+      );
+      if (!res.ok) console.error(`SMS alert failed for review ${review.id}: ${res.error}`);
+    } catch (err) {
+      console.error(`SMS alert failed for review ${review.id}:`, err);
+    }
   }
 }
