@@ -1935,7 +1935,7 @@ export default function HomeClient() {
           >
             <span className="rp-bounce-icon" style={{ fontSize: "19px", flexShrink: 0 }}>🚀</span>
             <span style={{ fontSize: isMobile ? "13.5px" : "15px", fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {widgetMode === "login" ? "Se connecter" : (isMobile ? "Vos avis sans réponse coûtent cher" : "Combien vous coûtent vos avis sans réponse ?")}
+              {widgetMode === "login" ? "Se connecter" : "Essai gratuit en 2 minutes"}
             </span>
           </button>
 
