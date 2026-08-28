@@ -1561,11 +1561,11 @@ export default function HomeClient() {
           {/* Plaque seule vs plaque + moteur — réponse aux concurrents hardware (bostap & co) */}
           <FadeInOnView>
           <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden", marginBottom: "28px" }}>
-            <div style={{ padding: "24px 28px 4px", textAlign: "center" }}>
-              <h3 style={{ margin: "0 0 6px", fontSize: "clamp(18px, 2.4vw, 24px)", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
+            <div style={{ padding: "24px 28px 22px", textAlign: "center" }}>
+              <h3 style={{ margin: "0 0 8px", fontSize: "clamp(18px, 2.4vw, 24px)", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
                 Une plaque NFC coûte 20€. Ce qu&apos;on en fait ensuite, c&apos;est tout l&apos;enjeu.
               </h3>
-              <p style={{ margin: "0 auto 4px", maxWidth: "560px", fontSize: "14px", color: "#5F6368", lineHeight: 1.6 }}>
+              <p style={{ margin: "0 auto", maxWidth: "560px", fontSize: "14px", color: "#5F6368", lineHeight: 1.6 }}>
                 La plupart des plaques du marché envoient le client sur Google. Puis plus rien. Nous, la plaque n&apos;est que le point de départ.
               </p>
             </div>
