@@ -188,3 +188,23 @@ canvas {
     animation: none;
   }
 }
+
+/* Sautillement périodique de la poignée du widget signup replié : un petit
+   double-rebond toutes les 4s, pas une boucle permanente, pour intriguer
+   sans agacer. Appliqué à la carte interne (pas au conteneur fixed) pour ne
+   pas entrer en conflit avec le transform de glissement ouvert/fermé. */
+@keyframes rp-widget-nudge {
+  0%, 78%, 100% { transform: translateY(0); }
+  82% { transform: translateY(-9px); }
+  86% { transform: translateY(0); }
+  90% { transform: translateY(-5px); }
+  94% { transform: translateY(0); }
+}
+.rp-widget-nudge {
+  animation: rp-widget-nudge 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rp-widget-nudge {
+    animation: none;
+  }
+}

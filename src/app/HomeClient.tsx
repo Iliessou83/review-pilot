@@ -1921,7 +1921,7 @@ export default function HomeClient() {
           zIndex: 92,
         }}
       >
-        <div style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "18px", borderTopRightRadius: "18px", boxShadow: "0 -10px 32px rgba(26,115,232,0.22)", overflow: "hidden" }}>
+        <div className={loginWidgetOpen ? "" : "rp-widget-nudge"} style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "18px", borderTopRightRadius: "18px", boxShadow: "0 -10px 32px rgba(26,115,232,0.22)", overflow: "hidden" }}>
           {/* Poignée toujours visible, même repliée — dégradé bleu de marque
               + halo pulsé (au lieu d'un gris plat) pour être visible sans
               avoir à la chercher, et plus grande pour se lire de loin. */}
