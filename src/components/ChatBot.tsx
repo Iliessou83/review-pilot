@@ -13,10 +13,22 @@ const SUGGESTED = [
   "Essai gratuit ?",
 ];
 
+// Icône dédiée d'Aria (étincelle), réutilisée dans le header et sur chaque
+// bulle de réponse — remplace l'emoji ✈ générique.
+function AriaAvatar({ size = 26 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: G.blue, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="none">
+        <path d="M12 2.5L14.2 9.3L21 11.5L14.2 13.7L12 20.5L9.8 13.7L3 11.5L9.8 9.3L12 2.5Z" fill="#fff" />
+      </svg>
+    </div>
+  );
+}
+
 export default function ChatBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Bonjour 👋 Je suis Pilot, l'assistant Caela Réputation. Comment puis-je vous aider ?" },
+    { role: "assistant", content: "Bonjour 👋 Je suis Aria, l'assistante IA de Caela Réputation. Comment puis-je vous aider ?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,26 +80,33 @@ export default function ChatBot() {
           border: "1px solid #DADCE0",
           fontFamily: "'Google Sans', system-ui, sans-serif",
         }}>
-          {/* Header */}
-          <div style={{ background: G.blue, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Header — dégradé + icône dédiée (au lieu d'un aplat bleu et d'un
+              emoji avion, qui lisaient "widget de démo" plutôt que produit
+              professionnel). */}
+          <div style={{ background: "linear-gradient(135deg, #1A73E8, #1557b0)", padding: "18px 18px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
               <div style={{
-                width: "36px", height: "36px", borderRadius: "50%",
-                background: "rgba(255,255,255,0.2)",
+                width: "38px", height: "38px", borderRadius: "11px",
+                background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.25)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "18px",
-              }}>✈</div>
+              }}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2.5L14.2 9.3L21 11.5L14.2 13.7L12 20.5L9.8 13.7L3 11.5L9.8 9.3L12 2.5Z" fill="#fff" />
+                  <path d="M19 3L19.7 5.1L21.8 5.8L19.7 6.5L19 8.6L18.3 6.5L16.2 5.8L18.3 5.1L19 3Z" fill="#fff" opacity="0.85" />
+                </svg>
+              </div>
               <div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>Pilot</div>
-                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#4ade80" }} />
-                  <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)" }}>En ligne</span>
+                <div style={{ fontSize: "14.5px", fontWeight: 700, color: "#fff", letterSpacing: "-0.2px" }}>Aria</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div className="rp-live-dot" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#4ade80" }} />
+                  <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.85)" }}>Assistante IA · en ligne</span>
                 </div>
               </div>
             </div>
             <button
               onClick={() => setOpen(false)}
-              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.8)", fontSize: "20px", cursor: "pointer", padding: "2px 6px", borderRadius: "4px" }}
+              aria-label="Fermer"
+              style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", fontSize: "16px", cursor: "pointer", width: "28px", height: "28px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}
             >×</button>
           </div>
 
@@ -96,7 +115,7 @@ export default function ChatBot() {
             {messages.map((msg, i) => (
               <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
                 {msg.role === "assistant" && (
-                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: G.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", marginRight: "6px", flexShrink: 0, alignSelf: "flex-end" }}>✈</div>
+                  <div style={{ marginRight: "6px", alignSelf: "flex-end" }}><AriaAvatar size={26} /></div>
                 )}
                 <div style={{
                   maxWidth: "78%",
@@ -115,7 +134,7 @@ export default function ChatBot() {
 
             {loading && (
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: G.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", flexShrink: 0 }}>✈</div>
+                <AriaAvatar size={26} />
                 <div style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", display: "flex", gap: "4px" }}>
                   {[0, 1, 2].map(i => (
                     <div key={i} style={{
@@ -188,24 +207,27 @@ export default function ChatBot() {
           {/* Footer */}
           <div style={{ padding: "8px 14px", background: "#F8F9FA", borderTop: "1px solid #DADCE0", textAlign: "center" }}>
             <span style={{ fontSize: "10px", color: "#80868B" }}>
-              Propulsé par Caela Réputation ·{" "}
+              Réponse générée par IA · une question ?{" "}
               <a href="mailto:contact@caela.fr" style={{ color: G.blue, textDecoration: "none" }}>contact@caela.fr</a>
             </span>
           </div>
         </div>
       )}
 
-      {/* Floating button */}
+      {/* Floating button — dégradé + halo discret quand fermé (pour signaler
+          une présence active plutôt qu'un simple bouton statique). */}
       <button
         onClick={() => setOpen(o => !o)}
+        aria-label={open ? "Fermer le chat" : "Ouvrir le chat avec Aria"}
+        className={open ? "" : "rp-chat-pulse"}
         style={{
           position: "fixed", bottom: "24px", right: "24px",
-          width: "56px", height: "56px", borderRadius: "50%",
-          background: open ? "#5F6368" : G.blue,
+          width: "58px", height: "58px", borderRadius: "50%",
+          background: open ? "#5F6368" : "linear-gradient(135deg, #1A73E8, #1557b0)",
           border: "none", cursor: "pointer",
           boxShadow: "0 4px 16px rgba(26,115,232,0.4), 0 2px 6px rgba(0,0,0,0.12)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "all 0.2s",
+          transition: "background 0.2s, transform 0.2s",
           zIndex: 1001,
         }}
         onMouseEnter={e => { (e.currentTarget).style.transform = "scale(1.08)"; }}
@@ -217,10 +239,7 @@ export default function ChatBot() {
           </svg>
         ) : (
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-            <circle cx="8" cy="11" r="1.5" fill={G.blue}/>
-            <circle cx="12" cy="11" r="1.5" fill={G.blue}/>
-            <circle cx="16" cy="11" r="1.5" fill={G.blue}/>
+            <path d="M12 2.5L14.2 9.3L21 11.5L14.2 13.7L12 20.5L9.8 13.7L3 11.5L9.8 9.3L12 2.5Z" fill="#fff" />
           </svg>
         )}
         {!open && unread > 0 && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import ChatBot from "@/components/ChatBot";
 import { trackClic } from "@/lib/analytics/client";
 
@@ -88,6 +89,31 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   );
 }
 
+// Petit helper générique : fondu + léger glissement au moment où l'élément
+// entre dans le viewport, rejoue à chaque entrée. Utilisé pour les blocs qui
+// n'ont pas besoin d'une chorégraphie sur mesure (juste "ne pas apparaître
+// figé d'un bloc").
+function FadeInOnView({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.2 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{
+      opacity: inView ? 1 : 0,
+      transform: inView ? "translateY(0)" : "translateY(22px)",
+      transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
+    }}>
+      {children}
+    </div>
+  );
+}
+
 function GMBCard() {
   // Le chrono tourne réellement (pas un texte figé "il y a 12 sec") : la
   // preuve de vitesse se voit sans qu'on ait besoin de la lire deux fois.
@@ -100,6 +126,11 @@ function GMBCard() {
   const timeLabel = secondsAgo < 60 ? `il y a ${secondsAgo} sec` : `il y a ${Math.floor(secondsAgo / 60)} min`;
 
   return (
+    // Wrapper séparé pour le flottement idle (keyframes CSS) : une animation
+    // CSS sur `transform` gagnerait toujours contre le transform inline du
+    // hover s'ils étaient sur le même élément. Ici le flottement est sur ce
+    // div, le lift au survol reste sur le <a> interne — aucun conflit.
+    <div className={hover ? "" : "rp-float"}>
     <a
       href="/audit"
       onClick={() => trackClic("bouton_audit-gratuit_carte-gmb-hero")}
@@ -179,59 +210,7 @@ function GMBCard() {
         </div>
       </div>
     </a>
-  );
-}
-
-// Mockup visuel de la plaque NFC (SVG maison — pas de vraie photo produit
-// disponible pour l'instant). Sert à faire comprendre l'objet en un coup
-// d'œil dans la section NFC, sans attendre un vrai shooting produit.
-function NFCPlateVisual({ size = 220 }: { size?: number }) {
-  return (
-    <svg width={size} height={size * 0.62} viewBox="0 0 220 136" style={{ display: "block", filter: "drop-shadow(0 8px 20px rgba(26,115,232,0.25))" }}>
-      <defs>
-        <linearGradient id="rpPlate" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2A2E33" />
-          <stop offset="55%" stopColor="#1B1E22" />
-          <stop offset="100%" stopColor="#0F1113" />
-        </linearGradient>
-        <linearGradient id="rpSheen" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.16" />
-          <stop offset="40%" stopColor="#fff" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="4" width="212" height="128" rx="16" fill="url(#rpPlate)" stroke="#3A3F45" strokeWidth="1.5" />
-      <rect x="4" y="4" width="212" height="128" rx="16" fill="url(#rpSheen)" />
-      {/* logo Caela */}
-      <g transform="translate(20,20)">
-        <circle cx="0" cy="0" r="4" fill={G.blue} />
-        <circle cx="11" cy="0" r="4" fill={G.red} />
-        <circle cx="22" cy="0" r="4" fill={G.yellow} />
-        <circle cx="33" cy="0" r="4" fill={G.green} />
-      </g>
-      {/* ondes NFC */}
-      <g transform="translate(178,30)" stroke="#fff" fill="none" strokeLinecap="round">
-        <path d="M-6,10 a10,10 0 0 1 12,0" strokeWidth="2.4" opacity="0.9" />
-        <path d="M-11,14 a17,17 0 0 1 22,0" strokeWidth="2.2" opacity="0.6" />
-        <path d="M-16,18 a24,24 0 0 1 32,0" strokeWidth="2" opacity="0.35" />
-        <circle cx="0" cy="14" r="2.2" fill="#fff" />
-      </g>
-      {/* texte */}
-      <text x="20" y="70" fill="#fff" fontSize="15" fontWeight="700" fontFamily="system-ui, sans-serif">Restaurant Le Cèdre</text>
-      <text x="20" y="88" fill="#9AA0A6" fontSize="10" fontFamily="system-ui, sans-serif">Tapez pour laisser un avis</text>
-      {/* QR de secours, coin bas droit */}
-      <g transform="translate(160,86)">
-        <rect width="34" height="34" rx="4" fill="#fff" />
-        {[0,1,2,3,4].map(r => (
-          <g key={r}>
-            {[0,1,2,3,4].map(c => (
-              ((r + c) % 3 === 0 || (r === 0 && c === 0) || (r === 4 && c === 4)) && (
-                <rect key={c} x={3 + c * 5.6} y={3 + r * 5.6} width="4.6" height="4.6" fill="#0F1113" />
-              )
-            ))}
-          </g>
-        ))}
-      </g>
-    </svg>
+    </div>
   );
 }
 
@@ -451,82 +430,129 @@ function CalculatorFlowBanner() {
 // Tableau "Sans / Avec" : chaque ligne de gauche se barre au scroll, la ligne
 // "avec" correspondante s'allume juste après — visualise le lien entre le
 // problème et sa solution au lieu de deux colonnes statiques.
+const DIY_COMPARISON_ROWS = [
+  { bad: "Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", good: "Réponse en 30 secondes, 24h/24, même la nuit du réveillon" },
+  { bad: "Tu écris la même réponse générique pour la 12ème fois", good: "Chaque réponse cite le prénom et un détail. Jamais générique." },
+  { bad: "Tu réponds énervé. Ça se voit et ça coûte des clients", good: "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic." },
+  { bad: "3h/semaine perdues sur les avis au lieu de gérer", good: "Taux de réponse >95%. Google t'en récompense sur Maps." },
+  { bad: "Ta note stagne. Les concurrents qui répondent vite te dépassent", good: "Ta note monte. L'IA travaille. Tu dors." },
+];
+
+// Refonte complète (2026-08-29) : l'ancienne version pilotait tout via des
+// transitions CSS déclenchées par IntersectionObserver, ce qui donnait un
+// résultat incohérent selon le moment exact où la section entrait dans le
+// viewport (parfois tout apparaissait déjà barré, sans animation visible —
+// classique conflit React/CSS transition quand l'état change avant le
+// premier paint). Ici, tout est piloté par une machine à états JS explicite
+// (setTimeout enchaînés, annulables via runId) : ligne par ligne, on tape le
+// problème, puis la solution en la surlignant, PUIS on barre le problème.
+// Rejoue à chaque entrée dans le viewport, s'arrête net si on en ressort.
 function DIYComparison() {
   const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
+  const [active, setActive] = useState(false);
+  const [badChars, setBadChars] = useState<number[]>(() => DIY_COMPARISON_ROWS.map(() => 0));
+  const [goodChars, setGoodChars] = useState<number[]>(() => DIY_COMPARISON_ROWS.map(() => 0));
+  const [struck, setStruck] = useState<boolean[]>(() => DIY_COMPARISON_ROWS.map(() => false));
+  const [highlighted, setHighlighted] = useState<boolean[]>(() => DIY_COMPARISON_ROWS.map(() => false));
+  const runIdRef = useRef(0);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Suit l'intersection réelle (pas de disconnect après le premier passage) :
-    // l'animation rejoue à chaque fois qu'on repasse sur la section, dans les
-    // deux sens de défilement.
-    const obs = new IntersectionObserver(([entry]) => {
-      setInView(entry.isIntersecting);
-    }, { threshold: 0.25 });
+    const obs = new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { threshold: 0.3 });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  const ROWS = [
-    { bad: "Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", good: "Réponse en 30 secondes, 24h/24, même la nuit du réveillon" },
-    { bad: "Tu écris la même réponse générique pour la 12ème fois", good: "Chaque réponse cite le prénom et un détail. Jamais générique." },
-    { bad: "Tu réponds énervé. Ça se voit et ça coûte des clients", good: "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic." },
-    { bad: "3h/semaine perdues sur les avis au lieu de gérer", good: "Taux de réponse >95%. Google t'en récompense sur Maps." },
-    { bad: "Ta note stagne. Les concurrents qui répondent vite te dépassent", good: "Ta note monte. L'IA travaille. Tu dors." },
-  ];
-  // Rythme ralenti (0.55s/ligne au lieu de 0.35s) : chaque ligne de gauche
-  // apparaît normalement, PUIS se barre — au lieu d'être barrée d'emblée —
-  // et sa contrepartie verte s'allume juste après, comme avant.
-  const STEP = 0.55;
+  useEffect(() => {
+    const myRun = ++runIdRef.current;
+    if (!active) {
+      setBadChars(DIY_COMPARISON_ROWS.map(() => 0));
+      setGoodChars(DIY_COMPARISON_ROWS.map(() => 0));
+      setStruck(DIY_COMPARISON_ROWS.map(() => false));
+      setHighlighted(DIY_COMPARISON_ROWS.map(() => false));
+      return;
+    }
+    const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    const CHARS_PER_TICK = 2;
+    const TYPE_SPEED = 18;
+
+    (async () => {
+      for (let i = 0; i < DIY_COMPARISON_ROWS.length; i++) {
+        const { bad, good } = DIY_COMPARISON_ROWS[i];
+        for (let c = CHARS_PER_TICK; c < bad.length; c += CHARS_PER_TICK) {
+          if (runIdRef.current !== myRun) return;
+          setBadChars((prev) => { const n = prev.slice(); n[i] = c; return n; });
+          await sleep(TYPE_SPEED);
+        }
+        if (runIdRef.current !== myRun) return;
+        setBadChars((prev) => { const n = prev.slice(); n[i] = bad.length; return n; });
+        await sleep(280);
+
+        if (runIdRef.current !== myRun) return;
+        setHighlighted((prev) => { const n = prev.slice(); n[i] = true; return n; });
+        for (let c = CHARS_PER_TICK; c < good.length; c += CHARS_PER_TICK) {
+          if (runIdRef.current !== myRun) return;
+          setGoodChars((prev) => { const n = prev.slice(); n[i] = c; return n; });
+          await sleep(TYPE_SPEED);
+        }
+        if (runIdRef.current !== myRun) return;
+        setGoodChars((prev) => { const n = prev.slice(); n[i] = good.length; return n; });
+        await sleep(350);
+
+        if (runIdRef.current !== myRun) return;
+        setStruck((prev) => { const n = prev.slice(); n[i] = true; return n; });
+        await sleep(500);
+      }
+    })();
+
+    return () => { runIdRef.current++; };
+  }, [active]);
+
+  const rowStyle: React.CSSProperties = { display: "flex", gap: "9px", minHeight: "34px", alignItems: "flex-start", padding: "6px 0" };
+  const textStyle: React.CSSProperties = { fontSize: "14px", lineHeight: 1.55, fontWeight: 500 };
 
   return (
-    <div ref={ref} style={{ borderTop: "1px solid #DADCE0", paddingTop: "24px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0 28px" }}>
-        <div style={{ paddingRight: "16px", borderRight: "1px solid #DADCE0" }}>
-          <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
-          {ROWS.map((row, i) => {
-            const entranceDelay = 0.1 + i * STEP;
-            const strikeDelay = entranceDelay + 0.35;
+    <div ref={ref} style={{ borderTop: "1px solid #DADCE0", paddingTop: "26px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "0 32px" }}>
+        <div style={{ paddingRight: "18px", borderRight: "1px solid #DADCE0" }}>
+          <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
+          {DIY_COMPARISON_ROWS.map((row, i) => {
+            const shown = badChars[i] ?? 0;
+            const typing = shown > 0 && shown < row.bad.length;
             return (
-              <div
-                key={row.bad}
-                style={{
-                  display: "flex", gap: "8px", marginBottom: "9px",
-                  opacity: inView ? 1 : 0,
-                  transform: inView ? "translateX(0)" : "translateX(-14px)",
-                  transition: `opacity 0.5s ease ${entranceDelay}s, transform 0.5s ease ${entranceDelay}s`,
-                }}
-              >
-                <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
+              <div key={row.bad} style={rowStyle}>
+                <span style={{ color: G.red, fontWeight: 700, flexShrink: 0, opacity: shown > 0 ? 1 : 0, transition: "opacity 0.15s ease" }}>✗</span>
                 <span
-                  className={inView ? "rp-strike rp-strike-active" : "rp-strike"}
-                  style={{ fontSize: "13px", color: "#5F6368", animationDelay: `${strikeDelay}s` }}
+                  className={struck[i] ? "rp-strike rp-strike-active" : "rp-strike"}
+                  style={{ ...textStyle, color: "#5F6368" }}
                 >
-                  {row.bad}
+                  {row.bad.slice(0, shown)}
+                  {typing && <span className="rp-type-cursor" />}
                 </span>
               </div>
             );
           })}
         </div>
-        <div style={{ paddingLeft: "16px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
-          {ROWS.map((row, i) => {
-            const delay = 0.1 + i * STEP + 0.55;
+        <div style={{ paddingLeft: "18px" }}>
+          <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
+          {DIY_COMPARISON_ROWS.map((row, i) => {
+            const shown = goodChars[i] ?? 0;
+            const typing = shown > 0 && shown < row.good.length;
             return (
-              <div
-                key={row.good}
-                className={inView ? "rp-row-highlight-active" : ""}
-                style={{
-                  display: "flex", gap: "8px", marginBottom: "9px",
-                  borderRadius: "6px", padding: "2px 4px", marginLeft: "-4px",
-                  opacity: inView ? 1 : 0,
-                  transform: inView ? "translateX(0)" : "translateX(14px)",
-                  transition: `opacity 0.5s ease ${delay}s, transform 0.5s ease ${delay}s`,
-                  animationDelay: `${delay}s`,
-                }}
-              >
-                <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
-                <span style={{ fontSize: "13px", color: "#5F6368", fontWeight: 500 }}>{row.good}</span>
+              <div key={row.good} style={rowStyle}>
+                <span style={{ color: G.green, fontWeight: 700, flexShrink: 0, opacity: highlighted[i] ? 1 : 0, transition: "opacity 0.15s ease" }}>✓</span>
+                <span
+                  style={{
+                    ...textStyle, color: "#1E4620",
+                    background: highlighted[i] ? "linear-gradient(180deg, transparent 60%, #A8E6B8 60%)" : "transparent",
+                    transition: "background 0.3s ease",
+                    borderRadius: "2px",
+                  }}
+                >
+                  {row.good.slice(0, shown)}
+                  {typing && <span className="rp-type-cursor" />}
+                </span>
               </div>
             );
           })}
@@ -609,6 +635,7 @@ function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [scales, setScales] = useState<number[]>(DIY_ARGS.map(() => 0.88));
+  const [paused, setPaused] = useState(false);
 
   const updateScales = () => {
     const track = trackRef.current;
@@ -651,8 +678,27 @@ function DIYCardsCarousel() {
     track.scrollBy({ left: dir * (card.getBoundingClientRect().width + 16), behavior: "smooth" });
   };
 
+  // Défilement automatique continu (une carte à la fois), en pause au survol
+  // ou pendant une interaction manuelle. Reboucle au début en douceur une
+  // fois la dernière carte atteinte, plutôt que de rester bloqué à la fin.
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      const track = trackRef.current;
+      if (!track) return;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 20;
+      if (atEnd) track.scrollTo({ left: 0, behavior: "smooth" });
+      else scrollByCard(1);
+    }, 2800);
+    return () => clearInterval(id);
+  }, [paused]);
+
   return (
-    <div style={{ position: "relative", marginBottom: "20px" }}>
+    <div
+      style={{ position: "relative", marginBottom: "20px" }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <div
         ref={trackRef}
         className="rp-no-scrollbar"
@@ -736,6 +782,83 @@ const REPLY_EXAMPLES = [
   { rating: 5, business: "Salon de coiffure", incoming: "Coupe parfaite, accueil chaleureux, je recommande à 100%.", reply: "Merci beaucoup pour ce retour, ça nous touche ! On a hâte de vous accueillir à nouveau pour votre prochaine coupe." },
   { rating: 2, business: "Garage", incoming: "Réparation qui a pris deux fois plus de temps que prévu, sans être prévenu.", reply: "Vous avez raison, on aurait dû vous tenir informé du délai. C'est un manquement de notre part et on va corriger ça pour la suite. N'hésitez pas à nous recontacter directement si besoin." },
 ];
+
+type ReplyExample = (typeof REPLY_EXAMPLES)[number];
+
+// Carte statique auparavant (avis + réponse déjà là au chargement) : on
+// simule maintenant le déroulé réel (avis reçu → IA qui rédige → réponse
+// publiée), décalé par carte pour que la rangée entière ait l'air de
+// tourner en direct. Rejoue à chaque entrée dans le viewport.
+function ReplyExampleCard({ ex, index }: { ex: ReplyExample; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [phase, setPhase] = useState<"idle" | "review" | "writing" | "done">("idle");
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) { setPhase("idle"); return; }
+      const t1 = setTimeout(() => setPhase("review"), 150 + index * 250);
+      const t2 = setTimeout(() => setPhase("writing"), 650 + index * 250);
+      const t3 = setTimeout(() => setPhase("done"), 1750 + index * 250);
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    }, { threshold: 0.35 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [index]);
+
+  const showReview = phase !== "idle";
+  const showReply = phase === "writing" || phase === "done";
+  const writing = phase === "writing";
+
+  return (
+    <div ref={ref} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", padding: "22px", boxShadow: SHADOW_SM, minHeight: "230px" }}>
+      <div
+        style={{
+          opacity: showReview ? 1 : 0,
+          transform: showReview ? "translateY(0)" : "translateY(8px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+          <span style={{ fontSize: "11px", fontWeight: 600, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.5px" }}>{ex.business} · Avis Google</span>
+          <div style={{ display: "flex", gap: "2px" }}>
+            {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "13px", color: i <= ex.rating ? G.yellow : "#DADCE0" }}>★</span>)}
+          </div>
+        </div>
+        <p style={{ margin: "0 0 16px", fontSize: "14px", color: "#202124", lineHeight: 1.6, fontStyle: "italic" }}>
+          &ldquo;{ex.incoming}&rdquo;
+        </p>
+      </div>
+
+      {writing && (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 14px", background: "#F8F9FA", borderRadius: "8px" }}>
+          <span className="rp-live-dot" style={{ width: "8px", height: "8px", background: G.blue, borderRadius: "50%", flexShrink: 0 }} />
+          <span style={{ fontSize: "12.5px", color: "#5F6368", fontStyle: "italic" }}>Caela rédige une réponse…</span>
+        </div>
+      )}
+
+      <div
+        style={{
+          background: "#E8F4EA", borderLeft: `3px solid ${G.green}`, borderRadius: "0 8px 8px 0", padding: "12px 14px",
+          opacity: showReply ? 1 : 0,
+          maxHeight: showReply ? "260px" : "0px",
+          overflow: "hidden",
+          transform: showReply ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "5px" }}>
+          <div style={{ width: "14px", height: "14px", background: G.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontSize: "8px", color: "#fff", fontWeight: 700 }}>✓</span>
+          </div>
+          <span style={{ fontSize: "10.5px", fontWeight: 700, color: G.green, textTransform: "uppercase", letterSpacing: "0.4px" }}>Réponse générée par l&apos;IA</span>
+        </div>
+        <p style={{ margin: 0, fontSize: "13px", color: "#1E6B38", lineHeight: 1.55 }}>{ex.reply}</p>
+      </div>
+    </div>
+  );
+}
 
 // Fusion décidée le 2026-08-04 : les 4 prestations séparées (création,
 // optimisation, suivi, gestion des avis) faisaient hésiter entre quatre
@@ -921,14 +1044,21 @@ export default function HomeClient() {
         ))}
       </div>
 
-      {/* ── NAV ── */}
+      {/* ── NAV ──
+          position:fixed (pas sticky) : sticky + transform casse le collage
+          dans certains navigateurs (le transform interfère avec le calcul
+          de la position sticky), ce qui pouvait empêcher la barre de
+          revenir correctement à la remontée. Fixed est fiable à 100%. */}
       <nav style={{
-        position: "sticky", top: 0, zIndex: 100, background: "#fff", borderBottom: "1px solid #DADCE0",
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "#fff", borderBottom: "1px solid #DADCE0",
         padding: isMobile ? "0 16px" : "0 40px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between",
         transform: navVisible ? "translateY(0)" : "translateY(-100%)",
         transition: "transform 0.25s ease",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flexShrink: 1 }}>
+        <div
+          onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); trackClic("logo_accueil_nav"); }}
+          style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flexShrink: 1, cursor: "pointer" }}
+        >
           <GDots size={9} />
           <span style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Caela Réputation</span>
           {!isMobile && (
@@ -983,6 +1113,9 @@ export default function HomeClient() {
           </div>
         )}
       </nav>
+      {/* La nav étant fixed (hors flux), ce spacer réserve sa hauteur pour
+          que le contenu ne saute pas sous elle. */}
+      <div style={{ height: "64px" }} />
 
       {/* CTA persistant : quand la nav se masque au défilement, "Se connecter"
           et "Essai gratuit" restent joignables via ce mini-groupe flottant —
@@ -1009,7 +1142,7 @@ export default function HomeClient() {
       {/* Mobile: panneau déroulant */}
       {isMobile && menuOpen && (
         <div style={{
-          position: "sticky", top: "64px", zIndex: 99,
+          position: "fixed", top: "64px", left: 0, right: 0, zIndex: 99,
           background: "#fff", borderBottom: "1px solid #DADCE0",
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
           padding: "10px 16px 14px",
@@ -1052,7 +1185,8 @@ export default function HomeClient() {
             <span style={{ color: G.green }}>Automatiquement.</span>
           </h1>
           <p style={{ margin: "0 0 36px", fontSize: "20px", lineHeight: 1.6, color: "#5F6368", maxWidth: "660px" }}>
-            Caela Réputation détecte chaque avis, répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
+            Caela Réputation détecte chaque avis, répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs.<br />
+            <strong style={{ whiteSpace: "nowrap" }}>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
             <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_hero")} style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
@@ -1147,7 +1281,7 @@ export default function HomeClient() {
             <table style={{ width: "100%", minWidth: "640px", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#F8F9FA" }}>
-                  {["Solution", "Solo", "Multi-lieux", "IA auto", "FR", "Google", "Essai gratuit"].map(col => (
+                  {["Solution", "Solo", "Multi-lieux", "Agence", "IA auto", "FR", "Google", "Essai gratuit"].map(col => (
                     <th key={col} style={{ padding: "11px 14px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: "#5F6368", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "1px solid #DADCE0" }}>{col}</th>
                   ))}
                 </tr>
@@ -1163,6 +1297,7 @@ export default function HomeClient() {
                     </td>
                     <td style={{ padding: "12px 14px", fontSize: "13px", fontWeight: c.highlight ? 700 : 400, color: c.highlight ? G.green : "#202124" }}>{c.solo}</td>
                     <td style={{ padding: "12px 14px", fontSize: "13px", color: c.highlight ? G.green : "#202124", fontWeight: c.highlight ? 700 : 400 }}>{c.business}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "13px", color: c.highlight ? G.green : "#202124", fontWeight: c.highlight ? 700 : 400 }}>{c.agency}{c.agency === "Custom" && <span style={{ display: "block", fontSize: "10px", color: "#80868B", fontWeight: 400 }}>sur devis</span>}</td>
                     <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.aiAuto ? "✅" : "❌"}</span></td>
                     <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.fr ? "✅" : "❌"}</span></td>
                     <td style={{ padding: "12px 14px" }}><span style={{ fontSize: "14px" }}>{c.gmb ? "✅" : "❌"}</span></td>
@@ -1176,10 +1311,12 @@ export default function HomeClient() {
             * Prix indicatifs publics 2025-2026.
           </p>
 
-          {/* Why not the US tool */}
+          {/* Why not the US tool — largeurs bornées des deux côtés (au lieu
+              d'un flex:1 qui étirait le paragraphe sur toute la largeur
+              restante et créait un grand vide avant la checklist). */}
           <div style={{ marginTop: "20px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 28px", boxShadow: SHADOW_SM }}>
-            <div style={{ display: "flex", gap: "20px", alignItems: "flex-start", flexWrap: "wrap" }}>
-              <div style={{ flex: 1, minWidth: "220px" }}>
+            <div style={{ display: "flex", gap: "40px", alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
+              <div style={{ flex: "1 1 380px", maxWidth: "560px" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
                   🇺🇸 getreviewpilot.ai existe. Pourquoi choisir le français ?
                 </div>
@@ -1187,7 +1324,7 @@ export default function HomeClient() {
                   Même Claude AI, $29/mois — mais anglais, sans RGPD ni support FR. &quot;C&apos;est pas top&quot; ? Traduit mot à mot, pas compris.
                 </p>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "200px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: "0 0 auto", minWidth: "200px" }}>
                 {[
                   { label: "Réponses en français naturel", ok: true },
                   { label: "Support humain en français", ok: true },
@@ -1220,14 +1357,28 @@ export default function HomeClient() {
               Un sujet, une réponse claire. De la gestion des avis aux plaques NFC, en passant par le comparatif honnête avec le faire-soi-même. En cours de tournage.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
-            {VIDEO_TOPICS.map(v => (
-              <div key={v.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "20px", boxShadow: SHADOW_SM, position: "relative" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <span style={{ fontSize: "26px" }}>{v.icon}</span>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: G.blue, background: "#E8F0FE", padding: "3px 9px", borderRadius: "10px" }}>{v.duration}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "18px" }}>
+            {VIDEO_TOPICS.map((v, i) => (
+              <div
+                key={v.title}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = SHADOW_LG; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = SHADOW_SM; }}
+                style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden", boxShadow: SHADOW_SM, transition: "transform 0.22s ease, box-shadow 0.22s ease" }}
+              >
+                {/* Vignette vidéo mockup : dégradé de marque + numéro + bouton
+                    play, pour se lire comme une vraie miniature en attendant
+                    le tournage — pas juste une icône dans une carte plate. */}
+                <div style={{
+                  height: "120px", position: "relative", overflow: "hidden",
+                  background: `linear-gradient(135deg, ${[G.blue, G.green, G.yellow, G.red][i % 4]}25, ${[G.blue, G.green, G.yellow, G.red][(i + 1) % 4]}15)`,
+                }}>
+                  <span style={{ position: "absolute", top: "10px", left: "12px", fontSize: "11px", fontWeight: 700, color: "#5F6368", background: "rgba(255,255,255,0.85)", padding: "3px 8px", borderRadius: "10px" }}>#{i + 1}</span>
+                  <span style={{ position: "absolute", bottom: "10px", right: "12px", fontSize: "11px", fontWeight: 700, color: "#fff", background: "rgba(32,33,36,0.7)", padding: "3px 8px", borderRadius: "10px" }}>{v.duration}</span>
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "46px", height: "46px", borderRadius: "50%", background: "rgba(255,255,255,0.92)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: SHADOW_MD, fontSize: "22px" }}>
+                    {v.icon}
+                  </div>
                 </div>
-                <p style={{ margin: 0, fontSize: "14.5px", fontWeight: 600, color: "#202124", lineHeight: 1.5 }}>{v.title}</p>
+                <p style={{ margin: 0, padding: "16px 18px", fontSize: "14.5px", fontWeight: 600, color: "#202124", lineHeight: 1.5 }}>{v.title}</p>
               </div>
             ))}
           </div>
@@ -1248,28 +1399,7 @@ export default function HomeClient() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-            {REPLY_EXAMPLES.map(ex => (
-              <div key={ex.incoming} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", padding: "22px", boxShadow: SHADOW_SM }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 600, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.5px" }}>{ex.business} · Avis Google</span>
-                  <div style={{ display: "flex", gap: "2px" }}>
-                    {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "13px", color: i <= ex.rating ? G.yellow : "#DADCE0" }}>★</span>)}
-                  </div>
-                </div>
-                <p style={{ margin: "0 0 16px", fontSize: "14px", color: "#202124", lineHeight: 1.6, fontStyle: "italic" }}>
-                  &ldquo;{ex.incoming}&rdquo;
-                </p>
-                <div style={{ background: "#E8F4EA", borderLeft: `3px solid ${G.green}`, borderRadius: "0 8px 8px 0", padding: "12px 14px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "5px" }}>
-                    <div style={{ width: "14px", height: "14px", background: G.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontSize: "8px", color: "#fff", fontWeight: 700 }}>✓</span>
-                    </div>
-                    <span style={{ fontSize: "10.5px", fontWeight: 700, color: G.green, textTransform: "uppercase", letterSpacing: "0.4px" }}>Réponse générée par l&apos;IA</span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: "13px", color: "#1E6B38", lineHeight: 1.55 }}>{ex.reply}</p>
-                </div>
-              </div>
-            ))}
+            {REPLY_EXAMPLES.map((ex, i) => <ReplyExampleCard key={ex.incoming} ex={ex} index={i} />)}
           </div>
         </div>
       </section>
@@ -1367,39 +1497,52 @@ export default function HomeClient() {
       {/* ── NFC PLATES ── */}
       <section id="nfc" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
         <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "44px" }}>
-            <div style={{ display: "inline-block", padding: "4px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-              Produit physique
-            </div>
-            <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              Collectez 3× plus d&apos;avis avec nos plaques NFC
-            </h2>
-            <p style={{ margin: "0 auto", maxWidth: "500px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
-              Posez la plaque sur votre comptoir. Votre client tape avec son téléphone. Il est directement sur votre fiche Google. Il laisse un avis en 30 secondes.
-            </p>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "28px" }}>
-              <NFCPlateVisual size={240} />
-            </div>
-          </div>
-
-          {/* How it works */}
-          <div style={{ display: "flex", gap: "0", marginBottom: "40px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden" }}>
-            {[
-              { step: "1", icon: "📱", title: "Le client tape la plaque", desc: "N'importe quel téléphone (iOS + Android). Pas d'app à installer.", color: G.blue },
-              { step: "2", icon: "⭐", title: "Il arrive sur votre fiche", desc: "Directement sur la page Google Reviews de votre établissement.", color: G.yellow },
-              { step: "3", icon: "✅", title: "Il laisse son avis", desc: "En 30 secondes. Caela Réputation prend le relais pour y répondre.", color: G.green },
-            ].map((s, i) => (
-              <div key={s.title} style={{ flex: 1, padding: "24px 20px", textAlign: "center", borderRight: i < 2 ? "1px solid #DADCE0" : "none" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: s.color + "15", margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>{s.icon}</div>
-                <div style={{ fontSize: "11px", fontWeight: 700, color: s.color, marginBottom: "5px" }}>ÉTAPE {s.step}</div>
-                <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124", marginBottom: "4px" }}>{s.title}</div>
-                <div style={{ fontSize: "12px", color: "#5F6368" }}>{s.desc}</div>
+          {/* Intro en 2 colonnes (texte + étapes à gauche, vraie photo produit
+              à droite) au lieu d'un bloc centré empilé avec l'image en dessous
+              — même logique que le hero, pour que la section respire au lieu
+              d'accumuler des cartes séparées les unes sous les autres. */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "64px", flexWrap: "wrap", marginBottom: "36px" }}>
+            <div style={{ flex: "1 1 440px", maxWidth: "600px" }}>
+              <div style={{ display: "inline-block", padding: "4px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                Produit physique
               </div>
-            ))}
+              <h2 style={{ margin: "0 0 12px", fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124", lineHeight: 1.2 }}>
+                Collectez 3× plus d&apos;avis avec nos plaques NFC
+              </h2>
+              <p style={{ margin: "0 0 28px", fontSize: "15px", color: "#5F6368", lineHeight: 1.65 }}>
+                Posez la plaque sur votre comptoir. Votre client tape avec son téléphone. Il est directement sur votre fiche Google. Il laisse un avis en 30 secondes.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {[
+                  { step: "1", icon: "📱", title: "Le client tape la plaque", desc: "N'importe quel téléphone (iOS + Android). Pas d'app à installer.", color: G.blue },
+                  { step: "2", icon: "⭐", title: "Il arrive sur votre fiche", desc: "Directement sur la page Google Reviews de votre établissement.", color: G.yellow },
+                  { step: "3", icon: "✅", title: "Il laisse son avis", desc: "En 30 secondes. Caela Réputation prend le relais pour y répondre.", color: G.green },
+                ].map((s) => (
+                  <div key={s.title} style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+                    <div style={{ width: "38px", height: "38px", flexShrink: 0, borderRadius: "50%", background: s.color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px" }}>{s.icon}</div>
+                    <div>
+                      <div style={{ fontSize: "10.5px", fontWeight: 700, color: s.color, letterSpacing: "0.4px", marginBottom: "2px" }}>ÉTAPE {s.step}</div>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124", marginBottom: "2px" }}>{s.title}</div>
+                      <div style={{ fontSize: "12.5px", color: "#5F6368", lineHeight: 1.5 }}>{s.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rp-float" style={{ flex: "0 0 auto" }}>
+              <Image
+                src="/nfc/plaque-produit.jpg"
+                alt="Plaque NFC Caela Réputation — posez votre téléphone pour laisser un avis Google"
+                width={340}
+                height={340}
+                style={{ borderRadius: "20px", boxShadow: SHADOW_XL, display: "block" }}
+              />
+            </div>
           </div>
 
           {/* Plaque seule vs plaque + moteur — réponse aux concurrents hardware (bostap & co) */}
-          <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden", marginBottom: "40px" }}>
+          <FadeInOnView>
+          <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden", marginBottom: "28px" }}>
             <div style={{ padding: "24px 28px 4px", textAlign: "center" }}>
               <h3 style={{ margin: "0 0 6px", fontSize: "clamp(18px, 2.4vw, 24px)", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
                 Une plaque NFC coûte 20€. Ce qu&apos;on en fait ensuite, c&apos;est tout l&apos;enjeu.
@@ -1443,6 +1586,7 @@ export default function HomeClient() {
               </div>
             </div>
           </div>
+          </FadeInOnView>
 
         </div>
 
@@ -1541,7 +1685,11 @@ export default function HomeClient() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "14px", alignItems: "start" }}>
+          {/* maxWidth resserré à 900px (au lieu des 1700 du reste de la page) :
+              3 cartes de tarifs sur toute la largeur laissaient un vide énorme
+              entre elles, ce n'est pas un tableau à faire respirer comme le
+              reste de la home. */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "14px", alignItems: "start", maxWidth: "900px", margin: "0 auto" }}>
             {PLANS.map(plan => {
               const price = billing === "annual" ? Math.round(parseInt(plan.price) * 0.8) : parseInt(plan.price);
               const savings = parseInt(plan.price) * 12 - price * 12;
@@ -1560,9 +1708,12 @@ export default function HomeClient() {
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.color }} />
                   {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "2px 8px", background: plan.color + "15", borderRadius: "20px", fontSize: "9px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
                   <p style={{ margin: "0 0 2px", fontSize: "11px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "3px", marginBottom: "3px" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "3px", marginBottom: "3px", flexWrap: "wrap" }}>
                     <span style={{ fontSize: "34px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
                     <span style={{ fontSize: "12px", color: "#5F6368" }}>/mois</span>
+                    {billing === "annual" && (
+                      <span style={{ fontSize: "14px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
+                    )}
                   </div>
                   <p style={{ margin: "0 0 4px", fontSize: "12px", color: "#5F6368" }}>{plan.desc}</p>
                   {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 8px", background: "#E6F4EA", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: G.green, marginBottom: "8px" }}>🎁 -{savings}€/an</div>}
@@ -1621,21 +1772,25 @@ export default function HomeClient() {
             </span>
           </div>
 
-          {/* Parrainage */}
-          <div style={{ marginTop: "20px", padding: "14px 20px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
-            <span style={{ fontSize: "16px" }}>🎁</span>
-            <div>
-              <div style={{ fontSize: "13px", fontWeight: 600, color: "#7A5C00", marginBottom: "2px" }}>Parrainez, économisez à deux</div>
-              <div style={{ fontSize: "12px", color: "#5F6368" }}>Chaque client a son code de parrainage personnel, accessible depuis son dashboard. <strong>1 mois offert</strong> pour vous, <strong>-15% sur son premier mois</strong> pour la personne que vous parrainez. <a href="/parrainage" style={{ color: "#7A5C00", fontWeight: 600, textDecoration: "underline" }}>En savoir plus →</a></div>
+          {/* Parrainage + Zéro risque : bornées à 900px comme les cartes de
+              tarifs juste au-dessus (au lieu de pleine largeur 1700px, qui
+              laissait un grand vide coloré à droite du texte) et mises côte
+              à côte plutôt qu'empilées. */}
+          <div style={{ marginTop: "20px", maxWidth: "900px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "12px" }}>
+            <div style={{ padding: "14px 20px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <span style={{ fontSize: "16px" }}>🎁</span>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#7A5C00", marginBottom: "2px" }}>Parrainez, économisez à deux</div>
+                <div style={{ fontSize: "12px", color: "#5F6368" }}>Chaque client a son code de parrainage personnel, accessible depuis son dashboard. <strong>1 mois offert</strong> pour vous, <strong>-15% sur son premier mois</strong> pour la personne que vous parrainez. <a href="/parrainage" style={{ color: "#7A5C00", fontWeight: 600, textDecoration: "underline" }}>En savoir plus →</a></div>
+              </div>
             </div>
-          </div>
 
-          {/* Safety note */}
-          <div style={{ marginTop: "12px", padding: "14px 20px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
-            <span style={{ fontSize: "16px" }}>🔒</span>
-            <div>
-              <div style={{ fontSize: "13px", fontWeight: 600, color: G.blue, marginBottom: "2px" }}>Zéro risque pour votre fiche Google</div>
-              <div style={{ fontSize: "12px", color: "#5F6368" }}>Caela Réputation utilise exclusivement l&apos;API officielle Google My Business. Les réponses sont publiées sous le nom de votre établissement, pas sous le nôtre. Vos clients ne savent pas que vous utilisez un outil. Conforme aux CGU Google.</div>
+            <div style={{ padding: "14px 20px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <span style={{ fontSize: "16px" }}>🔒</span>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: G.blue, marginBottom: "2px" }}>Zéro risque pour votre fiche Google</div>
+                <div style={{ fontSize: "12px", color: "#5F6368" }}>Caela Réputation utilise exclusivement l&apos;API officielle Google My Business. Les réponses sont publiées sous le nom de votre établissement, pas sous le nôtre. Vos clients ne savent pas que vous utilisez un outil. Conforme aux CGU Google.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1856,12 +2011,16 @@ export default function HomeClient() {
               ))}
             </div>
           </div>
+          {/* Ordre inversé : la mention "non affilié à Google" est importante
+              et doit rester lisible dans TOUS les états de scroll — le widget
+              ChatBot est en position fixed bottom-right, il couvrait cette
+              phrase en permanence quand elle était du même côté. */}
           <div style={{ borderTop: "1px solid #DADCE0", paddingTop: "14px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
             <p style={{ margin: 0, fontSize: "11px", color: "#80868B" }}>
-              © 2026 Caela Agency · <a href="mailto:contact@caela.fr" style={{ color: "#80868B", textDecoration: "underline" }}>contact@caela.fr</a> · Tous droits réservés
+              Caela Réputation est un outil indépendant, non affilié à Google LLC. &quot;Google&quot; et &quot;Google Business Profile&quot; sont des marques de Google LLC.
             </p>
             <p style={{ margin: 0, fontSize: "11px", color: "#80868B" }}>
-              Caela Réputation est un outil indépendant, non affilié à Google LLC. &quot;Google&quot; et &quot;Google Business Profile&quot; sont des marques de Google LLC.
+              © 2026 Caela Agency · <a href="mailto:contact@caela.fr" style={{ color: "#80868B", textDecoration: "underline" }}>contact@caela.fr</a> · Tous droits réservés
             </p>
           </div>
         </div>
