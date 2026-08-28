@@ -635,6 +635,14 @@ function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [scales, setScales] = useState<number[]>(DIY_ARGS.map(() => 0.88));
+  // Un seul gagnant : l'ancienne version surlignait toute carte à moins de
+  // 30% de la largeur du centre, ce qui, sur un rail large, laissait DEUX
+  // cartes voisines franchir le seuil en même temps (visible pendant le
+  // défilement auto, pas juste un cas limite). Ici on calcule explicitement
+  // l'index le plus proche du centre et seul celui-là reçoit la bordure/
+  // ombre — le zoom reste continu pour toutes, l'habillage "carte active"
+  // est exclusif.
+  const [centerIndex, setCenterIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
   const updateScales = () => {
@@ -642,15 +650,19 @@ function DIYCardsCarousel() {
     if (!track) return;
     const trackRect = track.getBoundingClientRect();
     const centerX = trackRect.left + trackRect.width / 2;
-    const next = cardRefs.current.map((el) => {
+    let closestIdx = 0;
+    let closestDist = Infinity;
+    const next = cardRefs.current.map((el, i) => {
       if (!el) return 0.88;
       const r = el.getBoundingClientRect();
       const cardCenter = r.left + r.width / 2;
       const dist = Math.abs(cardCenter - centerX);
+      if (dist < closestDist) { closestDist = dist; closestIdx = i; }
       const t = Math.max(0, 1 - dist / (trackRect.width / 2.3));
       return 0.86 + t * 0.28;
     });
     setScales(next);
+    setCenterIndex(closestIdx);
   };
 
   useEffect(() => {
@@ -710,14 +722,15 @@ function DIYCardsCarousel() {
         {DIY_ARGS.map((a, i) => {
           const scale = scales[i] ?? 0.88;
           const t = Math.min(1, Math.max(0, (scale - 0.86) / 0.28));
+          const isActive = i === centerIndex;
           return (
             <div
               key={a.title}
               ref={(el) => { cardRefs.current[i] = el; }}
               style={{
                 flex: "0 0 auto", width: "300px", scrollSnapAlign: "center",
-                background: "#fff", border: `1px solid ${t > 0.7 ? a.color : "#DADCE0"}`, borderRadius: "14px", padding: "22px",
-                boxShadow: t > 0.7 ? SHADOW_LG : SHADOW_SM,
+                background: "#fff", border: `1px solid ${isActive ? a.color : "#DADCE0"}`, borderRadius: "14px", padding: "22px",
+                boxShadow: isActive ? SHADOW_LG : SHADOW_SM,
                 opacity: 0.55 + t * 0.45,
                 transform: `scale(${scale})`,
                 transition: "border-color 0.2s ease, box-shadow 0.2s ease",
