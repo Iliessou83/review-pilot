@@ -9,6 +9,7 @@ const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853"
 const SHADOW_SM = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 const SHADOW_MD = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 const SHADOW_LG = "0 4px 12px rgba(60,64,67,0.18), 0 2px 6px rgba(60,64,67,0.1)";
+const SHADOW_XL = "0 14px 32px rgba(60,64,67,0.22), 0 4px 10px rgba(60,64,67,0.12)";
 
 function GDots({ size = 8 }: { size?: number }) {
   return (
@@ -88,8 +89,46 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
 }
 
 function GMBCard() {
+  // Le chrono tourne réellement (pas un texte figé "il y a 12 sec") : la
+  // preuve de vitesse se voit sans qu'on ait besoin de la lire deux fois.
+  const [secondsAgo, setSecondsAgo] = useState(12);
+  const [hover, setHover] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => setSecondsAgo((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const timeLabel = secondsAgo < 60 ? `il y a ${secondsAgo} sec` : `il y a ${Math.floor(secondsAgo / 60)} min`;
+
   return (
-    <div style={{ background: "#fff", borderRadius: "12px", boxShadow: SHADOW_LG, overflow: "hidden", width: "320px", maxWidth: "100%", flexShrink: 0, border: "1px solid #DADCE0" }}>
+    <a
+      href="/audit"
+      onClick={() => trackClic("bouton_audit-gratuit_carte-gmb-hero")}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "block", textDecoration: "none", cursor: "pointer",
+        background: "#fff", borderRadius: "12px",
+        boxShadow: hover ? SHADOW_XL : SHADOW_LG,
+        overflow: "hidden", width: "320px", maxWidth: "100%", flexShrink: 0,
+        border: `1px solid ${hover ? G.blue + "60" : "#DADCE0"}`,
+        transform: hover ? "translateY(-6px)" : "translateY(0)",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+        position: "relative",
+      }}
+    >
+      {/* Indice d'affordance : n'apparaît qu'au survol, pour ne pas polluer
+          la maquette au repos tout en rendant le clic évident. */}
+      <div style={{
+        position: "absolute", top: "10px", right: "10px", zIndex: 2,
+        padding: "5px 12px", background: "#202124", color: "#fff",
+        fontSize: "11px", fontWeight: 600, borderRadius: "20px",
+        opacity: hover ? 1 : 0,
+        transform: hover ? "translateY(0)" : "translateY(-4px)",
+        transition: "opacity 0.2s ease, transform 0.2s ease",
+        pointerEvents: "none", whiteSpace: "nowrap",
+      }}>
+        Auditer ma fiche →
+      </div>
       <div style={{ height: "130px", background: "linear-gradient(135deg, #E8F0FE, #D2E3FC 50%, #E6F4EA)", position: "relative", overflow: "hidden" }}>
         {[0,1,2,3,4].map(i => <div key={i} style={{ position: "absolute", left: 0, right: 0, top: `${i*28}px`, height: "1px", background: "rgba(26,115,232,0.08)" }} />)}
         {[0,1,2,3,4,5,6,7].map(i => <div key={i} style={{ position: "absolute", top: 0, bottom: 0, left: `${i*42}px`, width: "1px", background: "rgba(26,115,232,0.08)" }} />)}
@@ -128,10 +167,10 @@ function GMBCard() {
           <p style={{ margin: "0 0 7px", color: "#5F6368", lineHeight: 1.5, fontSize: "11px" }}>Excellent service, l&apos;équipe est aux petits soins !</p>
           <div style={{ background: "#E8F4EA", borderLeft: `3px solid ${G.green}`, borderRadius: "0 5px 5px 0", padding: "7px 9px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "3px" }}>
-              <div style={{ width: "12px", height: "12px", background: G.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div className="rp-live-dot" style={{ width: "12px", height: "12px", background: G.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontSize: "7px", color: "#fff", fontWeight: 700 }}>✓</span>
               </div>
-              <span style={{ fontSize: "9px", fontWeight: 700, color: G.green }}>Réponse IA · il y a 12 sec</span>
+              <span style={{ fontSize: "9px", fontWeight: 700, color: G.green }}>Réponse IA · {timeLabel}</span>
             </div>
             <p style={{ margin: 0, color: "#1E6B38", fontSize: "10px", lineHeight: 1.5 }}>
               Merci beaucoup Marie ! C&apos;est avec plaisir que nous vous accueillons...
@@ -139,7 +178,7 @@ function GMBCard() {
           </div>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
@@ -332,6 +371,138 @@ function ReviewFlow() {
         <span style={{ fontSize: "13.5px", color: G.blue, fontWeight: 600 }}>
           Pas besoin de se connecter au dashboard. Tout se passe dans votre email. Sur téléphone ou ordinateur.
         </span>
+      </div>
+    </div>
+  );
+}
+
+// Remplace l'ancien duo "calculateur + flow" côte à côte (deux blocs denses
+// écrasés l'un contre l'autre = surcharge visuelle). Un seul bloc visible à
+// la fois, choisi par onglet ou par rotation automatique — comme une bannière
+// qui défile, mais lisible et cliquable au lieu de juste tourner toute seule.
+function CalculatorFlowBanner() {
+  const [tab, setTab] = useState<"calc" | "flow">("calc");
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setTab((t) => (t === "calc" ? "flow" : "calc")), 7000);
+    return () => clearInterval(id);
+  }, [paused]);
+
+  const TABS: { key: "calc" | "flow"; label: string }[] = [
+    { key: "calc", label: "💰 Calculez vos économies" },
+    { key: "flow", label: "⚡ Comment ça marche" },
+  ];
+
+  return (
+    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "28px", flexWrap: "wrap" }}>
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => { setTab(t.key); setPaused(true); trackClic(`onglet_${t.key === "calc" ? "calculateur" : "comment-ca-marche"}_accueil`); }}
+            style={{
+              padding: "10px 22px", borderRadius: "24px", cursor: "pointer",
+              fontSize: "14px", fontWeight: 600, whiteSpace: "nowrap",
+              background: tab === t.key ? G.blue : "#fff",
+              color: tab === t.key ? "#fff" : "#5F6368",
+              border: tab === t.key ? "none" : "1px solid #DADCE0",
+              boxShadow: tab === t.key ? `0 3px 10px ${G.blue}40` : SHADOW_SM,
+              transition: "background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease",
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {/* Grille à cellule unique : les deux blocs restent montés et empilés au
+          même endroit (gridArea partagée), donc le conteneur se cale sur le
+          plus haut des deux en permanence — la rotation ne fait plus sauter
+          le contenu sous la section, contrairement à un montage/démontage. */}
+      <div style={{ maxWidth: "620px", margin: "0 auto", display: "grid" }}>
+        <div style={{
+          gridArea: "1 / 1",
+          opacity: tab === "calc" ? 1 : 0,
+          pointerEvents: tab === "calc" ? "auto" : "none",
+          transition: "opacity 0.4s ease",
+        }}>
+          <ROICalculator />
+        </div>
+        <div style={{
+          gridArea: "1 / 1",
+          opacity: tab === "flow" ? 1 : 0,
+          pointerEvents: tab === "flow" ? "auto" : "none",
+          transition: "opacity 0.4s ease",
+        }}>
+          <ReviewFlow />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Tableau "Sans / Avec" : chaque ligne de gauche se barre au scroll, la ligne
+// "avec" correspondante s'allume juste après — visualise le lien entre le
+// problème et sa solution au lieu de deux colonnes statiques.
+function DIYComparison() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
+    }, { threshold: 0.25 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const ROWS = [
+    { bad: "Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", good: "Réponse en 30 secondes, 24h/24, même la nuit du réveillon" },
+    { bad: "Tu écris la même réponse générique pour la 12ème fois", good: "Chaque réponse cite le prénom et un détail. Jamais générique." },
+    { bad: "Tu réponds énervé. Ça se voit et ça coûte des clients", good: "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic." },
+    { bad: "3h/semaine perdues sur les avis au lieu de gérer", good: "Taux de réponse >95%. Google t'en récompense sur Maps." },
+    { bad: "Ta note stagne. Les concurrents qui répondent vite te dépassent", good: "Ta note monte. L'IA travaille. Tu dors." },
+  ];
+
+  return (
+    <div ref={ref} style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+        <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
+          <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
+          {ROWS.map((row, i) => (
+            <div key={row.bad} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
+              <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
+              <span
+                className={inView ? "rp-strike rp-strike-active" : "rp-strike"}
+                style={{ fontSize: "13px", color: "#5F6368", animationDelay: `${0.15 + i * 0.35}s` }}
+              >
+                {row.bad}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: "24px 28px", background: "#fff" }}>
+          <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
+          {ROWS.map((row, i) => (
+            <div
+              key={row.good}
+              className={inView ? "rp-row-highlight-active" : ""}
+              style={{
+                display: "flex", gap: "8px", marginBottom: "9px",
+                borderRadius: "6px", padding: "2px 4px", marginLeft: "-4px",
+                opacity: inView ? 1 : 0,
+                transform: inView ? "translateX(0)" : "translateX(14px)",
+                transition: `opacity 0.45s ease ${0.35 + i * 0.35}s, transform 0.45s ease ${0.35 + i * 0.35}s`,
+                animationDelay: `${0.35 + i * 0.35}s`,
+              }}
+            >
+              <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
+              <span style={{ fontSize: "13px", color: "#5F6368", fontWeight: 500 }}>{row.good}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -737,7 +908,7 @@ export default function HomeClient() {
           s'étirait donc bien au-delà de son contenu réel et laissait un grand
           vide avant l'illustration. */}
       <section style={{ background: "linear-gradient(180deg, #F8F9FA 0%, #fff 100%)", padding: "80px 40px 96px" }}>
-      <div style={{ maxWidth: "1240px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "72px", flexWrap: "wrap" }}>
+      <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "72px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 460px", maxWidth: "560px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 14px", background: "#E8F0FE", borderRadius: "24px", marginBottom: "28px" }}>
             <GDots size={7} />
@@ -788,7 +959,7 @@ export default function HomeClient() {
 
       {/* ── METRICS ── */}
       <div style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", borderBottom: "1px solid #DADCE0" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto", display: "flex", flexWrap: "wrap" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", flexWrap: "wrap" }}>
           {[
             { value: "4-5★", label: "Réponse automatique", color: G.yellow },
             { value: "< 30s", label: "Délai de réponse IA", color: G.green },
@@ -803,29 +974,15 @@ export default function HomeClient() {
         </div>
       </div>
 
-      {/* ── CALCULATOR + FLOW 2★ (côte à côte pour raccourcir la page, fusion 2026-08-08) ── */}
+      {/* ── CALCULATEUR / COMMENT ÇA MARCHE (fusion 2026-08-08, refonte 2026-08-28 :
+          un seul bloc à la fois au lieu de deux cartes serrées côte à côte) ── */}
       <section id="calculator" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", gap: "32px", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ flex: "1 1 460px", minWidth: "320px" }}>
-            <ROICalculator />
-          </div>
-          <div style={{ flex: "1 1 460px", minWidth: "320px" }}>
-            <div style={{ textAlign: "center", marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 10px", fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 700, letterSpacing: "-0.7px", color: "#202124" }}>
-                Comment ça fonctionne
-              </h2>
-              <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>
-                Vous recevez la réponse dans votre email. 1 clic. Publié sur Google.
-              </p>
-            </div>
-            <ReviewFlow />
-          </div>
-        </div>
+        <CalculatorFlowBanner />
       </section>
 
       {/* ── WHY NOT DIY ── */}
       <section style={{ padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#FCE8E6", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px", minHeight: "1.4em" }}>
               <TypewriterText text={'"Je peux le faire moi-même"'} />
@@ -840,7 +997,20 @@ export default function HomeClient() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px", marginBottom: "20px" }}>
             {DIY_ARGS.map(a => (
-              <div key={a.title} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "22px", boxShadow: SHADOW_SM }}>
+              <div
+                key={a.title}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-6px)";
+                  e.currentTarget.style.boxShadow = SHADOW_LG;
+                  e.currentTarget.style.borderColor = a.color;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = SHADOW_SM;
+                  e.currentTarget.style.borderColor = "#DADCE0";
+                }}
+                style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "22px", boxShadow: SHADOW_SM, transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease" }}
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                   <div style={{ width: "38px", height: "38px", background: a.bg, borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px" }}>{a.icon}</div>
                   <span style={{ fontSize: "18px", fontWeight: 700, color: a.color }}>{a.stat}</span>
@@ -851,35 +1021,13 @@ export default function HomeClient() {
             ))}
           </div>
 
-          {/* Comparison */}
-          <div style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-              <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
-                {["Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", "Tu écris la même réponse générique pour la 12ème fois", "Tu réponds énervé. Ça se voit et ça coûte des clients", "3h/semaine perdues sur les avis au lieu de gérer", "Ta note stagne. Les concurrents qui répondent vite te dépassent"].map(item => (
-                  <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
-                    <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
-                    <span style={{ fontSize: "13px", color: "#5F6368" }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ padding: "24px 28px", background: "#fff" }}>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
-                {["Réponse en 30 secondes, 24h/24, même la nuit du réveillon", "Chaque réponse cite le prénom et un détail. Jamais générique.", "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic.", "Taux de réponse >95%. Google t'en récompense sur Maps.", "Ta note monte. L'IA travaille. Tu dors."].map(item => (
-                  <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
-                    <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
-                    <span style={{ fontSize: "13px", color: "#5F6368" }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <DIYComparison />
         </div>
       </section>
 
       {/* ── COMPETITOR TABLE ── */}
       <section style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "36px" }}>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3vw, 34px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               Pourquoi Caela Réputation ?
@@ -927,7 +1075,7 @@ export default function HomeClient() {
                   🇺🇸 getreviewpilot.ai existe. Pourquoi choisir le français ?
                 </div>
                 <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.65 }}>
-                  L&apos;outil américain utilise le même Claude AI et coûte $29/mois. Mais il est en anglais, sans support FR, sans conformité RGPD, sans compréhension des subtilités du marché local français. Quand un client parisien écrit &quot;c&apos;est pas top&quot;, l&apos;outil FR comprend le registre. L&apos;américain traduit mot à mot.
+                  Même Claude AI, $29/mois — mais anglais, sans RGPD ni support FR. &quot;C&apos;est pas top&quot; ? Traduit mot à mot, pas compris.
                 </p>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "200px" }}>
@@ -951,7 +1099,7 @@ export default function HomeClient() {
 
       {/* ── VIDÉOS EXPLICATIVES (bientôt) ── */}
       <section style={{ padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "36px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
               🎬 Bientôt disponible
@@ -979,7 +1127,7 @@ export default function HomeClient() {
 
       {/* ── EXEMPLES DE RÉPONSES ── */}
       <section style={{ padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#FEF7E0", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: "#F9AB00", marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
               Exemples de réponses
@@ -1019,7 +1167,7 @@ export default function HomeClient() {
 
       {/* ── SERVICES CAELA ── */}
       <section id="services" style={{ padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#E6F4EA", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Caela Agency</div>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
@@ -1106,7 +1254,7 @@ export default function HomeClient() {
 
       {/* ── NFC PLATES ── */}
       <section id="nfc" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
               Produit physique
@@ -1223,7 +1371,7 @@ export default function HomeClient() {
           </div>
         </div>
 
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           {/* Bande de réassurance — défile automatiquement (marquee), en boucle,
               pause au survol/tap pour rester lisible. Contenu dupliqué x2 pour
               une boucle sans à-coup (translateX(-50%) = exactement un set). */}
@@ -1260,7 +1408,7 @@ export default function HomeClient() {
           du dashboard, en plus de #pricing déjà référencé ailleurs sur la page. */}
       <div id="tarifs" style={{ position: "relative", top: "-1px" }} />
       <section id="pricing" style={{ padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               Tarifs simples. Dès 29€/mois.
@@ -1572,7 +1720,7 @@ export default function HomeClient() {
 
       {/* ── FOOTER ── */}
       <footer style={{ background: "#fff", borderTop: "1px solid #DADCE0", padding: "28px 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <GDots size={7} />
