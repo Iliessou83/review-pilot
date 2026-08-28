@@ -636,48 +636,37 @@ const DIY_ARGS = [
 // Carrousel horizontal (au lieu d'une grille figée + carte séparée en dessous) :
 // on fait défiler à la souris/tactile/flèches, la carte la plus proche du
 // centre du rail grossit légèrement (effet coverflow) pour guider l'œil.
+// Largeur de carte (300px, fixe — voir le style ci-dessous) + le gap (16px).
+// Sert de pas constant pour retrouver quelle carte est au centre à partir de
+// scrollLeft, SANS jamais mesurer les cartes via getBoundingClientRect : une
+// fois qu'une carte est zoomée par `transform: scale()`, son rect mesuré
+// change lui aussi — mesurer la géométrie pour en déduire le zoom crée une
+// boucle qui fausse le calcul (c'était le bug : le zoom finissait par ne
+// presque plus se voir, toutes les cartes convergeant vers des tailles
+// proches). L'index désormais vient uniquement de scrollLeft, la taille de
+// chaque carte est fixée par sa distance (en nombre de cartes) au centre.
+const DIY_CARD_STEP = 316;
+
 function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [scales, setScales] = useState<number[]>(DIY_ARGS.map(() => 0.88));
-  // Un seul gagnant : l'ancienne version surlignait toute carte à moins de
-  // 30% de la largeur du centre, ce qui, sur un rail large, laissait DEUX
-  // cartes voisines franchir le seuil en même temps (visible pendant le
-  // défilement auto, pas juste un cas limite). Ici on calcule explicitement
-  // l'index le plus proche du centre et seul celui-là reçoit la bordure/
-  // ombre — le zoom reste continu pour toutes, l'habillage "carte active"
-  // est exclusif.
   const [centerIndex, setCenterIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  const updateScales = () => {
+  const updateCenterIndex = () => {
     const track = trackRef.current;
     if (!track) return;
-    const trackRect = track.getBoundingClientRect();
-    const centerX = trackRect.left + trackRect.width / 2;
-    let closestIdx = 0;
-    let closestDist = Infinity;
-    const next = cardRefs.current.map((el, i) => {
-      if (!el) return 0.88;
-      const r = el.getBoundingClientRect();
-      const cardCenter = r.left + r.width / 2;
-      const dist = Math.abs(cardCenter - centerX);
-      if (dist < closestDist) { closestDist = dist; closestIdx = i; }
-      const t = Math.max(0, 1 - dist / (trackRect.width / 2.3));
-      return 0.86 + t * 0.28;
-    });
-    setScales(next);
-    setCenterIndex(closestIdx);
+    const idx = Math.round(track.scrollLeft / DIY_CARD_STEP);
+    setCenterIndex(Math.max(0, Math.min(DIY_ARGS.length - 1, idx)));
   };
 
   useEffect(() => {
-    updateScales();
+    updateCenterIndex();
     const track = trackRef.current;
     if (!track) return;
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(updateScales);
+      raf = requestAnimationFrame(updateCenterIndex);
     };
     track.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
@@ -690,9 +679,8 @@ function DIYCardsCarousel() {
 
   const scrollByCard = (dir: number) => {
     const track = trackRef.current;
-    const card = cardRefs.current[0];
-    if (!track || !card) return;
-    track.scrollBy({ left: dir * (card.getBoundingClientRect().width + 16), behavior: "smooth" });
+    if (!track) return;
+    track.scrollBy({ left: dir * DIY_CARD_STEP, behavior: "smooth" });
   };
 
   // Défilement automatique continu (une carte à la fois), en pause au survol
@@ -725,20 +713,20 @@ function DIYCardsCarousel() {
         }}
       >
         {DIY_ARGS.map((a, i) => {
-          const scale = scales[i] ?? 0.88;
-          const t = Math.min(1, Math.max(0, (scale - 0.86) / 0.28));
-          const isActive = i === centerIndex;
+          const dist = Math.abs(i - centerIndex);
+          const isActive = dist === 0;
+          const scale = dist === 0 ? 1.14 : dist === 1 ? 0.94 : 0.86;
+          const opacity = dist === 0 ? 1 : dist === 1 ? 0.75 : 0.55;
           return (
             <div
               key={a.title}
-              ref={(el) => { cardRefs.current[i] = el; }}
               style={{
                 flex: "0 0 auto", width: "300px", scrollSnapAlign: "center",
                 background: "#fff", border: `1px solid ${isActive ? a.color : "#DADCE0"}`, borderRadius: "14px", padding: "22px",
                 boxShadow: isActive ? SHADOW_LG : SHADOW_SM,
-                opacity: 0.55 + t * 0.45,
+                opacity,
                 transform: `scale(${scale})`,
-                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                transition: "transform 0.35s ease, opacity 0.35s ease, border-color 0.2s ease, box-shadow 0.2s ease",
                 zIndex: Math.round(scale * 100),
               }}
             >
