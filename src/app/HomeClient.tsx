@@ -1044,7 +1044,7 @@ export default function HomeClient() {
   }
 
   return (
-    <div style={{ background: "#fff", color: "#202124", paddingBottom: isMobile ? (showEcoBanner ? "120px" : "46px") : 0 }}>
+    <div style={{ background: "#fff", color: "#202124", paddingBottom: isMobile ? (showEcoBanner ? "132px" : "58px") : "64px" }}>
 
       {/* ── TRUST STRIP ── */}
       <div style={{ background: G.blue, padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
@@ -1724,35 +1724,35 @@ export default function HomeClient() {
                   zIndex: plan.highlight ? 1 : 0,
                 }} key={plan.name}>
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.color }} />
-                  {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "2px 8px", background: plan.color + "15", borderRadius: "20px", fontSize: "9px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
-                  <p style={{ margin: "0 0 2px", fontSize: "11px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "3px", marginBottom: "3px", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: "34px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
-                    <span style={{ fontSize: "12px", color: "#5F6368" }}>/mois</span>
+                  {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "3px 9px", background: plan.color + "15", borderRadius: "20px", fontSize: "10.5px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
+                  <p style={{ margin: "0 0 3px", fontSize: "13px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
+                    <span style={{ fontSize: "14px", color: "#5F6368" }}>/mois</span>
                     {billing === "annual" && (
-                      <span style={{ fontSize: "14px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
+                      <span style={{ fontSize: "16px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
                     )}
                   </div>
-                  <p style={{ margin: "0 0 4px", fontSize: "12px", color: "#5F6368" }}>{plan.desc}</p>
-                  {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 8px", background: "#E6F4EA", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: G.green, marginBottom: "8px" }}>🎁 -{savings}€/an</div>}
-                  <div style={{ fontSize: "11px", color: plan.color, marginBottom: "14px", fontWeight: 500 }}>{plan.best}</div>
+                  <p style={{ margin: "0 0 5px", fontSize: "13.5px", color: "#5F6368" }}>{plan.desc}</p>
+                  {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", background: "#E6F4EA", borderRadius: "20px", fontSize: "12.5px", fontWeight: 700, color: G.green, marginBottom: "9px" }}>🎁 -{savings}€/an</div>}
+                  <div style={{ fontSize: "13px", color: plan.color, marginBottom: "16px", fontWeight: 500 }}>{plan.best}</div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "7px", marginBottom: "18px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "9px", marginBottom: "20px" }}>
                     {plan.features.map(f => (
-                      <div key={f} style={{ display: "flex", gap: "7px" }}>
-                        <span style={{ color: plan.color, fontWeight: 700, fontSize: "12px", flexShrink: 0 }}>✓</span>
-                        <span style={{ fontSize: "12px", color: "#5F6368", lineHeight: 1.4 }}>{f}</span>
+                      <div key={f} style={{ display: "flex", gap: "8px" }}>
+                        <span style={{ color: plan.color, fontWeight: 700, fontSize: "13.5px", flexShrink: 0 }}>✓</span>
+                        <span style={{ fontSize: "14px", color: "#5F6368", lineHeight: 1.45 }}>{f}</span>
                       </div>
                     ))}
                     {plan.missing.map(f => (
-                      <div key={f} style={{ display: "flex", gap: "7px" }}>
-                        <span style={{ color: "#DADCE0", fontWeight: 700, fontSize: "12px", flexShrink: 0 }}>—</span>
-                        <span style={{ fontSize: "12px", color: "#DADCE0", lineHeight: 1.4 }}>{f}</span>
+                      <div key={f} style={{ display: "flex", gap: "8px" }}>
+                        <span style={{ color: "#DADCE0", fontWeight: 700, fontSize: "13.5px", flexShrink: 0 }}>—</span>
+                        <span style={{ fontSize: "14px", color: "#DADCE0", lineHeight: 1.45 }}>{f}</span>
                       </div>
                     ))}
                   </div>
 
-                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "10px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "6px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>
+                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
                     {plan.cta}
                   </a>
                 </div>
@@ -1820,12 +1820,12 @@ export default function HomeClient() {
       <div id="login" />
 
       {/* ── ÉCOSYSTÈME CAELA ── */}
-      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "48px 40px" }}>
-        <div style={{ maxWidth: "760px", margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ margin: "0 0 10px", fontSize: "16px", fontWeight: 700, color: "#202124" }}>
+      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "56px 40px" }}>
+        <div style={{ maxWidth: "820px", margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ margin: "0 0 12px", fontSize: "22px", fontWeight: 700, color: "#202124" }}>
             Fait partie de l&apos;écosystème Caela
           </h2>
-          <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: "15.5px", color: "#5F6368", lineHeight: 1.7 }}>
             Un compte, tous vos outils : Réservation (<a href="https://caelenda.fr" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Caelenda</a>) · Fidélité (<a href="https://caela-rewards.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Rewards</a>) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (<a href="https://caela-pulse.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Pulse</a>) · QR dynamique (<a href="https://caela-qr.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>CaelaQR</a>).
             <br />
             Connexion unique entre tous les produits.
@@ -1915,23 +1915,26 @@ export default function HomeClient() {
           // sur petit écran).
           bottom: isMobile && showEcoBanner ? "62px" : 0,
           ...(isMobile
-            ? { left: "10px", right: "78px", transform: `translateY(${loginWidgetOpen ? "0" : "calc(100% - 46px)"})` }
-            : { left: "50%", width: "360px", maxWidth: "94vw", transform: `translateX(-50%) translateY(${loginWidgetOpen ? "0" : "calc(100% - 46px)"})` }),
+            ? { left: "10px", right: "78px", transform: `translateY(${loginWidgetOpen ? "0" : "calc(100% - 58px)"})` }
+            : { left: "50%", width: "360px", maxWidth: "94vw", transform: `translateX(-50%) translateY(${loginWidgetOpen ? "0" : "calc(100% - 58px)"})` }),
           transition: "bottom 0.25s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1)",
           zIndex: 92,
         }}
       >
-        <div style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "16px", borderTopRightRadius: "16px", boxShadow: "0 -8px 28px rgba(32,33,36,0.18)", overflow: "hidden" }}>
-          {/* Poignée toujours visible, même repliée */}
+        <div style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "18px", borderTopRightRadius: "18px", boxShadow: "0 -10px 32px rgba(26,115,232,0.22)", overflow: "hidden" }}>
+          {/* Poignée toujours visible, même repliée — dégradé bleu de marque
+              + halo pulsé (au lieu d'un gris plat) pour être visible sans
+              avoir à la chercher, et plus grande pour se lire de loin. */}
           <button
             onClick={() => setLoginWidgetOpen(o => !o)}
+            className={loginWidgetOpen ? "" : "rp-chat-pulse"}
             style={{
-              width: "100%", padding: "12px 16px", background: "#202124", border: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "inherit",
+              width: "100%", padding: "16px 18px", background: "linear-gradient(135deg, #1A73E8, #1557b0)", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontFamily: "inherit",
             }}
           >
-            <span className="rp-bounce-icon" style={{ fontSize: "15px", flexShrink: 0 }}>🚀</span>
-            <span style={{ fontSize: isMobile ? "12px" : "13px", fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <span className="rp-bounce-icon" style={{ fontSize: "19px", flexShrink: 0 }}>🚀</span>
+            <span style={{ fontSize: isMobile ? "13.5px" : "15px", fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {widgetMode === "login" ? "Se connecter" : (isMobile ? "Vos avis sans réponse coûtent cher" : "Combien vous coûtent vos avis sans réponse ?")}
             </span>
           </button>
