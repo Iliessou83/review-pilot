@@ -513,7 +513,11 @@ function DIYComparison() {
   const textStyle: React.CSSProperties = { fontSize: "14px", lineHeight: 1.55, fontWeight: 500 };
 
   return (
-    <div ref={ref} style={{ borderTop: "1px solid #DADCE0", paddingTop: "26px" }}>
+    // maxWidth resserré à 1000px (au lieu de suivre les 1700px du reste de
+    // la section) : deux colonnes de texte cru s'étiraient sur toute la
+    // largeur, avec un grand vide entre elles de part et d'autre du trait
+    // central.
+    <div ref={ref} style={{ borderTop: "1px solid #DADCE0", paddingTop: "26px", maxWidth: "1000px", margin: "0 auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "0 32px" }}>
         <div style={{ paddingRight: "18px", borderRight: "1px solid #DADCE0" }}>
           <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
@@ -545,9 +549,10 @@ function DIYComparison() {
                 <span
                   style={{
                     ...textStyle, color: "#1E4620",
-                    background: highlighted[i] ? "linear-gradient(180deg, transparent 60%, #A8E6B8 60%)" : "transparent",
-                    transition: "background 0.3s ease",
-                    borderRadius: "2px",
+                    background: highlighted[i] ? "#CFF2DA" : "transparent",
+                    boxShadow: highlighted[i] ? "0 0 0 4px #CFF2DA" : "0 0 0 4px transparent",
+                    transition: "background 0.3s ease, box-shadow 0.3s ease",
+                    borderRadius: "4px",
                   }}
                 >
                   {row.good.slice(0, shown)}
@@ -1327,7 +1332,7 @@ export default function HomeClient() {
           {/* Why not the US tool — largeurs bornées des deux côtés (au lieu
               d'un flex:1 qui étirait le paragraphe sur toute la largeur
               restante et créait un grand vide avant la checklist). */}
-          <div style={{ marginTop: "20px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 28px", boxShadow: SHADOW_SM }}>
+          <div style={{ marginTop: "20px", maxWidth: "1100px", margin: "20px auto 0", background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 28px", boxShadow: SHADOW_SM }}>
             <div style={{ display: "flex", gap: "40px", alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 380px", maxWidth: "560px" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
