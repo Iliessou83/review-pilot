@@ -513,13 +513,12 @@ function DIYComparison() {
   const textStyle: React.CSSProperties = { fontSize: "14px", lineHeight: 1.55, fontWeight: 500 };
 
   return (
-    // maxWidth resserré à 1000px (au lieu de suivre les 1700px du reste de
-    // la section) : deux colonnes de texte cru s'étiraient sur toute la
-    // largeur, avec un grand vide entre elles de part et d'autre du trait
-    // central.
-    <div ref={ref} style={{ borderTop: "1px solid #DADCE0", paddingTop: "26px", maxWidth: "1000px", margin: "0 auto" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "0 32px" }}>
-        <div style={{ paddingRight: "18px", borderRight: "1px solid #DADCE0" }}>
+    // Même habillage "carte" que la comparaison plaque NFC seule / plaque +
+    // moteur (fond blanc, bordure arrondie) plutôt qu'un simple trait du haut
+    // — pour la cohérence visuelle entre les deux comparaisons de la page.
+    <div ref={ref} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "14px", overflow: "hidden" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+        <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
           <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
           {DIY_COMPARISON_ROWS.map((row, i) => {
             const shown = badChars[i] ?? 0;
@@ -538,7 +537,7 @@ function DIYComparison() {
             );
           })}
         </div>
-        <div style={{ paddingLeft: "18px" }}>
+        <div style={{ padding: "24px 28px", background: "#F6FBF7" }}>
           <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
           {DIY_COMPARISON_ROWS.map((row, i) => {
             const shown = goodChars[i] ?? 0;
