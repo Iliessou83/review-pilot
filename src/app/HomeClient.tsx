@@ -316,16 +316,17 @@ function ReviewFlow() {
     { icon: "📧", color: G.yellow, label: "Email envoyé avec boutons", sub: "1 clic = réponse choisie, directement dans le mail", timing: "+10 sec" },
     { icon: "✅", color: G.green, label: "Publié sur Google", sub: "La réponse apparaît sous le nom du restaurant", timing: "+2 sec" },
   ];
-  // Révèle les 4 étapes une à une (au lieu de tout afficher d'un bloc) dès
-  // que la carte entre dans le viewport — un seul déclenchement, via un ref
-  // observé une fois (pas de reset au re-scroll, pour rester sobre).
+  // Révèle les 4 étapes une à une dès que la carte entre dans le viewport,
+  // et REJOUE l'animation à chaque nouvelle entrée (remontée puis retour,
+  // par ex.) — inView suit l'intersection réelle au lieu de se figer après
+  // un seul déclenchement.
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
+      setInView(entry.isIntersecting);
     }, { threshold: 0.3 });
     obs.observe(el);
     return () => obs.disconnect();
@@ -419,21 +420,26 @@ function CalculatorFlowBanner() {
       {/* Grille à cellule unique : les deux blocs restent montés et empilés au
           même endroit (gridArea partagée), donc le conteneur se cale sur le
           plus haut des deux en permanence — la rotation ne fait plus sauter
-          le contenu sous la section, contrairement à un montage/démontage. */}
-      <div style={{ maxWidth: "620px", margin: "0 auto", display: "grid" }}>
+          le contenu sous la section, contrairement à un montage/démontage.
+          Largeur remontée à 1100px (au lieu de 620px, trop compressé — la
+          grille des 4 étapes "Comment ça marche" renvoyait un 4e élément
+          orphelin sur sa propre ligne faute de place). */}
+      <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid" }}>
         <div style={{
           gridArea: "1 / 1",
           opacity: tab === "calc" ? 1 : 0,
+          transform: tab === "calc" ? "translateY(0) scale(1)" : "translateY(10px) scale(0.98)",
           pointerEvents: tab === "calc" ? "auto" : "none",
-          transition: "opacity 0.4s ease",
+          transition: "opacity 0.45s ease, transform 0.45s ease",
         }}>
           <ROICalculator />
         </div>
         <div style={{
           gridArea: "1 / 1",
           opacity: tab === "flow" ? 1 : 0,
+          transform: tab === "flow" ? "translateY(0) scale(1)" : "translateY(10px) scale(0.98)",
           pointerEvents: tab === "flow" ? "auto" : "none",
-          transition: "opacity 0.4s ease",
+          transition: "opacity 0.45s ease, transform 0.45s ease",
         }}>
           <ReviewFlow />
         </div>
@@ -451,8 +457,11 @@ function DIYComparison() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Suit l'intersection réelle (pas de disconnect après le premier passage) :
+    // l'animation rejoue à chaque fois qu'on repasse sur la section, dans les
+    // deux sens de défilement.
     const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
+      setInView(entry.isIntersecting);
     }, { threshold: 0.25 });
     obs.observe(el);
     return () => obs.disconnect();
@@ -465,43 +474,62 @@ function DIYComparison() {
     { bad: "3h/semaine perdues sur les avis au lieu de gérer", good: "Taux de réponse >95%. Google t'en récompense sur Maps." },
     { bad: "Ta note stagne. Les concurrents qui répondent vite te dépassent", good: "Ta note monte. L'IA travaille. Tu dors." },
   ];
+  // Rythme ralenti (0.55s/ligne au lieu de 0.35s) : chaque ligne de gauche
+  // apparaît normalement, PUIS se barre — au lieu d'être barrée d'emblée —
+  // et sa contrepartie verte s'allume juste après, comme avant.
+  const STEP = 0.55;
 
   return (
-    <div ref={ref} style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", overflow: "hidden" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-        <div style={{ padding: "24px 28px", borderRight: "1px solid #DADCE0" }}>
+    <div ref={ref} style={{ borderTop: "1px solid #DADCE0", paddingTop: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0 28px" }}>
+        <div style={{ paddingRight: "16px", borderRight: "1px solid #DADCE0" }}>
           <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✗ Sans Caela Réputation</div>
-          {ROWS.map((row, i) => (
-            <div key={row.bad} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
-              <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
-              <span
-                className={inView ? "rp-strike rp-strike-active" : "rp-strike"}
-                style={{ fontSize: "13px", color: "#5F6368", animationDelay: `${0.15 + i * 0.35}s` }}
+          {ROWS.map((row, i) => {
+            const entranceDelay = 0.1 + i * STEP;
+            const strikeDelay = entranceDelay + 0.35;
+            return (
+              <div
+                key={row.bad}
+                style={{
+                  display: "flex", gap: "8px", marginBottom: "9px",
+                  opacity: inView ? 1 : 0,
+                  transform: inView ? "translateX(0)" : "translateX(-14px)",
+                  transition: `opacity 0.5s ease ${entranceDelay}s, transform 0.5s ease ${entranceDelay}s`,
+                }}
               >
-                {row.bad}
-              </span>
-            </div>
-          ))}
+                <span style={{ color: G.red, fontWeight: 700, flexShrink: 0 }}>✗</span>
+                <span
+                  className={inView ? "rp-strike rp-strike-active" : "rp-strike"}
+                  style={{ fontSize: "13px", color: "#5F6368", animationDelay: `${strikeDelay}s` }}
+                >
+                  {row.bad}
+                </span>
+              </div>
+            );
+          })}
         </div>
-        <div style={{ padding: "24px 28px", background: "#fff" }}>
+        <div style={{ paddingLeft: "16px" }}>
           <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>✓ Avec Caela Réputation</div>
-          {ROWS.map((row, i) => (
-            <div
-              key={row.good}
-              className={inView ? "rp-row-highlight-active" : ""}
-              style={{
-                display: "flex", gap: "8px", marginBottom: "9px",
-                borderRadius: "6px", padding: "2px 4px", marginLeft: "-4px",
-                opacity: inView ? 1 : 0,
-                transform: inView ? "translateX(0)" : "translateX(14px)",
-                transition: `opacity 0.45s ease ${0.35 + i * 0.35}s, transform 0.45s ease ${0.35 + i * 0.35}s`,
-                animationDelay: `${0.35 + i * 0.35}s`,
-              }}
-            >
-              <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
-              <span style={{ fontSize: "13px", color: "#5F6368", fontWeight: 500 }}>{row.good}</span>
-            </div>
-          ))}
+          {ROWS.map((row, i) => {
+            const delay = 0.1 + i * STEP + 0.55;
+            return (
+              <div
+                key={row.good}
+                className={inView ? "rp-row-highlight-active" : ""}
+                style={{
+                  display: "flex", gap: "8px", marginBottom: "9px",
+                  borderRadius: "6px", padding: "2px 4px", marginLeft: "-4px",
+                  opacity: inView ? 1 : 0,
+                  transform: inView ? "translateX(0)" : "translateX(14px)",
+                  transition: `opacity 0.5s ease ${delay}s, transform 0.5s ease ${delay}s`,
+                  animationDelay: `${delay}s`,
+                }}
+              >
+                <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: "13px", color: "#5F6368", fontWeight: 500 }}>{row.good}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -573,6 +601,106 @@ const DIY_ARGS = [
   { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Rush, vacances, périodes chargées : les avis s'accumulent. L'IA n'en rate jamais un." },
   { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. On gère 30 fiches comme une." },
 ];
+
+// Carrousel horizontal (au lieu d'une grille figée + carte séparée en dessous) :
+// on fait défiler à la souris/tactile/flèches, la carte la plus proche du
+// centre du rail grossit légèrement (effet coverflow) pour guider l'œil.
+function DIYCardsCarousel() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [scales, setScales] = useState<number[]>(DIY_ARGS.map(() => 0.88));
+
+  const updateScales = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const trackRect = track.getBoundingClientRect();
+    const centerX = trackRect.left + trackRect.width / 2;
+    const next = cardRefs.current.map((el) => {
+      if (!el) return 0.88;
+      const r = el.getBoundingClientRect();
+      const cardCenter = r.left + r.width / 2;
+      const dist = Math.abs(cardCenter - centerX);
+      const t = Math.max(0, 1 - dist / (trackRect.width / 2.3));
+      return 0.86 + t * 0.28;
+    });
+    setScales(next);
+  };
+
+  useEffect(() => {
+    updateScales();
+    const track = trackRef.current;
+    if (!track) return;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(updateScales);
+    };
+    track.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      track.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const scrollByCard = (dir: number) => {
+    const track = trackRef.current;
+    const card = cardRefs.current[0];
+    if (!track || !card) return;
+    track.scrollBy({ left: dir * (card.getBoundingClientRect().width + 16), behavior: "smooth" });
+  };
+
+  return (
+    <div style={{ position: "relative", marginBottom: "20px" }}>
+      <div
+        ref={trackRef}
+        className="rp-no-scrollbar"
+        style={{
+          display: "flex", gap: "16px", overflowX: "auto", scrollSnapType: "x mandatory",
+          padding: "36px 10vw 28px", scrollBehavior: "smooth",
+        }}
+      >
+        {DIY_ARGS.map((a, i) => {
+          const scale = scales[i] ?? 0.88;
+          const t = Math.min(1, Math.max(0, (scale - 0.86) / 0.28));
+          return (
+            <div
+              key={a.title}
+              ref={(el) => { cardRefs.current[i] = el; }}
+              style={{
+                flex: "0 0 auto", width: "300px", scrollSnapAlign: "center",
+                background: "#fff", border: `1px solid ${t > 0.7 ? a.color : "#DADCE0"}`, borderRadius: "14px", padding: "22px",
+                boxShadow: t > 0.7 ? SHADOW_LG : SHADOW_SM,
+                opacity: 0.55 + t * 0.45,
+                transform: `scale(${scale})`,
+                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                zIndex: Math.round(scale * 100),
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                <div style={{ width: "38px", height: "38px", background: a.bg, borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px" }}>{a.icon}</div>
+                <span style={{ fontSize: "18px", fontWeight: 700, color: a.color }}>{a.stat}</span>
+              </div>
+              <h3 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 600, color: "#202124" }}>{a.title}</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+      <button
+        aria-label="Précédent"
+        onClick={() => scrollByCard(-1)}
+        style={{ position: "absolute", left: "-6px", top: "50%", transform: "translateY(-50%)", width: "36px", height: "36px", borderRadius: "50%", background: "#fff", border: "1px solid #DADCE0", boxShadow: SHADOW_MD, cursor: "pointer", fontSize: "16px", color: "#5F6368", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >‹</button>
+      <button
+        aria-label="Suivant"
+        onClick={() => scrollByCard(1)}
+        style={{ position: "absolute", right: "-6px", top: "50%", transform: "translateY(-50%)", width: "36px", height: "36px", borderRadius: "50%", background: "#fff", border: "1px solid #DADCE0", boxShadow: SHADOW_MD, cursor: "pointer", fontSize: "16px", color: "#5F6368", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >›</button>
+    </div>
+  );
+}
 
 const COMPETITORS = [
   { name: "Caela Réputation 🇫🇷", solo: "29-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
@@ -702,14 +830,19 @@ export default function HomeClient() {
 
   // Topbar : masquée au défilement vers le bas, réaffichée immédiatement
   // au premier pixel remonté. Toujours visible tout en haut de page.
+  // Seuil de 4px pour ignorer le bruit du trackpad/momentum scroll (sans lui,
+  // un micro-jitter pouvait alterner show/hide en boucle et donner
+  // l'impression que la remontée "ne marchait pas bien").
   useEffect(() => {
     let lastY = window.scrollY;
+    const THRESHOLD = 4;
     const onScroll = () => {
       const y = window.scrollY;
+      const delta = y - lastY;
       if (y <= 80) setNavVisible(true);
-      else if (y > lastY) setNavVisible(false);
-      else if (y < lastY) setNavVisible(true);
-      lastY = y;
+      else if (delta > THRESHOLD) setNavVisible(false);
+      else if (delta < -THRESHOLD) setNavVisible(true);
+      if (Math.abs(delta) > THRESHOLD) lastY = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -908,17 +1041,17 @@ export default function HomeClient() {
           s'étirait donc bien au-delà de son contenu réel et laissait un grand
           vide avant l'illustration. */}
       <section style={{ background: "linear-gradient(180deg, #F8F9FA 0%, #fff 100%)", padding: "80px 40px 96px" }}>
-      <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "72px", flexWrap: "wrap" }}>
-        <div style={{ flex: "1 1 460px", maxWidth: "560px" }}>
+      <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "88px", flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 560px", maxWidth: "780px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 14px", background: "#E8F0FE", borderRadius: "24px", marginBottom: "28px" }}>
             <GDots size={7} />
             <span style={{ fontSize: "13px", fontWeight: 600, color: G.blue }}>Spécialiste Google Business Profile</span>
           </div>
-          <h1 style={{ margin: "0 0 20px", fontSize: "clamp(30px, 4.3vw, 50px)", fontWeight: 700, letterSpacing: "-1.2px", lineHeight: 1.15, color: "#202124" }}>
-            Vos avis <GL size={38} /> répondus.<br />
+          <h1 style={{ margin: "0 0 20px", fontSize: "clamp(34px, 4.8vw, 66px)", fontWeight: 700, letterSpacing: "-1.6px", lineHeight: 1.12, color: "#202124" }}>
+            Vos avis <GL size={48} /> répondus.<br />
             <span style={{ color: G.green }}>Automatiquement.</span>
           </h1>
-          <p style={{ margin: "0 0 36px", fontSize: "18px", lineHeight: 1.65, color: "#5F6368", maxWidth: "480px" }}>
+          <p style={{ margin: "0 0 36px", fontSize: "20px", lineHeight: 1.6, color: "#5F6368", maxWidth: "660px" }}>
             Caela Réputation détecte chaque avis, répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs. <strong>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -995,31 +1128,7 @@ export default function HomeClient() {
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px", marginBottom: "20px" }}>
-            {DIY_ARGS.map(a => (
-              <div
-                key={a.title}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-6px)";
-                  e.currentTarget.style.boxShadow = SHADOW_LG;
-                  e.currentTarget.style.borderColor = a.color;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = SHADOW_SM;
-                  e.currentTarget.style.borderColor = "#DADCE0";
-                }}
-                style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "22px", boxShadow: SHADOW_SM, transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                  <div style={{ width: "38px", height: "38px", background: a.bg, borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px" }}>{a.icon}</div>
-                  <span style={{ fontSize: "18px", fontWeight: 700, color: a.color }}>{a.stat}</span>
-                </div>
-                <h3 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 600, color: "#202124" }}>{a.title}</h3>
-                <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</p>
-              </div>
-            ))}
-          </div>
+          <DIYCardsCarousel />
 
           <DIYComparison />
         </div>
@@ -1193,31 +1302,34 @@ export default function HomeClient() {
               </div>
             ))}
           </div>
-          {/* Retrait des faux avis, ajouté le 08/08 : demande fréquente côté clients,
-              inclus dans les packs mais aussi vendable à l'unité sans abonnement. */}
-          <div style={{ marginTop: "16px", background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <span style={{ fontSize: "24px" }}>🚫</span>
-              <div>
-                <h3 style={{ margin: "0 0 3px", fontSize: "15px", fontWeight: 700, color: "#202124" }}>{FAKE_REVIEW_REMOVAL.title}</h3>
-                <p style={{ margin: 0, fontSize: "12px", color: "#5F6368", maxWidth: "520px" }}>{FAKE_REVIEW_REMOVAL.desc}</p>
+          {/* Retrait des faux avis + réduction plaques NFC : deux bannières
+              autrefois empilées pleine largeur, ce qui laissait un grand vide
+              central une fois la section élargie (justify-content:space-between
+              sur 1700px). Fusionnées en une grille 2 colonnes = une seule
+              rangée, plus de vide mort. CTA NFC corrigé : "audit gratuit"
+              n'a aucun sens sur une offre plaques (l'audit, c'est pour la
+              fiche GMB) — remplacé par un lien direct vers la section NFC. */}
+          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "12px" }}>
+            <div style={{ background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ fontSize: "22px" }}>🚫</span>
+                <div>
+                  <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>{FAKE_REVIEW_REMOVAL.title}</h3>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>{FAKE_REVIEW_REMOVAL.desc}</p>
+                </div>
               </div>
+              <a href="mailto:contact@caela.fr?subject=Signalement%20avis" style={{ padding: "8px 14px", background: G.red, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>Signaler un avis →</a>
             </div>
-            <div style={{ textAlign: "center", flexShrink: 0 }}>
-              <div style={{ fontSize: "13px", fontWeight: 700, color: G.red, whiteSpace: "nowrap", marginBottom: "6px" }}>{FAKE_REVIEW_REMOVAL.price}</div>
-              <a href="mailto:contact@caela.fr?subject=Signalement%20avis" style={{ display: "block", padding: "8px 16px", background: G.red, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap" }}>Signaler un avis →</a>
-            </div>
-          </div>
 
-          <div style={{ marginTop: "12px", background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" }}><GDots size={8} /><span style={{ fontSize: "12px", fontWeight: 600, color: "#5F6368" }}>Client de l&apos;un de nos 3 packs GMB</span></div>
-              <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>-20% sur vos plaques NFC</h3>
-              <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Tout client Pack Lancement, Pack Croissance ou Pack Avis bénéficie de -20% sur un pack de plaques NFC (voir plus bas). Code envoyé par email à la souscription.</p>
+            <div style={{ background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+              <div>
+                <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>-20% sur vos plaques NFC</h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Client d&apos;un de nos 3 packs GMB : code envoyé par email à la souscription.</p>
+              </div>
+              <a href="#nfc" style={{ padding: "8px 14px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
+                Voir les plaques →
+              </a>
             </div>
-            <a href="mailto:contact@caela.fr" style={{ padding: "11px 24px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40`, whiteSpace: "nowrap" }}>
-              Demander un audit gratuit
-            </a>
           </div>
 
           {/* Option complémentaire, discrète : proposition à valider avant de la

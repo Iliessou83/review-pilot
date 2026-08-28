@@ -104,7 +104,7 @@ canvas {
   transform: translateY(-50%);
 }
 .rp-strike-active::after {
-  animation: rp-strike-draw 0.5s ease forwards;
+  animation: rp-strike-draw 0.7s ease forwards;
 }
 @keyframes rp-strike-draw {
   from { width: 0%; }
@@ -116,7 +116,7 @@ canvas {
   100% { background: transparent; }
 }
 .rp-row-highlight-active {
-  animation: rp-row-highlight 1.1s ease forwards;
+  animation: rp-row-highlight 1.4s ease forwards;
 }
 @media (prefers-reduced-motion: reduce) {
   .rp-live-dot,
@@ -127,4 +127,14 @@ canvas {
     animation: none;
     width: 100%;
   }
+}
+
+/* Carrousel "pourquoi pas DIY" : rail scrollable, scrollbar cachée (les
+   flèches + le swipe/drag suffisent, pas besoin de l'afficher). */
+.rp-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rp-no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
