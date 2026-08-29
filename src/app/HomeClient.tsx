@@ -920,9 +920,24 @@ function ReplyExampleCard({ ex, index }: { ex: ReplyExample; index: number }) {
 // de la gestion courante des avis. Corrigé le 2026-08-29 : la version
 // précédente prétendait à tort que c'était inclus dans les 3 packs GMB.
 const GMB_SERVICES = [
-  { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€", desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.", highlight: false },
-  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "199€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte).", highlight: true },
-  { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois", desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte. Rien d'autre.", highlight: false },
+  {
+    color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€",
+    desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.",
+    features: ["Audit + création complète de la fiche", "Catégories, horaires, SEO local", "Rédaction posts, photos, Q&A", "Paiement unique, aucun abonnement"],
+    highlight: false,
+  },
+  {
+    color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "199€/mois",
+    desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte).",
+    features: ["Posts + photos mis à jour chaque mois", "Veille concurrentielle", "Rapport de performance mensuel", "Réponse manuelle aux avis incluse", "Stratégie de collecte d'avis"],
+    highlight: true,
+  },
+  {
+    color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois",
+    desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte. Rien d'autre.",
+    features: ["Réponse manuelle aux avis complexes", "Stratégie de collecte d'avis", "Sans optimisation de fiche ni posts"],
+    highlight: false,
+  },
 ];
 
 const FAKE_REVIEW_REMOVAL = {
@@ -966,7 +981,7 @@ function safeNext(): string {
 const NAV_LINKS: [string, string][] = [
   ["#services", "Services GMB"],
   ["#nfc", "Plaques NFC"],
-  ["#pricing", "Tarifs"],
+  ["#pricing", "Abonnement réponses IA"],
   ["/audit", "Audit gratuit 🔍"],
   ["/blog", "Blog"],
 ];
@@ -1470,12 +1485,12 @@ export default function HomeClient() {
       <section id="services" style={{ padding: "80px 40px" }}>
         <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
-            <div style={{ display: "inline-block", padding: "4px 14px", background: "#E6F4EA", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Caela Agency</div>
+            <div style={{ display: "inline-block", padding: "4px 14px", background: "#E6F4EA", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Service humain Caela Agency — pas un abonnement IA</div>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               On gère votre présence <GL size={30} />
             </h2>
-            <p style={{ margin: "0 auto", maxWidth: "460px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
-              Caela Réputation automatise vos réponses. Caela s&apos;occupe du reste: création, optimisation, visibilité.
+            <p style={{ margin: "0 auto", maxWidth: "500px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
+              L&apos;abonnement Caela Réputation ci-dessous automatise vos réponses. Ici, c&apos;est différent : une vraie personne s&apos;occupe pour vous de créer, optimiser et faire vivre votre fiche Google.
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "16px" }}>
@@ -1486,6 +1501,14 @@ export default function HomeClient() {
                 <div style={{ fontSize: "10px", fontWeight: 600, color: s.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>{s.tag}</div>
                 <h3 style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>{s.title}</h3>
                 <p style={{ margin: "0 0 14px", fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>{s.desc}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "7px", marginBottom: "16px" }}>
+                  {s.features.map(f => (
+                    <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: "7px" }}>
+                      <span style={{ color: s.color, fontWeight: 700, fontSize: "12px", lineHeight: 1.5 }}>✓</span>
+                      <span style={{ fontSize: "12.5px", color: "#3C4043", lineHeight: 1.5 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "12px" }}>
                   <span style={{ fontSize: "20px", fontWeight: 700, color: s.color }}>{s.price}</span>
                   {s.oldPrice && <span style={{ fontSize: "13px", color: "#80868B", textDecoration: "line-through" }}>{s.oldPrice}</span>}
@@ -1735,7 +1758,7 @@ export default function HomeClient() {
         <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              Tarifs simples. Dès 29€/mois.
+              L&apos;abonnement qui répond à vos avis. Dès 31€/mois.
             </h2>
             <p style={{ margin: "0 0 18px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
