@@ -31,31 +31,32 @@ export default function BlogIndexPage() {
         <Link href="/" style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>← Retour</Link>
       </nav>
 
-      <div style={{ maxWidth: "880px", margin: "0 auto", padding: "56px 24px 80px" }}>
+      <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "56px 24px 80px" }}>
         <p style={{ fontSize: "13px", fontWeight: 700, color: G.blue, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>Blog</p>
         <h1 style={{ fontSize: "36px", fontWeight: 800, margin: "0 0 12px", letterSpacing: "-0.5px" }}>Avis Google & e-réputation</h1>
         <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.6, margin: "0 0 48px", maxWidth: "620px" }}>
           Guides pratiques pour les commerçants et indépendants : réponses aux avis, classement Google Maps, fiche Google Business Profile, collecte automatisée.
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
           {posts.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
               style={{
-                display: "block", padding: "24px 0", borderTop: "1px solid #DADCE0",
-                textDecoration: "none", color: "inherit",
+                display: "block", padding: "24px", border: "1px solid #DADCE0", borderRadius: "14px",
+                textDecoration: "none", color: "inherit", background: "#fff",
+                transition: "box-shadow 0.15s ease, transform 0.15s ease",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px", flexWrap: "wrap" }}>
                 <span style={{ fontSize: "12px", fontWeight: 700, color: G.green, background: "#E6F4EA", padding: "3px 10px", borderRadius: "12px" }}>
                   {post.category}
                 </span>
                 <span style={{ fontSize: "12px", color: "#80868B" }}>{formatDate(post.date)} · {post.readMinutes} min de lecture</span>
               </div>
-              <h2 style={{ fontSize: "20px", fontWeight: 700, margin: "0 0 8px", color: "#202124" }}>{post.title}</h2>
-              <p style={{ fontSize: "14px", color: "#5F6368", lineHeight: 1.6, margin: 0 }}>{post.excerpt}</p>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, margin: "0 0 8px", color: "#202124", lineHeight: 1.35 }}>{post.title}</h2>
+              <p style={{ fontSize: "13.5px", color: "#5F6368", lineHeight: 1.6, margin: 0 }}>{post.excerpt}</p>
             </Link>
           ))}
         </div>

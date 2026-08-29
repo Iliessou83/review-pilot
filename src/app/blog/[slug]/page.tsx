@@ -90,49 +90,66 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <Link href="/blog" style={{ fontSize: "13px", color: "#5F6368", textDecoration: "none" }}>← Blog</Link>
       </nav>
 
-      <article style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 24px 40px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <span style={{ fontSize: "12px", fontWeight: 700, color: G.green, background: "#E6F4EA", padding: "3px 10px", borderRadius: "12px" }}>
-            {post.category}
-          </span>
-          <span style={{ fontSize: "12px", color: "#80868B" }}>{formatDate(post.date)} · {post.readMinutes} min de lecture</span>
-        </div>
-        <h1 style={{ fontSize: "32px", fontWeight: 800, margin: "0 0 16px", lineHeight: 1.25, letterSpacing: "-0.4px" }}>
-          {post.title}
-        </h1>
-        <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.6, margin: "0 0 36px", paddingBottom: "28px", borderBottom: "1px solid #DADCE0" }}>
-          {post.excerpt}
-        </p>
-
-        {post.blocks.map((block, i) => <Block key={i} block={block} />)}
-
-        <div style={{ marginTop: "40px", padding: "24px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", textAlign: "center" }}>
-          <p style={{ fontSize: "15px", fontWeight: 700, color: "#202124", margin: "0 0 6px" }}>
-            Envie d&apos;automatiser vos réponses aux avis Google ?
-          </p>
-          <p style={{ fontSize: "13.5px", color: "#5F6368", margin: "0 0 16px" }}>
-            Essai gratuit 14 jours, sans carte bancaire.
-          </p>
-          <Link href="/signup" style={{ display: "inline-block", padding: "10px 22px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
-            Essai gratuit →
-          </Link>
-        </div>
-      </article>
-
-      {others.length > 0 && (
-        <div style={{ maxWidth: "720px", margin: "0 auto", padding: "0 24px 64px" }}>
-          <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 16px" }}>
-            À lire aussi
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            {others.map((o) => (
-              <Link key={o.slug} href={`/blog/${o.slug}`} style={{ padding: "14px 0", borderTop: "1px solid #DADCE0", textDecoration: "none", color: "#1A73E8", fontSize: "14.5px", fontWeight: 600 }}>
-                {o.title}
-              </Link>
-            ))}
+      {/* Page élargie (1160px) en 2 colonnes plutôt qu'une simple colonne de
+          texte centrée : la largeur d'un paragraphe reste ~700px (au-delà,
+          une ligne de lecture devient inconfortable), mais la page entière
+          utilise l'espace desktop via une colonne latérale (CTA + à lire
+          aussi) au lieu de laisser un grand vide de chaque côté. */}
+      <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "48px 24px 64px", display: "flex", gap: "56px", flexWrap: "wrap", alignItems: "flex-start" }}>
+        <article style={{ flex: "1 1 640px", minWidth: 0, maxWidth: "720px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: G.green, background: "#E6F4EA", padding: "3px 10px", borderRadius: "12px" }}>
+              {post.category}
+            </span>
+            <span style={{ fontSize: "12px", color: "#80868B" }}>{formatDate(post.date)} · {post.readMinutes} min de lecture</span>
           </div>
-        </div>
-      )}
+          <h1 style={{ fontSize: "32px", fontWeight: 800, margin: "0 0 16px", lineHeight: 1.25, letterSpacing: "-0.4px" }}>
+            {post.title}
+          </h1>
+          <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.6, margin: "0 0 36px", paddingBottom: "28px", borderBottom: "1px solid #DADCE0" }}>
+            {post.excerpt}
+          </p>
+
+          {post.blocks.map((block, i) => <Block key={i} block={block} />)}
+
+          <div style={{ marginTop: "40px", padding: "24px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", textAlign: "center" }}>
+            <p style={{ fontSize: "15px", fontWeight: 700, color: "#202124", margin: "0 0 6px" }}>
+              Envie d&apos;automatiser vos réponses aux avis Google ?
+            </p>
+            <p style={{ fontSize: "13.5px", color: "#5F6368", margin: "0 0 16px" }}>
+              Essai gratuit 14 jours, sans carte bancaire.
+            </p>
+            <Link href="/signup" style={{ display: "inline-block", padding: "10px 22px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
+              Essai gratuit →
+            </Link>
+          </div>
+        </article>
+
+        <aside style={{ flex: "1 1 260px", minWidth: "260px", maxWidth: "320px", position: "sticky", top: "88px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ background: "linear-gradient(135deg, #1A73E8, #1557b0)", borderRadius: "14px", padding: "22px", color: "#fff" }}>
+            <p style={{ fontSize: "14px", fontWeight: 700, margin: "0 0 6px" }}>Essai gratuit 14 jours</p>
+            <p style={{ fontSize: "12.5px", opacity: 0.85, margin: "0 0 14px", lineHeight: 1.5 }}>Sans carte bancaire pour commencer à tester.</p>
+            <Link href="/signup" style={{ display: "inline-block", padding: "9px 16px", fontSize: "13px", fontWeight: 700, background: "#fff", color: G.blue, textDecoration: "none", borderRadius: "6px" }}>
+              Essayer →
+            </Link>
+          </div>
+
+          {others.length > 0 && (
+            <div style={{ border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px" }}>
+              <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#80868B", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 12px" }}>
+                À lire aussi
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                {others.map((o) => (
+                  <Link key={o.slug} href={`/blog/${o.slug}`} style={{ padding: "10px 0", borderTop: "1px solid #F1F3F4", textDecoration: "none", color: "#1A73E8", fontSize: "13.5px", fontWeight: 600, lineHeight: 1.4 }}>
+                    {o.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
 
       <footer style={{ background: "#fff", borderTop: "1px solid #DADCE0", padding: "28px 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", justifyContent: "center", gap: "20px", flexWrap: "wrap" }}>
