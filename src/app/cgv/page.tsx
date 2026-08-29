@@ -63,7 +63,10 @@ Le Client s'engage formellement à ne pas utiliser le Service pour :
 En cas de violation, Caela Agency se réserve le droit de suspendre immédiatement l'accès sans remboursement.
 
 4.4 RESPONSABILITÉ DES RÉPONSES PUBLIÉES
-Les réponses générées ou suggérées par l'IA sont des suggestions. Le Client reste seul responsable des réponses publiées en son nom sur Google ou Trustpilot, qu'elles aient été générées automatiquement (mode auto-réponse activé) ou validées manuellement. Caela Agency ne peut être tenu responsable du contenu des réponses approuvées ou automatiquement publiées par le Client.`,
+Les réponses générées ou suggérées par l'IA sont des suggestions. Le Client reste seul responsable des réponses publiées en son nom sur Google ou Trustpilot, qu'elles aient été générées automatiquement (mode auto-réponse activé) ou validées manuellement. Caela Agency ne peut être tenu responsable du contenu des réponses approuvées ou automatiquement publiées par le Client.
+
+4.5 DÉLÉGATION À DES COLLABORATEURS CAELA
+Le Client reconnaît et accepte que Caela Agency puisse faire intervenir, pour la gestion opérationnelle du Service prévue par son offre (réponses aux avis, optimisation de fiche, signalement d'avis), des salariés ou prestataires de Caela Agency. Ces intervenants accèdent à la fiche Google Business Profile du Client exclusivement via leur propre compte Google individuel, ajouté en tant que Gérant, jamais via un compte partagé ou les identifiants personnels du Client. Caela Agency demeure seule responsable envers le Client des actions de ses collaborateurs dans le cadre du Service, dans les limites fixées à l'article 8.`,
   },
   {
     title: "5. Offres, tarifs et abonnement",
