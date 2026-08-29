@@ -655,11 +655,24 @@ function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [centerIndex, setCenterIndex] = useState(0);
 
+  // Trouve la carte dont le centre est le plus proche du centre visible du
+  // rail, via offsetLeft/offsetWidth (propriétés de layout, jamais affectées
+  // par le transform: scale() appliqué plus bas) — pas de boucle de mesure
+  // post-transform, et la carte "loupée" correspond exactement à celle que
+  // l'œil voit au milieu, quel que soit le point d'arrêt du scroll.
   const updateCenterIndex = () => {
     const track = trackRef.current;
     if (!track) return;
-    const idx = Math.round(track.scrollLeft / DIY_CARD_STEP);
-    setCenterIndex(Math.max(0, Math.min(DIY_ARGS.length - 1, idx)));
+    const viewportCenter = track.scrollLeft + track.clientWidth / 2;
+    let closest = 0;
+    let minDist = Infinity;
+    Array.from(track.children).forEach((child, i) => {
+      const el = child as HTMLElement;
+      const center = el.offsetLeft + el.offsetWidth / 2;
+      const dist = Math.abs(center - viewportCenter);
+      if (dist < minDist) { minDist = dist; closest = i; }
+    });
+    setCenterIndex(closest);
   };
 
   useEffect(() => {
@@ -694,6 +707,8 @@ function DIYCardsCarousel() {
         style={{
           display: "flex", gap: "16px", overflowX: "auto", scrollSnapType: "x mandatory",
           padding: "36px 10vw 28px", scrollBehavior: "smooth",
+          maskImage: "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
         }}
       >
         {DIY_ARGS.map((a, i) => {
@@ -1307,14 +1322,14 @@ export default function HomeClient() {
           <div style={{ marginTop: "20px", maxWidth: "1100px", margin: "20px auto 0", background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "24px 28px", boxShadow: SHADOW_SM }}>
             <div style={{ display: "flex", gap: "40px", alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 380px", maxWidth: "560px" }}>
-                <div style={{ fontSize: "12px", fontWeight: 700, color: G.red, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+                <div style={{ fontSize: "15px", fontWeight: 700, color: G.red, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "10px" }}>
                   🇺🇸 getreviewpilot.ai existe. Pourquoi choisir le français ?
                 </div>
-                <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.65 }}>
+                <p style={{ margin: 0, fontSize: "15px", color: "#5F6368", lineHeight: 1.7 }}>
                   Même Claude AI, $29/mois — mais anglais, sans RGPD ni support FR. &quot;C&apos;est pas top&quot; ? Traduit mot à mot, pas compris.
                 </p>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: "0 0 auto", minWidth: "200px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: "0 0 auto", minWidth: "220px" }}>
                 {[
                   { label: "Réponses en français naturel", ok: true },
                   { label: "Support humain en français", ok: true },
@@ -1323,8 +1338,8 @@ export default function HomeClient() {
                   { label: "Services GMB inclus", ok: true },
                 ].map(item => (
                   <div key={item.label} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <span style={{ color: G.green, fontWeight: 700, fontSize: "13px" }}>{item.ok ? "✓" : "✗"}</span>
-                    <span style={{ fontSize: "12px", color: "#5F6368" }}>{item.label}</span>
+                    <span style={{ color: G.green, fontWeight: 700, fontSize: "15px" }}>{item.ok ? "✓" : "✗"}</span>
+                    <span style={{ fontSize: "14px", color: "#5F6368" }}>{item.label}</span>
                   </div>
                 ))}
               </div>
