@@ -6,6 +6,7 @@
     { "path": "/api/cron/weekly-report", "schedule": "0 8 * * 1" },
     { "path": "/api/cron/referral-reward", "schedule": "0 9 * * *" },
     { "path": "/api/cron/content-reminder", "schedule": "0 9 * * 1" },
-    { "path": "/api/cron/internal-alerts", "schedule": "0 7 * * *" }
+    { "path": "/api/cron/internal-alerts", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/data-retention-purge", "schedule": "0 5 * * 0" }
   ]
 }
