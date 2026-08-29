@@ -1499,6 +1499,7 @@ export default function HomeClient() {
                 {s.highlight && <div style={{ position: "absolute", top: "13px", right: "13px", padding: "2px 10px", background: s.bg, borderRadius: "20px", fontSize: "10px", fontWeight: 700, color: s.color }}>Recommandé</div>}
                 <div style={{ width: "42px", height: "42px", background: s.bg, borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "19px", marginBottom: "12px" }}>{s.icon}</div>
                 <div style={{ fontSize: "10px", fontWeight: 600, color: s.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>{s.tag}</div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 8px", background: "#F1F3F4", borderRadius: "10px", fontSize: "10px", fontWeight: 600, color: "#5F6368", marginBottom: "8px" }}>👤 Traité par un humain, pas par l&apos;IA</div>
                 <h3 style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>{s.title}</h3>
                 <p style={{ margin: "0 0 14px", fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>{s.desc}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "7px", marginBottom: "16px" }}>
@@ -1514,6 +1515,9 @@ export default function HomeClient() {
                   {s.oldPrice && <span style={{ fontSize: "13px", color: "#80868B", textDecoration: "line-through" }}>{s.oldPrice}</span>}
                 </div>
                 <a href="mailto:contact@caela.fr" style={{ display: "block", textAlign: "center", padding: "10px", background: s.highlight ? s.color : s.bg, borderRadius: "6px", color: s.highlight ? "#fff" : s.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>Contacter →</a>
+                <a href="#pricing" style={{ display: "block", textAlign: "center", marginTop: "10px", fontSize: "11.5px", color: "#80868B", textDecoration: "underline" }}>
+                  Vous préférez que l&apos;IA s&apos;en charge elle-même ? Voir l&apos;abonnement dès 31€/mois →
+                </a>
               </div>
             ))}
           </div>
@@ -1678,6 +1682,15 @@ export default function HomeClient() {
               <br />
               Résiliable en 2 clics, rappel email 3 jours avant le 1er prélèvement. Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
             </p>
+          </div>
+
+          {/* Renvoi vers les services humains — même logique inverse que le lien
+              ajouté sur les cartes GMB_SERVICES : ce plan est un logiciel (l'IA
+              répond), pas un humain qui s'occupe de tout à votre place. */}
+          <div style={{ marginTop: "10px", textAlign: "center" }}>
+            <a href="#services" style={{ fontSize: "12px", color: "#80868B", textDecoration: "underline" }}>
+              Vous préférez qu&apos;un humain s&apos;en charge à votre place ? Voir les services GMB →
+            </a>
           </div>
 
           {/* Agency discreet line */}
