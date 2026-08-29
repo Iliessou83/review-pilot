@@ -1798,8 +1798,8 @@ export default function HomeClient() {
               tarifs juste au-dessus (au lieu de pleine largeur 1700px, qui
               laissait un grand vide coloré à droite du texte) et mises côte
               à côte plutôt qu'empilées. */}
-          <div style={{ marginTop: "20px", maxWidth: "900px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "12px" }}>
-            <div style={{ padding: "16px 20px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+          <div style={{ marginTop: "20px", maxWidth: "940px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "12px" }}>
+            <div style={{ padding: "18px 22px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
               <span style={{ fontSize: "17px" }}>🎁</span>
               <div>
                 <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#7A5C00", marginBottom: "4px" }}>Parrainez, économisez à deux</div>
@@ -1807,11 +1807,11 @@ export default function HomeClient() {
               </div>
             </div>
 
-            <div style={{ padding: "16px 20px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+            <div style={{ padding: "18px 22px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
               <span style={{ fontSize: "17px" }}>🔒</span>
               <div>
                 <div style={{ fontSize: "13.5px", fontWeight: 600, color: G.blue, marginBottom: "4px" }}>Zéro risque pour votre fiche Google</div>
-                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}>Caela Réputation utilise exclusivement l&apos;API officielle Google My Business. Les réponses sont publiées sous le nom de votre établissement, pas sous le nôtre — vos clients ne savent pas que vous utilisez un outil. Conforme aux CGU Google.</div>
+                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}>API officielle Google My Business exclusivement. Réponses publiées sous le nom de votre établissement, jamais sous le nôtre. 100% conforme aux CGU Google.</div>
               </div>
             </div>
           </div>
