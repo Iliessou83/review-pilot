@@ -3,8 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import ChatBot from "@/components/ChatBot";
+import dynamic from "next/dynamic";
 import { trackClic } from "@/lib/analytics/client";
+
+// Chargé après l'hydratation initiale (pas de SSR) : le chatbot n'est jamais
+// nécessaire au premier rendu, retirer son JS du bundle critique allège le
+// chargement de la page pour tous les visiteurs qui ne l'ouvrent jamais.
+const ChatBot = dynamic(() => import("@/components/ChatBot"), { ssr: false });
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW_SM = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";

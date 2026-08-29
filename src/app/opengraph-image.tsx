@@ -4,7 +4,6 @@ import { ImageResponse } from "next/og";
 // dynamiquement — pas d'asset statique existant en /public. S'applique à toutes
 // les pages publiques qui n'ont pas leur propre opengraph-image.tsx (Next.js
 // remonte au segment parent le plus proche).
-export const runtime = "edge";
 export const alt = "Caela Réputation — Gestion d'avis Google automatisée";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
