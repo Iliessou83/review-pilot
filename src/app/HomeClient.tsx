@@ -571,8 +571,6 @@ function DIYComparison() {
   );
 }
 
-const ADDON_AVIS_NEGATIFS_PRICE = 19;
-
 const PLANS = [
   {
     name: "Starter",
@@ -1065,7 +1063,6 @@ export default function HomeClient() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
-  const [addonAvisNegatifs, setAddonAvisNegatifs] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [next, setNext] = useState("/dashboard");
@@ -1715,13 +1712,6 @@ export default function HomeClient() {
             </div>
           </div>
 
-          <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", maxWidth: "620px", margin: "0 auto 28px", padding: "14px 16px", background: "#FEF7E0", border: "1px solid #FBBC0450", borderRadius: "10px", cursor: "pointer" }}>
-            <input type="checkbox" checked={addonAvisNegatifs} onChange={e => setAddonAvisNegatifs(e.target.checked)} style={{ marginTop: "3px", width: "16px", height: "16px", flexShrink: 0, accentColor: G.yellow }} />
-            <span style={{ fontSize: "13.5px", color: "#3C4043", lineHeight: 1.5 }}>
-              <strong>Option : on répond nous-mêmes aux avis négatifs à votre place</strong> (+{ADDON_AVIS_NEGATIFS_PRICE}€/mois). Au lieu de recevoir 3 suggestions IA à valider vous-même, c&apos;est un humain Caela qui rédige et publie la réponse.
-            </span>
-          </label>
-
           {/* maxWidth resserré à 900px (au lieu des 1700 du reste de la page) :
               3 cartes de tarifs sur toute la largeur laissaient un vide énorme
               entre elles, ce n'est pas un tableau à faire respirer comme le
@@ -1730,7 +1720,6 @@ export default function HomeClient() {
             {PLANS.map(plan => {
               const price = billing === "annual" ? Math.round(parseInt(plan.price) * 0.8) : parseInt(plan.price);
               const savings = parseInt(plan.price) * 12 - price * 12;
-              const total = price + (addonAvisNegatifs ? ADDON_AVIS_NEGATIFS_PRICE : 0);
               return (
                 <div style={{
                   background: "#fff",
@@ -1747,15 +1736,12 @@ export default function HomeClient() {
                   {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "3px 9px", background: plan.color + "15", borderRadius: "20px", fontSize: "10.5px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
                   <p style={{ margin: "0 0 3px", fontSize: "13px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{total}€</span>
+                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
                     <span style={{ fontSize: "14px", color: "#5F6368" }}>/mois</span>
                     {billing === "annual" && (
                       <span style={{ fontSize: "16px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
                     )}
                   </div>
-                  {addonAvisNegatifs && (
-                    <p style={{ margin: "0 0 4px", fontSize: "11.5px", color: "#80868B" }}>dont {ADDON_AVIS_NEGATIFS_PRICE}€ option avis négatifs</p>
-                  )}
                   <p style={{ margin: "0 0 5px", fontSize: "13.5px", color: "#5F6368" }}>{plan.desc}</p>
                   {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", background: "#E6F4EA", borderRadius: "20px", fontSize: "12.5px", fontWeight: 700, color: G.green, marginBottom: "9px" }}>🎁 -{savings}€/an</div>}
                   <div style={{ fontSize: "13px", color: plan.color, marginBottom: "16px", fontWeight: 500 }}>{plan.best}</div>
@@ -1775,7 +1761,7 @@ export default function HomeClient() {
                     ))}
                   </div>
 
-                  <a href={`/signup?plan=${plan.name.toLowerCase()}${addonAvisNegatifs ? "&addon=avis-negatifs" : ""}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
+                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
                     {plan.cta}
                   </a>
                 </div>

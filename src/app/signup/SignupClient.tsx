@@ -6,6 +6,8 @@ import Link from "next/link";
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 const SHADOW = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 const KNOWN_PLANS = ["starter", "solo", "pro", "studio"];
+const PLAN_LABELS: Record<string, string> = { starter: "Starter", solo: "Solo", pro: "Pro", studio: "Studio" };
+const ADDON_AVIS_NEGATIFS_PRICE = 19;
 
 function GDots({ size = 10 }: { size?: number }) {
   return (
@@ -26,7 +28,7 @@ export default function SignupClient() {
   const [existingModules, setExistingModules] = useState<string[] | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [planId, setPlanId] = useState("solo");
-  const [addon, setAddon] = useState("");
+  const [addonAvisNegatifs, setAddonAvisNegatifs] = useState(false);
 
   // Pré-remplit depuis un lien de parrainage partagé (?ref=CAELA-XXXXXX) et
   // retient la formule choisie sur la page de tarifs (?plan=solo). Lu côté
@@ -38,7 +40,7 @@ export default function SignupClient() {
     if (ref) setReferralCode(ref.toUpperCase());
     const plan = params.get("plan")?.toLowerCase();
     if (plan && KNOWN_PLANS.includes(plan)) setPlanId(plan);
-    if (params.get("addon") === "avis-negatifs") setAddon("avis-negatifs");
+    if (params.get("addon") === "avis-negatifs") setAddonAvisNegatifs(true);
   }, []);
 
   // Carte bancaire obligatoire dès l'inscription (voir CGV art. 5) : une fois
@@ -55,7 +57,7 @@ export default function SignupClient() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, confirmSeparate, referralCode: referralCode || undefined, addon: addon || undefined }),
+        body: JSON.stringify({ name, email, password, confirmSeparate, referralCode: referralCode || undefined, addon: addonAvisNegatifs ? "avis-negatifs" : undefined }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -149,15 +151,20 @@ export default function SignupClient() {
           <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: "#202124", letterSpacing: "-0.4px", textAlign: "center" }}>
             Créer votre compte
           </h1>
-          <p style={{ margin: "0 0 24px", color: "#5F6368", fontSize: 14, textAlign: "center" }}>
-            14 jours d&apos;essai gratuit, carte bancaire requise à l&apos;étape suivante. Aucun débit avant la fin de l&apos;essai.
+          <p style={{ margin: "0 0 14px", color: "#5F6368", fontSize: 14, textAlign: "center" }}>
+            Formule <strong style={{ color: "#202124" }}>{PLAN_LABELS[planId] || planId}</strong> — 14 jours d&apos;essai gratuit, carte bancaire requise à l&apos;étape suivante. Aucun débit avant la fin de l&apos;essai.
           </p>
 
-          {addon === "avis-negatifs" && (
-            <div style={{ marginBottom: 18, padding: "10px 14px", background: "#FEF7E0", border: "1px solid #FBBC0450", borderRadius: 8, fontSize: 12.5, color: "#5F6368", lineHeight: 1.5 }}>
-              ✓ Option <strong>&quot;avis négatifs pris en charge par un humain&quot;</strong> notée. On vous contacte après l&apos;inscription pour l&apos;activer (facturée séparément).
-            </div>
-          )}
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, padding: "12px 14px", background: "#FEF7E0", border: "1px solid #FBBC0450", borderRadius: 10, cursor: "pointer" }}>
+            <input
+              type="checkbox" checked={addonAvisNegatifs}
+              onChange={(e) => setAddonAvisNegatifs(e.target.checked)}
+              style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0, accentColor: G.yellow }}
+            />
+            <span style={{ fontSize: 12.5, color: "#3C4043", lineHeight: 1.5 }}>
+              <strong>Option : on répond nous-mêmes aux avis négatifs à votre place</strong> (+{ADDON_AVIS_NEGATIFS_PRICE}€/mois). Au lieu de recevoir 3 suggestions IA à valider vous-même, c&apos;est un humain Caela qui rédige et publie la réponse. On vous contacte après l&apos;inscription pour l&apos;activer (facturée séparément).
+            </span>
+          </label>
 
           <form onSubmit={handleSubmit}>
             {fields.map((f) => (
