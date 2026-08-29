@@ -982,6 +982,82 @@ const NAV_LINKS: [string, string][] = [
   ["/blog", "Blog"],
 ];
 
+// Visite guidée audio : Web Speech API (SpeechSynthesis), 100% gratuite,
+// aucune clé API. Chaque étape défile jusqu'à sa section (scrollIntoView)
+// puis attend la fin du défilement avant de parler — parler pendant le
+// scroll donnerait l'impression que la voix est désynchronisée de l'écran.
+// L'étape suivante démarre dans le onend de l'utterance précédente : c'est
+// ce qui rythme l'ensemble sur la durée réelle de la voix, pas un minuteur
+// fixe qui coupe la phrase ou laisse un blanc.
+const TOUR_STEPS: { id: string; text: string }[] = [
+  { id: "hero", text: "Bienvenue sur Caela Réputation. On automatise les réponses à vos avis Google avec l'intelligence artificielle, en trente secondes par avis." },
+  { id: "calculator", text: "Répondre à la main, c'est gratuit, jusqu'à ce qu'on calcule le temps que ça vous coûte vraiment chaque mois." },
+  { id: "services", text: "Si vous préférez qu'un humain s'occupe de tout, notre agence crée et optimise votre fiche Google, ou gère vos avis à votre place." },
+  { id: "pricing", text: "L'abonnement qui répond à vos avis démarre à trente-neuf euros par mois en engagement annuel, avec quatorze jours d'essai gratuit." },
+  { id: "nfc", text: "Et pour collecter plus d'avis facilement, découvrez nos plaques N F C : le client approche son téléphone, laisse un avis en trois secondes." },
+];
+
+function GuidedTourButton() {
+  const [playing, setPlaying] = useState(false);
+  const cancelledRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => {
+      cancelledRef.current = true;
+      clearTimeout(timerRef.current);
+      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  function speakStep(i: number) {
+    if (cancelledRef.current || i >= TOUR_STEPS.length) {
+      setPlaying(false);
+      return;
+    }
+    const step = TOUR_STEPS[i];
+    document.getElementById(step.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    timerRef.current = setTimeout(() => {
+      if (cancelledRef.current) return;
+      const utter = new SpeechSynthesisUtterance(step.text);
+      utter.lang = "fr-FR";
+      utter.rate = 1;
+      utter.onend = () => speakStep(i + 1);
+      utter.onerror = () => setPlaying(false);
+      window.speechSynthesis.speak(utter);
+    }, 700);
+  }
+
+  function start() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    trackClic("bouton_visite-guidee_hero");
+    cancelledRef.current = false;
+    setPlaying(true);
+    speakStep(0);
+  }
+
+  function stop() {
+    cancelledRef.current = true;
+    clearTimeout(timerRef.current);
+    window.speechSynthesis.cancel();
+    setPlaying(false);
+  }
+
+  return (
+    <button
+      onClick={playing ? stop : start}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 14px",
+        background: playing ? "#FCE8E6" : "#E6F4EA", border: "none", borderRadius: "24px",
+        fontSize: "13px", fontWeight: 600, color: playing ? G.red : "#1E7A3D",
+        cursor: "pointer", fontFamily: "inherit",
+      }}
+    >
+      {playing ? "⏹ Arrêter" : "🔊 Visite guidée (2 min)"}
+    </button>
+  );
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -1228,12 +1304,15 @@ export default function HomeClient() {
           colonne de texte avait flex:1 dans une section à 1680px, elle
           s'étirait donc bien au-delà de son contenu réel et laissait un grand
           vide avant l'illustration. */}
-      <section style={{ background: "linear-gradient(180deg, #F8F9FA 0%, #fff 100%)", padding: "80px 40px 96px" }}>
+      <section id="hero" style={{ background: "linear-gradient(180deg, #F8F9FA 0%, #fff 100%)", padding: "80px 40px 96px" }}>
       <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "88px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 560px", maxWidth: "780px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 14px", background: "#E8F0FE", borderRadius: "24px", marginBottom: "28px" }}>
-            <GDots size={7} />
-            <span style={{ fontSize: "13px", fontWeight: 600, color: G.blue }}>Spécialiste Google Business Profile</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px", flexWrap: "wrap" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 14px", background: "#E8F0FE", borderRadius: "24px" }}>
+              <GDots size={7} />
+              <span style={{ fontSize: "13px", fontWeight: 600, color: G.blue }}>Spécialiste Google Business Profile</span>
+            </div>
+            <GuidedTourButton />
           </div>
           <h1 style={{ margin: "0 0 20px", fontSize: "clamp(34px, 4.8vw, 66px)", fontWeight: 700, letterSpacing: "-1.6px", lineHeight: 1.12, color: "#202124" }}>
             Vos avis <GL size={48} /> répondus.<br />
