@@ -22,6 +22,14 @@ canvas {
   height: auto;
 }
 
+.rp-cta-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.rp-cta-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+}
+
 /* iOS zoome dès qu'un champ a une police < 16px. On force 16px sous 768px. */
 @media (max-width: 768px) {
   input,

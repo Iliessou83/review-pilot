@@ -7,8 +7,9 @@ export const metadata: Metadata = {
 };
 
 // Balisage schema.org : décrit le produit (offres réelles alignées sur PLANS
-// dans HomeClient.tsx — Starter 39€, Solo 69€, Pro 149€/mois) pour que Google
-// puisse afficher un extrait enrichi (prix, note) dans les résultats.
+// dans HomeClient.tsx — Starter 49€/mois (39€/mois en annuel), Solo 69€,
+// Pro 149€/mois) pour que Google puisse afficher un extrait enrichi (prix,
+// note) dans les résultats.
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",

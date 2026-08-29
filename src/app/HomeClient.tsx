@@ -224,7 +224,7 @@ function ROICalculator() {
   const timeMin = reviews * 4;
   const timeH = (timeMin / 60).toFixed(1);
   const timeCost = Math.round(timeMin / 60 * 50);
-  const plan = reviews <= 30 ? { name: "Starter", price: 39 } : reviews <= 100 ? { name: "Solo", price: 69 } : reviews <= 300 ? { name: "Pro", price: 149 } : { name: "Studio", price: 299 };
+  const plan = reviews <= 30 ? { name: "Starter", price: 49 } : reviews <= 100 ? { name: "Solo", price: 69 } : reviews <= 300 ? { name: "Pro", price: 149 } : { name: "Studio", price: 299 };
   const savings = timeCost - plan.price;
   const roi = Math.round((savings / plan.price) * 100);
 
@@ -571,11 +571,13 @@ function DIYComparison() {
   );
 }
 
+const ADDON_AVIS_NEGATIFS_PRICE = 19;
+
 const PLANS = [
   {
     name: "Starter",
-    price: "39",
-    annual: "31",
+    price: "49",
+    annual: "39",
     desc: "1 établissement",
     color: G.green,
     best: "Moins de 30 avis/mois — débutez sans risque",
@@ -628,9 +630,9 @@ const PLANS = [
 ];
 
 const DIY_ARGS = [
-  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h à rédiger. À 50€/h, ça fait 150€ gaspillés. Solo = 69€." },
+  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h de rédaction. Le Solo coûte 69€ : ton temps vaut plus." },
   { color: G.blue, bg: "#E8F0FE", icon: "📍", stat: "+12% de vues Maps", title: "La vitesse impacte ton SEO Google", desc: "Google Maps favorise les fiches qui répondent vite. Un signal fort pour l'algorithme." },
-  { color: G.yellow, bg: "#FEF7E0", icon: "🧠", stat: "45% reconvertis", title: "Les avis négatifs mal gérés coûtent cher", desc: "Une réponse pro à un avis 1⭐ reconvertit 45% des clients. À chaud, tu brises ta réputation." },
+  { color: G.yellow, bg: "#FEF7E0", icon: "🧠", stat: "45% reconvertis", title: "Les avis négatifs mal gérés coûtent cher", desc: "Une réponse pro à un avis 1⭐ reconvertit 45% des clients qui hésitaient." },
   { color: G.green, bg: "#E6F4EA", icon: "👀", stat: "89% lisent tes réponses", title: "Tes réponses convertissent avant l'appel", desc: "89% lisent tes réponses avant de contacter. Une bonne réponse = client gagné." },
   { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Rush, vacances, périodes chargées : les avis s'accumulent. L'IA n'en rate jamais un." },
   { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. On gère 30 fiches comme une." },
@@ -771,7 +773,7 @@ function DIYCardsCarousel() {
                 <span style={{ fontSize: "18px", fontWeight: 700, color: a.color }}>{a.stat}</span>
               </div>
               <h3 style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 600, color: "#202124" }}>{a.title}</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</p>
+              <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", lineHeight: 1.6 }}>{a.desc}</p>
             </div>
           );
         })}
@@ -932,12 +934,6 @@ const GMB_SERVICES = [
     features: ["Posts + photos mis à jour chaque mois", "Veille concurrentielle", "Rapport de performance mensuel", "Réponse manuelle aux avis incluse", "Stratégie de collecte d'avis"],
     highlight: true,
   },
-  {
-    color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois",
-    desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte. Rien d'autre.",
-    features: ["Réponse manuelle aux avis complexes", "Stratégie de collecte d'avis", "Sans optimisation de fiche ni posts"],
-    highlight: false,
-  },
 ];
 
 const FAKE_REVIEW_REMOVAL = {
@@ -993,6 +989,7 @@ export default function HomeClient() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
+  const [addonAvisNegatifs, setAddonAvisNegatifs] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [next, setNext] = useState("/dashboard");
@@ -1247,10 +1244,10 @@ export default function HomeClient() {
             <strong style={{ whiteSpace: "nowrap" }}>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
-            <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_hero")} style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
+            <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_hero")} className="rp-cta-hover" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
               Essai gratuit 14 jours
             </a>
-            <a href="/audit" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
+            <a href="/audit" className="rp-cta-hover" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
               <span style={{ fontSize: "16px" }}>🔍</span> Audit gratuit de ta fiche
             </a>
           </div>
@@ -1515,9 +1512,11 @@ export default function HomeClient() {
                   {s.oldPrice && <span style={{ fontSize: "13px", color: "#80868B", textDecoration: "line-through" }}>{s.oldPrice}</span>}
                 </div>
                 <a href="mailto:contact@caela.fr" style={{ display: "block", textAlign: "center", padding: "10px", background: s.highlight ? s.color : s.bg, borderRadius: "6px", color: s.highlight ? "#fff" : s.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>Contacter →</a>
-                <a href="#pricing" style={{ display: "block", textAlign: "center", marginTop: "8px", padding: "9px", border: `1px solid ${G.blue}40`, background: "#E8F0FE", borderRadius: "6px", fontSize: "12px", color: G.blue, textDecoration: "none", fontWeight: 700 }}>
-                  🤖 Voir l&apos;IA à 31€/mois →
-                </a>
+                {s.title === "Pack Croissance" && (
+                  <a href="#pricing" style={{ display: "block", textAlign: "center", marginTop: "8px", padding: "9px", border: `1px solid ${G.blue}40`, background: "#E8F0FE", borderRadius: "6px", fontSize: "12px", color: G.blue, textDecoration: "none", fontWeight: 700 }}>
+                    🤖 Voir l&apos;IA à 39€/mois →
+                  </a>
+                )}
               </div>
             ))}
           </div>
@@ -1619,7 +1618,7 @@ export default function HomeClient() {
         <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              L&apos;abonnement qui répond à vos avis. Dès 31€/mois.
+              L&apos;abonnement qui répond à vos avis. Dès 39€/mois.
             </h2>
             <p style={{ margin: "0 0 18px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
@@ -1637,6 +1636,13 @@ export default function HomeClient() {
             </div>
           </div>
 
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", maxWidth: "620px", margin: "0 auto 28px", padding: "14px 16px", background: "#FEF7E0", border: "1px solid #FBBC0450", borderRadius: "10px", cursor: "pointer" }}>
+            <input type="checkbox" checked={addonAvisNegatifs} onChange={e => setAddonAvisNegatifs(e.target.checked)} style={{ marginTop: "3px", width: "16px", height: "16px", flexShrink: 0, accentColor: G.yellow }} />
+            <span style={{ fontSize: "13.5px", color: "#3C4043", lineHeight: 1.5 }}>
+              <strong>Option : on répond nous-mêmes aux avis négatifs à votre place</strong> (+{ADDON_AVIS_NEGATIFS_PRICE}€/mois). Au lieu de recevoir 3 suggestions IA à valider vous-même, c&apos;est un humain Caela qui rédige et publie la réponse.
+            </span>
+          </label>
+
           {/* maxWidth resserré à 900px (au lieu des 1700 du reste de la page) :
               3 cartes de tarifs sur toute la largeur laissaient un vide énorme
               entre elles, ce n'est pas un tableau à faire respirer comme le
@@ -1645,6 +1651,7 @@ export default function HomeClient() {
             {PLANS.map(plan => {
               const price = billing === "annual" ? Math.round(parseInt(plan.price) * 0.8) : parseInt(plan.price);
               const savings = parseInt(plan.price) * 12 - price * 12;
+              const total = price + (addonAvisNegatifs ? ADDON_AVIS_NEGATIFS_PRICE : 0);
               return (
                 <div style={{
                   background: "#fff",
@@ -1661,12 +1668,15 @@ export default function HomeClient() {
                   {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "3px 9px", background: plan.color + "15", borderRadius: "20px", fontSize: "10.5px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
                   <p style={{ margin: "0 0 3px", fontSize: "13px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
+                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{total}€</span>
                     <span style={{ fontSize: "14px", color: "#5F6368" }}>/mois</span>
                     {billing === "annual" && (
                       <span style={{ fontSize: "16px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
                     )}
                   </div>
+                  {addonAvisNegatifs && (
+                    <p style={{ margin: "0 0 4px", fontSize: "11.5px", color: "#80868B" }}>dont {ADDON_AVIS_NEGATIFS_PRICE}€ option avis négatifs</p>
+                  )}
                   <p style={{ margin: "0 0 5px", fontSize: "13.5px", color: "#5F6368" }}>{plan.desc}</p>
                   {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", background: "#E6F4EA", borderRadius: "20px", fontSize: "12.5px", fontWeight: 700, color: G.green, marginBottom: "9px" }}>🎁 -{savings}€/an</div>}
                   <div style={{ fontSize: "13px", color: plan.color, marginBottom: "16px", fontWeight: 500 }}>{plan.best}</div>
@@ -1686,7 +1696,7 @@ export default function HomeClient() {
                     ))}
                   </div>
 
-                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
+                  <a href={`/signup?plan=${plan.name.toLowerCase()}${addonAvisNegatifs ? "&addon=avis-negatifs" : ""}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
                     {plan.cta}
                   </a>
                 </div>

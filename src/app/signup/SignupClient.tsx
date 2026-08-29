@@ -26,6 +26,7 @@ export default function SignupClient() {
   const [existingModules, setExistingModules] = useState<string[] | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [planId, setPlanId] = useState("solo");
+  const [addon, setAddon] = useState("");
 
   // Pré-remplit depuis un lien de parrainage partagé (?ref=CAELA-XXXXXX) et
   // retient la formule choisie sur la page de tarifs (?plan=solo). Lu côté
@@ -37,6 +38,7 @@ export default function SignupClient() {
     if (ref) setReferralCode(ref.toUpperCase());
     const plan = params.get("plan")?.toLowerCase();
     if (plan && KNOWN_PLANS.includes(plan)) setPlanId(plan);
+    if (params.get("addon") === "avis-negatifs") setAddon("avis-negatifs");
   }, []);
 
   // Carte bancaire obligatoire dès l'inscription (voir CGV art. 5) : une fois
@@ -53,7 +55,7 @@ export default function SignupClient() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, confirmSeparate, referralCode: referralCode || undefined }),
+        body: JSON.stringify({ name, email, password, confirmSeparate, referralCode: referralCode || undefined, addon: addon || undefined }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -150,6 +152,12 @@ export default function SignupClient() {
           <p style={{ margin: "0 0 24px", color: "#5F6368", fontSize: 14, textAlign: "center" }}>
             14 jours d&apos;essai gratuit, carte bancaire requise à l&apos;étape suivante. Aucun débit avant la fin de l&apos;essai.
           </p>
+
+          {addon === "avis-negatifs" && (
+            <div style={{ marginBottom: 18, padding: "10px 14px", background: "#FEF7E0", border: "1px solid #FBBC0450", borderRadius: 8, fontSize: 12.5, color: "#5F6368", lineHeight: 1.5 }}>
+              ✓ Option <strong>&quot;avis négatifs pris en charge par un humain&quot;</strong> notée. On vous contacte après l&apos;inscription pour l&apos;activer (facturée séparément).
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             {fields.map((f) => (

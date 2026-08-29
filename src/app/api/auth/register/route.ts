@@ -8,6 +8,7 @@ import { createToken, ADMIN_EMAILS } from "@/lib/auth";
 import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { getSuggestedExtensions } from "@/lib/hubExtensions";
+import { envoyer, EXPEDITEUR } from "@/lib/email";
 
 // Inscription autonome (self-serve). Crée un compte client (email + mot de passe),
 // ouvre une session role "client" (cloisonné à ses commerces). Ne touche pas aux
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Trop de tentatives. Réessayez dans 15 minutes." }, { status: 429 });
   }
 
-  let body: { email?: string; password?: string; name?: string; confirmSeparate?: boolean; referralCode?: string };
+  let body: { email?: string; password?: string; name?: string; confirmSeparate?: boolean; referralCode?: string; addon?: string };
   try {
     body = await request.json();
   } catch {
@@ -101,6 +102,24 @@ export async function POST(request: NextRequest) {
       metadata: { event: "signup" },
     }),
   );
+
+  // Option payante "avis négatifs pris en charge par un humain" : pas encore
+  // câblée dans le Checkout Stripe (aucun prix Stripe créé côté agence), donc
+  // on ne peut ni la facturer ni l'activer automatiquement ici. Pour ne pas
+  // perdre la demande en silence (panne #29 du catalogue), on notifie
+  // l'agence qui active et facture la ligne manuellement.
+  if (body.addon === "avis-negatifs") {
+    after(() =>
+      envoyer({
+        from: EXPEDITEUR,
+        to: "contact@caela.fr",
+        subject: `Option "avis négatifs" demandée à l'inscription — ${email}`,
+        html: `<p>Nouveau compte <strong>${email}</strong>${name ? ` (${name})` : ""} a coché l'option "on répond nous-mêmes aux avis négatifs" (+${19}€/mois) à l'inscription.</p><p>À activer et facturer manuellement — pas encore automatisé côté Stripe.</p>`,
+      }).then((ok) => {
+        if (!ok) console.error("register: échec notification option avis-negatifs", email);
+      }),
+    );
+  }
 
   const token = await createToken(email, "client");
   const res = NextResponse.json({ success: true });

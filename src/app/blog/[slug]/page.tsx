@@ -117,7 +117,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               Envie d&apos;automatiser vos réponses aux avis Google ?
             </p>
             <p style={{ fontSize: "13.5px", color: "#5F6368", margin: "0 0 16px" }}>
-              Essai gratuit 14 jours, sans carte bancaire.
+              Essai gratuit 14 jours, résiliable en 2 clics.
             </p>
             <Link href="/signup" style={{ display: "inline-block", padding: "10px 22px", fontSize: "14px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px" }}>
               Essai gratuit →
@@ -128,7 +128,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <aside style={{ flex: "1 1 260px", minWidth: "260px", maxWidth: "320px", position: "sticky", top: "88px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ background: "linear-gradient(135deg, #1A73E8, #1557b0)", borderRadius: "14px", padding: "22px", color: "#fff" }}>
             <p style={{ fontSize: "14px", fontWeight: 700, margin: "0 0 6px" }}>Essai gratuit 14 jours</p>
-            <p style={{ fontSize: "12.5px", opacity: 0.85, margin: "0 0 14px", lineHeight: 1.5 }}>Sans carte bancaire pour commencer à tester.</p>
+            <p style={{ fontSize: "12.5px", opacity: 0.85, margin: "0 0 14px", lineHeight: 1.5 }}>Carte requise, résiliable en 2 clics avant le 1er prélèvement.</p>
             <Link href="/signup" style={{ display: "inline-block", padding: "9px 16px", fontSize: "13px", fontWeight: 700, background: "#fff", color: G.blue, textDecoration: "none", borderRadius: "6px" }}>
               Essayer →
             </Link>
