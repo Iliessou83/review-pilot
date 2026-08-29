@@ -619,7 +619,6 @@ const PLANS = [
       "5 établissements connectés",
       "Tout Solo inclus",
       "Personnalisation du ton par lieu",
-      "Multi-utilisateurs (3 accès)",
       "Support prioritaire",
     ],
     missing: [],
