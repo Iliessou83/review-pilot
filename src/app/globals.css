@@ -208,3 +208,21 @@ canvas {
     animation: none;
   }
 }
+
+/* Accordéons "voir le détail" (comparatif concurrents, etc.) : masque le
+   triangle natif du <summary>, remplacé par le chevron qu'on dessine nous-
+   mêmes et qui pivote à l'ouverture. */
+.rp-accordion summary {
+  list-style: none;
+  cursor: pointer;
+}
+.rp-accordion summary::-webkit-details-marker {
+  display: none;
+}
+.rp-accordion .rp-chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+.rp-accordion[open] .rp-chevron {
+  transform: rotate(180deg);
+}

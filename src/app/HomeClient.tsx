@@ -1320,6 +1320,23 @@ export default function HomeClient() {
             </h2>
             <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>Comparaison honnête. Aucun concurrent français ne propose l&apos;IA auto-réponse à ce prix.</p>
           </div>
+
+          {/* Accordéon fermé par défaut : le comparatif détaillé (5 concurrents,
+              prix, tableau) est de l'info dense utile pour un visiteur déjà en
+              phase de comparaison, pas pour tout le monde au premier scroll —
+              évite d'empiler tarifs + comparatif + packs GMB + NFC d'affilée. */}
+          <details className="rp-accordion">
+            <summary style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+              padding: "14px 22px", background: "#fff", border: `1px solid ${G.blue}40`, borderRadius: "10px",
+              fontSize: "14px", fontWeight: 700, color: G.blue, boxShadow: SHADOW_SM,
+              maxWidth: "440px", margin: "0 auto",
+            }}>
+              📊 Voir le comparatif détaillé face à 5 concurrents
+              <span className="rp-chevron" style={{ fontSize: "12px" }}>▾</span>
+            </summary>
+
+          <div style={{ marginTop: "20px" }}>
           <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", overflowX: "auto", boxShadow: SHADOW_SM }}>
             <table style={{ width: "100%", minWidth: "640px", borderCollapse: "collapse" }}>
               <thead>
@@ -1383,6 +1400,8 @@ export default function HomeClient() {
               </div>
             </div>
           </div>
+          </div>
+          </details>
         </div>
       </section>
 
