@@ -130,6 +130,25 @@ export const reviews = pgTable("reviews", {
 // le mailto direct pour qu'on sache dès la réception si on a déjà l'accès
 // GMB nécessaire ou s'il faut guider le client pour nous l'ajouter comme
 // Gérant. Traitement et facturation restent manuels côté Caela (voir SOP).
+// Alerte interne "client en train de décrocher" (cron quotidien, jamais
+// montrée au client — voir le playbook ops). Une ligne par déclenchement,
+// dédupliquée côté cron pour ne pas spammer si le seuil reste franchi
+// plusieurs jours d'affilée (une seule alerte active par business+type).
+export const internalAlerts = pgTable("internal_alerts", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  type: text("type", { enum: ["rating_drop", "negative_spike", "health_low"] }).notNull(),
+  detail: text("detail").notNull(),
+  severity: text("severity", { enum: ["high", "medium"] }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export type InternalAlert = typeof internalAlerts.$inferSelect;
+export type NewInternalAlert = typeof internalAlerts.$inferInsert;
+
 export const removalRequests = pgTable("removal_requests", {
   id: serial("id").primaryKey(),
   businessName: text("business_name").notNull(),
