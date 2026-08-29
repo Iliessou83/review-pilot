@@ -1515,8 +1515,8 @@ export default function HomeClient() {
                   {s.oldPrice && <span style={{ fontSize: "13px", color: "#80868B", textDecoration: "line-through" }}>{s.oldPrice}</span>}
                 </div>
                 <a href="mailto:contact@caela.fr" style={{ display: "block", textAlign: "center", padding: "10px", background: s.highlight ? s.color : s.bg, borderRadius: "6px", color: s.highlight ? "#fff" : s.color, textDecoration: "none", fontSize: "13px", fontWeight: 600 }}>Contacter →</a>
-                <a href="#pricing" style={{ display: "block", textAlign: "center", marginTop: "10px", fontSize: "11.5px", color: "#80868B", textDecoration: "underline" }}>
-                  Vous préférez que l&apos;IA s&apos;en charge elle-même ? Voir l&apos;abonnement dès 31€/mois →
+                <a href="#pricing" style={{ display: "block", textAlign: "center", marginTop: "8px", padding: "9px", border: `1px solid ${G.blue}40`, background: "#E8F0FE", borderRadius: "6px", fontSize: "12px", color: G.blue, textDecoration: "none", fontWeight: 700 }}>
+                  🤖 Voir l&apos;IA à 31€/mois →
                 </a>
               </div>
             ))}
@@ -1588,6 +1588,28 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      {/* ── PONT SERVICES <-> PRICING ──
+          Les deux sections sont adjacentes depuis le réordonnancement du
+          29/08 : au lieu de compter sur un lien discret par carte (raté,
+          trop gris pour être vu), une bannière pleine largeur, impossible à
+          manquer, explique que les deux offres sont complémentaires — pas
+          deux façons concurrentes de payer pour la même chose. */}
+      <div style={{ padding: "0 40px" }}>
+        <a href="#pricing" style={{
+          display: "block", maxWidth: "1700px", margin: "0 auto", textDecoration: "none",
+          background: "linear-gradient(90deg, #E6F4EA, #E8F0FE)", border: "1px solid #DADCE0",
+          borderRadius: "14px", padding: "20px 28px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", flexWrap: "wrap", textAlign: "center" }}>
+            <span style={{ fontSize: "22px" }}>🤝</span>
+            <span style={{ fontSize: "14.5px", fontWeight: 700, color: "#202124" }}>
+              Les services ci-dessus (humains) et l&apos;abonnement ci-dessous (IA) sont complémentaires, pas concurrents — la plupart des clients n&apos;ont besoin que de l&apos;un des deux.
+            </span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: G.blue, whiteSpace: "nowrap" }}>Voir l&apos;abonnement IA ↓</span>
+          </div>
+        </a>
+      </div>
 
       {/* ── PRICING ── */}
       {/* id="tarifs" en alias : ancre stable utilisée par les CTA "Voir les tarifs"
@@ -1682,15 +1704,6 @@ export default function HomeClient() {
               <br />
               Résiliable en 2 clics, rappel email 3 jours avant le 1er prélèvement. Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
             </p>
-          </div>
-
-          {/* Renvoi vers les services humains — même logique inverse que le lien
-              ajouté sur les cartes GMB_SERVICES : ce plan est un logiciel (l'IA
-              répond), pas un humain qui s'occupe de tout à votre place. */}
-          <div style={{ marginTop: "10px", textAlign: "center" }}>
-            <a href="#services" style={{ fontSize: "12px", color: "#80868B", textDecoration: "underline" }}>
-              Vous préférez qu&apos;un humain s&apos;en charge à votre place ? Voir les services GMB →
-            </a>
           </div>
 
           {/* Agency discreet line */}
