@@ -654,7 +654,6 @@ const DIY_CARD_STEP = 316;
 function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [centerIndex, setCenterIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
 
   const updateCenterIndex = () => {
     const track = trackRef.current;
@@ -687,27 +686,8 @@ function DIYCardsCarousel() {
     track.scrollBy({ left: dir * DIY_CARD_STEP, behavior: "smooth" });
   };
 
-  // Défilement automatique continu (une carte à la fois), en pause au survol
-  // ou pendant une interaction manuelle. Reboucle au début en douceur une
-  // fois la dernière carte atteinte, plutôt que de rester bloqué à la fin.
-  useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => {
-      const track = trackRef.current;
-      if (!track) return;
-      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 20;
-      if (atEnd) track.scrollTo({ left: 0, behavior: "smooth" });
-      else scrollByCard(1);
-    }, 2800);
-    return () => clearInterval(id);
-  }, [paused]);
-
   return (
-    <div
-      style={{ position: "relative", marginBottom: "20px" }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <div style={{ position: "relative", marginBottom: "20px" }}>
       <div
         ref={trackRef}
         className="rp-no-scrollbar"
