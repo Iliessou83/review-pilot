@@ -893,17 +893,19 @@ function ReplyExampleCard({ ex, index }: { ex: ReplyExample; index: number }) {
 // (au lieu de 199) pour rester au-dessus du Pack Avis sans écraser sa valeur.
 // Pack Avis seul baissé à 49,90€/mois le 08/08 pour être une vraie porte
 // d'entrée basse (avant : 89€, trop proche du Pack Croissance à 149€).
-// Ajout de la suppression d'avis faux/frauduleux : incluse dans les 3 packs,
-// et proposée à l'unité (sans abonnement) pour un besoin ponctuel.
+// Signalement d'avis faux/frauduleux : TOUJOURS à l'unité (19,90€), jamais
+// inclus dans un pack — démarche à part (dossier + suivi Google), distincte
+// de la gestion courante des avis. Corrigé le 2026-08-29 : la version
+// précédente prétendait à tort que c'était inclus dans les 3 packs GMB.
 const GMB_SERVICES = [
   { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€", desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.", highlight: false },
-  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "199€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte, signalement des faux avis).", highlight: true },
-  { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois", desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte, signalement des avis faux ou frauduleux auprès de Google. Rien d'autre.", highlight: false },
+  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "199€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte).", highlight: true },
+  { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois", desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte. Rien d'autre.", highlight: false },
 ];
 
 const FAKE_REVIEW_REMOVAL = {
   title: "Un faux avis, un avis diffamatoire ou posté par un concurrent ?",
-  desc: "On monte le dossier et on le signale à Google pour vous : capture, argumentaire, suivi jusqu'à la décision. Inclus dans les 3 packs GMB ci-dessus, ou à l'unité si vous n'êtes pas encore client.",
+  desc: "On monte le dossier et on le signale à Google pour vous : capture, argumentaire, suivi jusqu'à la décision. Démarche à part, à l'unité — satisfait ou remboursé : si le retrait échoue, vous êtes intégralement remboursé.",
   price: "19,90€ / signalement",
 };
 
