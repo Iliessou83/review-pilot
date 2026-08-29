@@ -1483,26 +1483,26 @@ export default function HomeClient() {
               n'a aucun sens sur une offre plaques (l'audit, c'est pour la
               fiche GMB) — remplacé par un lien direct vers la section NFC. */}
           <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "12px" }}>
-            <div style={{ background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+            <div style={{ background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "18px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "22px" }}>🚫</span>
                 <div>
                   <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>{FAKE_REVIEW_REMOVAL.title}</h3>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>
-                    {FAKE_REVIEW_REMOVAL.desc}{" "}
-                    <a href="/blog/faire-retirer-faux-avis-google" style={{ color: G.red, fontWeight: 600, textDecoration: "underline", whiteSpace: "nowrap" }}>ⓘ En savoir plus</a>
-                  </p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>{FAKE_REVIEW_REMOVAL.desc}</p>
                 </div>
               </div>
-              <a href="mailto:contact@caela.fr?subject=Signalement%20avis" style={{ padding: "8px 14px", background: G.red, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>Signaler un avis →</a>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+                <a href="/signaler-avis" style={{ padding: "9px 16px", background: G.red, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 700, whiteSpace: "nowrap" }}>Signaler un avis →</a>
+                <a href="/blog/faire-retirer-faux-avis-google" style={{ color: G.red, fontWeight: 600, fontSize: "12px", textDecoration: "underline" }}>ⓘ Comment ça marche</a>
+              </div>
             </div>
 
             <div style={{ background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "22px" }}>🏷️</span>
                 <div>
-                  <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>Client GMB ? -20% sur vos plaques NFC</h3>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Le code de réduction vous est envoyé automatiquement par email dès votre souscription à un pack GMB.</p>
+                  <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>Vos avis Google, en vitrine physique</h3>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Une plaque NFC : le client approche son téléphone, laisse un avis en 3 secondes, sans app ni QR code.</p>
                 </div>
               </div>
               <a href="#nfc" style={{ padding: "8px 14px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>

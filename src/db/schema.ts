@@ -125,6 +125,28 @@ export const reviews = pgTable("reviews", {
   platform: text("platform", { enum: ["google", "trustpilot", "facebook", "tripadvisor", "pagesjaunes", "other"] }).notNull(),
 });
 
+// Demande de signalement d'avis faux/diffamatoire (19,90€/avis retiré,
+// satisfait ou remboursé). Formulaire guidé sur /signaler-avis — remplace
+// le mailto direct pour qu'on sache dès la réception si on a déjà l'accès
+// GMB nécessaire ou s'il faut guider le client pour nous l'ajouter comme
+// Gérant. Traitement et facturation restent manuels côté Caela (voir SOP).
+export const removalRequests = pgTable("removal_requests", {
+  id: serial("id").primaryKey(),
+  businessName: text("business_name").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  reviewAuthor: text("review_author").notNull(),
+  reviewText: text("review_text").notNull(),
+  reason: text("reason", { enum: ["faux_avis", "diffamatoire", "concurrent", "autre"] }).notNull(),
+  reasonDetail: text("reason_detail"),
+  hasGmbAccess: text("has_gmb_access", { enum: ["deja_connecte", "va_ajouter_gerant", "ne_sait_pas"] }).notNull(),
+  gmbListingUrl: text("gmb_listing_url"),
+  status: text("status", { enum: ["nouveau", "en_cours", "retire", "refuse_rembourse"] }).default("nouveau").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type RemovalRequest = typeof removalRequests.$inferSelect;
+export type NewRemovalRequest = typeof removalRequests.$inferInsert;
+
 export const pendingResponses = pgTable("pending_responses", {
   id: serial("id").primaryKey(),
   reviewId: integer("review_id")
