@@ -647,22 +647,20 @@ const DIY_ARGS = [
 // change lui aussi — mesurer la géométrie pour en déduire le zoom crée une
 // boucle qui fausse le calcul (c'était le bug : le zoom finissait par ne
 // presque plus se voir, toutes les cartes convergeant vers des tailles
-// proches). L'index désormais vient uniquement de scrollLeft, la taille de
-// chaque carte est fixée par sa distance (en nombre de cartes) au centre.
-const DIY_CARD_STEP = 316;
-
+// proches). La taille de chaque carte est fixée par sa distance (en nombre
+// de cartes) au centre.
 function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [centerIndex, setCenterIndex] = useState(0);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Trouve la carte dont le centre est le plus proche du centre visible du
   // rail, via offsetLeft/offsetWidth (propriétés de layout, jamais affectées
   // par le transform: scale() appliqué plus bas) — pas de boucle de mesure
-  // post-transform, et la carte "loupée" correspond exactement à celle que
-  // l'œil voit au milieu, quel que soit le point d'arrêt du scroll.
-  const updateCenterIndex = () => {
+  // post-transform.
+  const getClosestIndex = () => {
     const track = trackRef.current;
-    if (!track) return;
+    if (!track) return 0;
     const viewportCenter = track.scrollLeft + track.clientWidth / 2;
     let closest = 0;
     let minDist = Infinity;
@@ -672,17 +670,34 @@ function DIYCardsCarousel() {
       const dist = Math.abs(center - viewportCenter);
       if (dist < minDist) { minDist = dist; closest = i; }
     });
-    setCenterIndex(closest);
+    return closest;
+  };
+
+  // Aligne le centre EXACT (au pixel près) de la carte `index` sur le centre
+  // du rail — recalculé nous-mêmes plutôt que de faire confiance au
+  // scroll-snap-align CSS natif, qui peut caler à quelques pixels du vrai
+  // centre selon le navigateur (arrondi interne, gap, marges) et donnait une
+  // carte visuellement décalée.
+  const centerOnIndex = (index: number, smooth = true) => {
+    const track = trackRef.current;
+    const el = track?.children[index] as HTMLElement | undefined;
+    if (!track || !el) return;
+    const target = el.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
+    if (Math.abs(track.scrollLeft - target) < 1) return;
+    track.scrollTo({ left: target, behavior: smooth ? "smooth" : "auto" });
   };
 
   useEffect(() => {
-    updateCenterIndex();
     const track = trackRef.current;
     if (!track) return;
+    setCenterIndex(getClosestIndex());
+    centerOnIndex(getClosestIndex(), false);
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(updateCenterIndex);
+      raf = requestAnimationFrame(() => setCenterIndex(getClosestIndex()));
+      clearTimeout(settleTimer.current);
+      settleTimer.current = setTimeout(() => centerOnIndex(getClosestIndex()), 120);
     };
     track.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
@@ -690,13 +705,13 @@ function DIYCardsCarousel() {
       track.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(raf);
+      clearTimeout(settleTimer.current);
     };
   }, []);
 
   const scrollByCard = (dir: number) => {
-    const track = trackRef.current;
-    if (!track) return;
-    track.scrollBy({ left: dir * DIY_CARD_STEP, behavior: "smooth" });
+    const next = Math.max(0, Math.min(DIY_ARGS.length - 1, centerIndex + dir));
+    centerOnIndex(next);
   };
 
   return (
@@ -881,8 +896,8 @@ function ReplyExampleCard({ ex, index }: { ex: ReplyExample; index: number }) {
 // Ajout de la suppression d'avis faux/frauduleux : incluse dans les 3 packs,
 // et proposée à l'unité (sans abonnement) pour un besoin ponctuel.
 const GMB_SERVICES = [
-  { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€", oldPrice: "498€", desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.", highlight: false },
-  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "~350€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte, signalement des faux avis).", highlight: true },
+  { color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€", desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.", highlight: false },
+  { color: G.yellow, bg: "#FEF7E0", icon: "📊", title: "Pack Croissance", tag: "Optimisation mensuelle + Gestion des avis", price: "149€/mois", oldPrice: "199€/mois", desc: "L'offre complète : mise à jour des posts et photos chaque mois, veille concurrentielle, rapport de performance — ET la gestion des avis incluse (réponse manuelle, stratégie de collecte, signalement des faux avis).", highlight: true },
   { color: G.green, bg: "#E6F4EA", icon: "💬", title: "Pack Avis seul", tag: "Gestion des avis, sans l'optimisation mensuelle", price: "49,90€/mois", desc: "Juste la gestion des avis : réponse manuelle aux cas complexes, stratégie de collecte, signalement des avis faux ou frauduleux auprès de Google. Rien d'autre.", highlight: false },
 ];
 
