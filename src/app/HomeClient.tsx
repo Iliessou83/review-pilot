@@ -640,18 +640,22 @@ const DIY_ARGS = [
 // Carrousel horizontal (au lieu d'une grille figée + carte séparée en dessous) :
 // on fait défiler à la souris/tactile/flèches, la carte la plus proche du
 // centre du rail grossit légèrement (effet coverflow) pour guider l'œil.
-// Largeur de carte (300px, fixe — voir le style ci-dessous) + le gap (16px).
-// Sert de pas constant pour retrouver quelle carte est au centre à partir de
-// scrollLeft, SANS jamais mesurer les cartes via getBoundingClientRect : une
-// fois qu'une carte est zoomée par `transform: scale()`, son rect mesuré
-// change lui aussi — mesurer la géométrie pour en déduire le zoom crée une
-// boucle qui fausse le calcul (c'était le bug : le zoom finissait par ne
-// presque plus se voir, toutes les cartes convergeant vers des tailles
-// proches). La taille de chaque carte est fixée par sa distance (en nombre
-// de cartes) au centre.
+// La taille de chaque carte est fixée par sa distance (en nombre de cartes)
+// au centre, jamais via getBoundingClientRect (son rect change lui-même une
+// fois zoomé par transform: scale() → boucle qui fausse le calcul).
+//
+// Boucle infinie : le tableau de cartes est répété 3 fois (copie gauche,
+// copie "réelle" du milieu, copie droite). L'utilisateur ne voit jamais les
+// bords du DOM — dès que le scroll se stabilise sur une carte de la copie
+// gauche ou droite, on saute silencieusement (sans transition) à la carte
+// identique de la copie du milieu, ce qui est visuellement invisible
+// puisque les trois copies sont pixel pour pixel les mêmes cartes.
+const DIY_LOOP = [...DIY_ARGS, ...DIY_ARGS, ...DIY_ARGS];
+const DIY_N = DIY_ARGS.length;
+
 function DIYCardsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [centerIndex, setCenterIndex] = useState(0);
+  const [centerIndex, setCenterIndex] = useState(DIY_N);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Trouve la carte dont le centre est le plus proche du centre visible du
@@ -660,7 +664,7 @@ function DIYCardsCarousel() {
   // post-transform.
   const getClosestIndex = () => {
     const track = trackRef.current;
-    if (!track) return 0;
+    if (!track) return DIY_N;
     const viewportCenter = track.scrollLeft + track.clientWidth / 2;
     let closest = 0;
     let minDist = Infinity;
@@ -687,17 +691,37 @@ function DIYCardsCarousel() {
     track.scrollTo({ left: target, behavior: smooth ? "smooth" : "auto" });
   };
 
+  // Une fois le scroll immobile, si on a dérivé vers la copie gauche ou
+  // droite, on se replace instantanément sur la carte équivalente de la
+  // copie du milieu — même carte à l'écran, juste un autre nœud du DOM.
+  const settleAndMaybeLoop = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const idx = getClosestIndex();
+    setCenterIndex(idx);
+    if (idx >= DIY_N && idx < 2 * DIY_N) {
+      centerOnIndex(idx);
+      return;
+    }
+    const target = idx % DIY_N;
+    const middleIndex = DIY_N + target;
+    const el = track.children[middleIndex] as HTMLElement | undefined;
+    if (!el) return;
+    track.scrollLeft = el.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
+    setCenterIndex(middleIndex);
+  };
+
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
-    setCenterIndex(getClosestIndex());
-    centerOnIndex(getClosestIndex(), false);
+    centerOnIndex(DIY_N, false);
+    setCenterIndex(DIY_N);
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => setCenterIndex(getClosestIndex()));
       clearTimeout(settleTimer.current);
-      settleTimer.current = setTimeout(() => centerOnIndex(getClosestIndex()), 120);
+      settleTimer.current = setTimeout(settleAndMaybeLoop, 120);
     };
     track.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
@@ -710,8 +734,7 @@ function DIYCardsCarousel() {
   }, []);
 
   const scrollByCard = (dir: number) => {
-    const next = Math.max(0, Math.min(DIY_ARGS.length - 1, centerIndex + dir));
-    centerOnIndex(next);
+    centerOnIndex(centerIndex + dir);
   };
 
   return (
@@ -726,14 +749,14 @@ function DIYCardsCarousel() {
           WebkitMaskImage: "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
         }}
       >
-        {DIY_ARGS.map((a, i) => {
+        {DIY_LOOP.map((a, i) => {
           const dist = Math.abs(i - centerIndex);
           const isActive = dist === 0;
           const scale = dist === 0 ? 1.14 : dist === 1 ? 0.94 : 0.86;
           const opacity = dist === 0 ? 1 : dist === 1 ? 0.75 : 0.55;
           return (
             <div
-              key={a.title}
+              key={`${a.title}-${i}`}
               style={{
                 flex: "0 0 auto", width: "300px", scrollSnapAlign: "center",
                 background: "#fff", border: `1px solid ${isActive ? a.color : "#DADCE0"}`, borderRadius: "14px", padding: "22px",
