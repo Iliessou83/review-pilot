@@ -1585,6 +1585,162 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* ── PRICING ── */}
+      {/* id="tarifs" en alias : ancre stable utilisée par les CTA "Voir les tarifs"
+          du dashboard, en plus de #pricing déjà référencé ailleurs sur la page. */}
+      <div id="tarifs" style={{ position: "relative", top: "-1px" }} />
+      <section id="pricing" style={{ padding: "80px 40px" }}>
+        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "44px" }}>
+            <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
+              L&apos;abonnement qui répond à vos avis. Dès 31€/mois.
+            </h2>
+            <p style={{ margin: "0 0 18px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 16px", background: "#E6F4EA", borderRadius: "20px", maxWidth: "440px" }}>
+                <span style={{ fontSize: "16px", flexShrink: 0 }}>✨</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E7A3D" }}>14 jours d&apos;essai gratuit — votre première réponse IA à un avis négatif, offerte dès le premier jour</span>
+              </div>
+              <div style={{ display: "inline-flex", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", padding: "3px", gap: "2px", boxShadow: SHADOW_SM }}>
+                {(["monthly", "annual"] as const).map(b => (
+                  <button key={b} onClick={() => setBilling(b)} style={{ padding: "8px 18px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 500, background: billing === b ? G.blue : "transparent", color: billing === b ? "#fff" : "#5F6368", fontFamily: "inherit" }}>
+                    {b === "monthly" ? "Mensuel" : <span>Annuel <span style={{ color: billing === b ? "#bef7d7" : G.green, fontSize: "11px", fontWeight: 700 }}>-20%</span></span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* maxWidth resserré à 900px (au lieu des 1700 du reste de la page) :
+              3 cartes de tarifs sur toute la largeur laissaient un vide énorme
+              entre elles, ce n'est pas un tableau à faire respirer comme le
+              reste de la home. */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "14px", alignItems: "start", maxWidth: "900px", margin: "0 auto" }}>
+            {PLANS.map(plan => {
+              const price = billing === "annual" ? Math.round(parseInt(plan.price) * 0.8) : parseInt(plan.price);
+              const savings = parseInt(plan.price) * 12 - price * 12;
+              return (
+                <div style={{
+                  background: "#fff",
+                  border: plan.highlight ? `2px solid ${plan.color}` : "1px solid #DADCE0",
+                  borderRadius: "14px",
+                  padding: plan.highlight ? "30px 20px 24px" : "24px 20px",
+                  boxShadow: plan.highlight ? `0 12px 28px ${plan.color}28` : SHADOW_SM,
+                  position: "relative",
+                  overflow: "hidden",
+                  transform: plan.highlight ? "translateY(-10px)" : "none",
+                  zIndex: plan.highlight ? 1 : 0,
+                }} key={plan.name}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.color }} />
+                  {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "3px 9px", background: plan.color + "15", borderRadius: "20px", fontSize: "10.5px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
+                  <p style={{ margin: "0 0 3px", fontSize: "13px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
+                    <span style={{ fontSize: "14px", color: "#5F6368" }}>/mois</span>
+                    {billing === "annual" && (
+                      <span style={{ fontSize: "16px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
+                    )}
+                  </div>
+                  <p style={{ margin: "0 0 5px", fontSize: "13.5px", color: "#5F6368" }}>{plan.desc}</p>
+                  {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", background: "#E6F4EA", borderRadius: "20px", fontSize: "12.5px", fontWeight: 700, color: G.green, marginBottom: "9px" }}>🎁 -{savings}€/an</div>}
+                  <div style={{ fontSize: "13px", color: plan.color, marginBottom: "16px", fontWeight: 500 }}>{plan.best}</div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "9px", marginBottom: "20px" }}>
+                    {plan.features.map(f => (
+                      <div key={f} style={{ display: "flex", gap: "8px" }}>
+                        <span style={{ color: plan.color, fontWeight: 700, fontSize: "13.5px", flexShrink: 0 }}>✓</span>
+                        <span style={{ fontSize: "14px", color: "#5F6368", lineHeight: 1.45 }}>{f}</span>
+                      </div>
+                    ))}
+                    {plan.missing.map(f => (
+                      <div key={f} style={{ display: "flex", gap: "8px" }}>
+                        <span style={{ color: "#DADCE0", fontWeight: 700, fontSize: "13.5px", flexShrink: 0 }}>—</span>
+                        <span style={{ fontSize: "14px", color: "#DADCE0", lineHeight: 1.45 }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
+                    {plan.cta}
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mention légale de facturation (art. L221-5 Code conso) — anti dark pattern.
+              Condensée le 08/08 pour tenir en 2 lignes tout en gardant les mentions
+              obligatoires : durée, CB requise, prix au tarif affiché sauf résiliation,
+              résiliation en 2 clics, rappel avant prélèvement. */}
+          <div style={{ marginTop: "20px", maxWidth: "620px", margin: "20px auto 0", textAlign: "center" }}>
+            <p style={{ fontSize: "12px", lineHeight: 1.7, color: "#80868B", margin: 0 }}>
+              Essai gratuit 14 jours, <strong>carte bancaire requise</strong> — au tarif affiché à la fin de l&apos;essai <strong>sauf résiliation avant son terme</strong>.
+              <br />
+              Résiliable en 2 clics, rappel email 3 jours avant le 1er prélèvement. Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
+            </p>
+          </div>
+
+          {/* Agency discreet line */}
+          <div style={{ marginTop: "12px", textAlign: "center" }}>
+            <span style={{ fontSize: "13px", color: "#80868B" }}>
+              Vous gérez 5+ établissements ?{" "}
+              {/* Visait l'ancre #contact, qui n'existe sur aucune section de
+                  cette page : le lien ne faisait rien, sans erreur ni 404. Un
+                  prospect Plan Agence à 449 €/mois n'avait aucun moyen de nous
+                  joindre depuis cette ligne. Même destination que le reste de
+                  la page de tarifs. */}
+              <a
+                href="mailto:contact@caela.fr?subject=Plan%20Agence%20-%205%20etablissements%20ou%20plus"
+                style={{ color: G.blue, textDecoration: "none", fontWeight: 600 }}
+              >
+                Plan Agence à partir de 449€/mois →
+              </a>
+            </span>
+          </div>
+
+          {/* Parrainage + Zéro risque : bornées à 900px comme les cartes de
+              tarifs juste au-dessus (au lieu de pleine largeur 1700px, qui
+              laissait un grand vide coloré à droite du texte) et mises côte
+              à côte plutôt qu'empilées. */}
+          <div style={{ marginTop: "20px", maxWidth: "940px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "12px" }}>
+            <div style={{ padding: "18px 22px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "17px" }}>🎁</span>
+              <div>
+                <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#7A5C00", marginBottom: "4px" }}>Parrainez, économisez à deux</div>
+                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}><strong>1 mois offert</strong> pour vous, <strong>-15%</strong> pour la personne parrainée — code personnel dans ton dashboard. <a href="/parrainage" style={{ color: "#7A5C00", fontWeight: 600, textDecoration: "underline" }}>En savoir plus →</a></div>
+              </div>
+            </div>
+
+            <div style={{ padding: "18px 22px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "17px" }}>🔒</span>
+              <div>
+                <div style={{ fontSize: "13.5px", fontWeight: 600, color: G.blue, marginBottom: "4px" }}>Zéro risque pour votre fiche Google</div>
+                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}>API officielle Google My Business exclusivement. Réponses publiées sous le nom de votre établissement, jamais sous le nôtre. 100% conforme aux CGU Google.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ancre discrète pour les liens "Se connecter" qui pointaient sur
+          #login (scroll-behavior smooth global) — le widget lui-même est en
+          position fixed plus bas et s'ouvre via setLoginWidgetOpen. */}
+      <div id="login" />
+
+      {/* ── ÉCOSYSTÈME CAELA ── */}
+      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "56px 40px" }}>
+        <div style={{ maxWidth: "820px", margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ margin: "0 0 12px", fontSize: "22px", fontWeight: 700, color: "#202124" }}>
+            Fait partie de l&apos;écosystème Caela
+          </h2>
+          <p style={{ margin: 0, fontSize: "15.5px", color: "#5F6368", lineHeight: 1.7 }}>
+            Un compte, tous vos outils : Réservation (<a href="https://caelenda.fr" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Caelenda</a>) · Fidélité (<a href="https://caela-rewards.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Rewards</a>) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (<a href="https://caela-pulse.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Pulse</a>) · QR dynamique (<a href="https://caela-qr.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>CaelaQR</a>).
+            <br />
+            Connexion unique entre tous les produits.
+          </p>
+        </div>
+      </section>
+
       {/* ── NFC PLATES ── */}
       <section id="nfc" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
         <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
@@ -1747,162 +1903,6 @@ export default function HomeClient() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ── PRICING ── */}
-      {/* id="tarifs" en alias : ancre stable utilisée par les CTA "Voir les tarifs"
-          du dashboard, en plus de #pricing déjà référencé ailleurs sur la page. */}
-      <div id="tarifs" style={{ position: "relative", top: "-1px" }} />
-      <section id="pricing" style={{ padding: "80px 40px" }}>
-        <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "44px" }}>
-            <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              L&apos;abonnement qui répond à vos avis. Dès 31€/mois.
-            </h2>
-            <p style={{ margin: "0 0 18px", fontSize: "15px", color: "#5F6368" }}>Sans engagement. Annulez quand vous voulez.</p>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 16px", background: "#E6F4EA", borderRadius: "20px", maxWidth: "440px" }}>
-                <span style={{ fontSize: "16px", flexShrink: 0 }}>✨</span>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#1E7A3D" }}>14 jours d&apos;essai gratuit — votre première réponse IA à un avis négatif, offerte dès le premier jour</span>
-              </div>
-              <div style={{ display: "inline-flex", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "8px", padding: "3px", gap: "2px", boxShadow: SHADOW_SM }}>
-                {(["monthly", "annual"] as const).map(b => (
-                  <button key={b} onClick={() => setBilling(b)} style={{ padding: "8px 18px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 500, background: billing === b ? G.blue : "transparent", color: billing === b ? "#fff" : "#5F6368", fontFamily: "inherit" }}>
-                    {b === "monthly" ? "Mensuel" : <span>Annuel <span style={{ color: billing === b ? "#bef7d7" : G.green, fontSize: "11px", fontWeight: 700 }}>-20%</span></span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* maxWidth resserré à 900px (au lieu des 1700 du reste de la page) :
-              3 cartes de tarifs sur toute la largeur laissaient un vide énorme
-              entre elles, ce n'est pas un tableau à faire respirer comme le
-              reste de la home. */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "14px", alignItems: "start", maxWidth: "900px", margin: "0 auto" }}>
-            {PLANS.map(plan => {
-              const price = billing === "annual" ? Math.round(parseInt(plan.price) * 0.8) : parseInt(plan.price);
-              const savings = parseInt(plan.price) * 12 - price * 12;
-              return (
-                <div style={{
-                  background: "#fff",
-                  border: plan.highlight ? `2px solid ${plan.color}` : "1px solid #DADCE0",
-                  borderRadius: "14px",
-                  padding: plan.highlight ? "30px 20px 24px" : "24px 20px",
-                  boxShadow: plan.highlight ? `0 12px 28px ${plan.color}28` : SHADOW_SM,
-                  position: "relative",
-                  overflow: "hidden",
-                  transform: plan.highlight ? "translateY(-10px)" : "none",
-                  zIndex: plan.highlight ? 1 : 0,
-                }} key={plan.name}>
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: plan.color }} />
-                  {plan.highlight && <div style={{ position: "absolute", top: "12px", right: "14px", padding: "3px 9px", background: plan.color + "15", borderRadius: "20px", fontSize: "10.5px", fontWeight: 700, color: plan.color }}>POPULAIRE</div>}
-                  <p style={{ margin: "0 0 3px", fontSize: "13px", fontWeight: 700, color: plan.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{plan.name}</p>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: "40px", fontWeight: 700, color: "#202124", letterSpacing: "-1px" }}>{price}€</span>
-                    <span style={{ fontSize: "14px", color: "#5F6368" }}>/mois</span>
-                    {billing === "annual" && (
-                      <span style={{ fontSize: "16px", color: "#80868B", textDecoration: "line-through", marginLeft: "4px" }}>{plan.price}€</span>
-                    )}
-                  </div>
-                  <p style={{ margin: "0 0 5px", fontSize: "13.5px", color: "#5F6368" }}>{plan.desc}</p>
-                  {billing === "annual" && <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", background: "#E6F4EA", borderRadius: "20px", fontSize: "12.5px", fontWeight: 700, color: G.green, marginBottom: "9px" }}>🎁 -{savings}€/an</div>}
-                  <div style={{ fontSize: "13px", color: plan.color, marginBottom: "16px", fontWeight: 500 }}>{plan.best}</div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "9px", marginBottom: "20px" }}>
-                    {plan.features.map(f => (
-                      <div key={f} style={{ display: "flex", gap: "8px" }}>
-                        <span style={{ color: plan.color, fontWeight: 700, fontSize: "13.5px", flexShrink: 0 }}>✓</span>
-                        <span style={{ fontSize: "14px", color: "#5F6368", lineHeight: 1.45 }}>{f}</span>
-                      </div>
-                    ))}
-                    {plan.missing.map(f => (
-                      <div key={f} style={{ display: "flex", gap: "8px" }}>
-                        <span style={{ color: "#DADCE0", fontWeight: 700, fontSize: "13.5px", flexShrink: 0 }}>—</span>
-                        <span style={{ fontSize: "14px", color: "#DADCE0", lineHeight: 1.45 }}>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
-                    {plan.cta}
-                  </a>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Mention légale de facturation (art. L221-5 Code conso) — anti dark pattern.
-              Condensée le 08/08 pour tenir en 2 lignes tout en gardant les mentions
-              obligatoires : durée, CB requise, prix au tarif affiché sauf résiliation,
-              résiliation en 2 clics, rappel avant prélèvement. */}
-          <div style={{ marginTop: "20px", maxWidth: "620px", margin: "20px auto 0", textAlign: "center" }}>
-            <p style={{ fontSize: "12px", lineHeight: 1.7, color: "#80868B", margin: 0 }}>
-              Essai gratuit 14 jours, <strong>carte bancaire requise</strong> — au tarif affiché à la fin de l&apos;essai <strong>sauf résiliation avant son terme</strong>.
-              <br />
-              Résiliable en 2 clics, rappel email 3 jours avant le 1er prélèvement. Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
-            </p>
-          </div>
-
-          {/* Agency discreet line */}
-          <div style={{ marginTop: "12px", textAlign: "center" }}>
-            <span style={{ fontSize: "13px", color: "#80868B" }}>
-              Vous gérez 5+ établissements ?{" "}
-              {/* Visait l'ancre #contact, qui n'existe sur aucune section de
-                  cette page : le lien ne faisait rien, sans erreur ni 404. Un
-                  prospect Plan Agence à 449 €/mois n'avait aucun moyen de nous
-                  joindre depuis cette ligne. Même destination que le reste de
-                  la page de tarifs. */}
-              <a
-                href="mailto:contact@caela.fr?subject=Plan%20Agence%20-%205%20etablissements%20ou%20plus"
-                style={{ color: G.blue, textDecoration: "none", fontWeight: 600 }}
-              >
-                Plan Agence à partir de 449€/mois →
-              </a>
-            </span>
-          </div>
-
-          {/* Parrainage + Zéro risque : bornées à 900px comme les cartes de
-              tarifs juste au-dessus (au lieu de pleine largeur 1700px, qui
-              laissait un grand vide coloré à droite du texte) et mises côte
-              à côte plutôt qu'empilées. */}
-          <div style={{ marginTop: "20px", maxWidth: "940px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "12px" }}>
-            <div style={{ padding: "18px 22px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
-              <span style={{ fontSize: "17px" }}>🎁</span>
-              <div>
-                <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#7A5C00", marginBottom: "4px" }}>Parrainez, économisez à deux</div>
-                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}><strong>1 mois offert</strong> pour vous, <strong>-15%</strong> pour la personne parrainée — code personnel dans ton dashboard. <a href="/parrainage" style={{ color: "#7A5C00", fontWeight: 600, textDecoration: "underline" }}>En savoir plus →</a></div>
-              </div>
-            </div>
-
-            <div style={{ padding: "18px 22px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
-              <span style={{ fontSize: "17px" }}>🔒</span>
-              <div>
-                <div style={{ fontSize: "13.5px", fontWeight: 600, color: G.blue, marginBottom: "4px" }}>Zéro risque pour votre fiche Google</div>
-                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}>API officielle Google My Business exclusivement. Réponses publiées sous le nom de votre établissement, jamais sous le nôtre. 100% conforme aux CGU Google.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ancre discrète pour les liens "Se connecter" qui pointaient sur
-          #login (scroll-behavior smooth global) — le widget lui-même est en
-          position fixed plus bas et s'ouvre via setLoginWidgetOpen. */}
-      <div id="login" />
-
-      {/* ── ÉCOSYSTÈME CAELA ── */}
-      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "56px 40px" }}>
-        <div style={{ maxWidth: "820px", margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ margin: "0 0 12px", fontSize: "22px", fontWeight: 700, color: "#202124" }}>
-            Fait partie de l&apos;écosystème Caela
-          </h2>
-          <p style={{ margin: 0, fontSize: "15.5px", color: "#5F6368", lineHeight: 1.7 }}>
-            Un compte, tous vos outils : Réservation (<a href="https://caelenda.fr" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Caelenda</a>) · Fidélité (<a href="https://caela-rewards.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Rewards</a>) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (<a href="https://caela-pulse.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Pulse</a>) · QR dynamique (<a href="https://caela-qr.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>CaelaQR</a>).
-            <br />
-            Connexion unique entre tous les produits.
-          </p>
         </div>
       </section>
 
