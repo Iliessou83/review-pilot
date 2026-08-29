@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
 import { reviews, businesses, pendingResponses } from "@/db/schema";
-import { eq, desc, count, avg, gte, and, lt, inArray } from "drizzle-orm";
+import { eq, desc, count, avg, gte, and, lt, lte, inArray } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getScope, ownedBusinessIds } from "@/lib/scope";
@@ -17,6 +17,7 @@ function emptyStats() {
     history: [3, 2, 1, 0].map((k) => ({ label: monthNames[(now.getMonth() - k + 12) % 12], count: 0, avg: 0 })),
     thisMonthCount: 0, thisMonthAvg: "0.0", lastMonthAvg: "0.0", evolution: 0, evolutionPct: 0,
     negThisMonth: 0, negLastMonth: 0,
+    flagCandidates: [],
   };
 }
 
@@ -35,7 +36,7 @@ async function getStats(biz: ReturnType<typeof inArray> | undefined, hasNone: bo
   const [totalRes, avgRes, autoRes, pendingRes, recent,
     thisMonth, lastMonth, twoMonths, threeMonths,
     thisMonthAvg, lastMonthAvg,
-    negThisMonth, negLastMonth] = await Promise.all([
+    negThisMonth, negLastMonth, flagCandidates] = await Promise.all([
     db.select({ count: count() }).from(reviews).where(biz),
     db.select({ avg: avg(reviews.rating) }).from(reviews).where(biz),
     db.select({ count: count() }).from(reviews).where(and(eq(reviews.responded, true), biz)),
@@ -59,6 +60,14 @@ async function getStats(biz: ReturnType<typeof inArray> | undefined, hasNone: bo
     // Negative reviews this vs last month
     db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, thisMonthStart), lt(reviews.rating, 4), biz)),
     db.select({ count: count() }).from(reviews).where(and(gte(reviews.publishedAt, lastMonthStart), lt(reviews.publishedAt, thisMonthStart), lt(reviews.rating, 4), biz)),
+    // Candidats au signalement : 1-2★, les plus susceptibles d'être faux/
+    // diffamatoires/concurrents — surfacés dans le widget dédié.
+    db.select({ review: reviews, businessName: businesses.name })
+      .from(reviews)
+      .leftJoin(businesses, eq(reviews.businessId, businesses.id))
+      .where(and(lte(reviews.rating, 2), biz))
+      .orderBy(desc(reviews.publishedAt))
+      .limit(5),
   ]);
 
   const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -90,6 +99,7 @@ async function getStats(biz: ReturnType<typeof inArray> | undefined, hasNone: bo
     evolutionPct,
     negThisMonth: negThisMonth[0]?.count || 0,
     negLastMonth: negLastMonth[0]?.count || 0,
+    flagCandidates,
   };
 }
 
@@ -283,6 +293,55 @@ export default async function DashboardPage() {
           </div>
         );
       })()}
+
+      {/* Avis à signaler : surface les 1-2★ les plus récents et incite à
+          déclencher le service de signalement (dossier + suivi Google,
+          19,90€/signalement, satisfait ou remboursé) — pas de paiement en
+          ligne ici, la démarche est manuelle côté Caela, comme les autres
+          services GMB (contact par email pré-rempli). */}
+      {stats.flagCandidates.length > 0 && (
+        <div style={{ background: "#fff", border: "1px solid #FAD2CF", borderRadius: "12px", overflow: "hidden", boxShadow: SHADOW, marginBottom: "24px" }}>
+          <div style={{ padding: "16px 24px", background: "#FCE8E6", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+            <div>
+              <h2 style={{ margin: "0 0 2px", fontSize: "15px", fontWeight: 700, color: "#202124" }}>
+                🚩 {stats.flagCandidates.length} avis à surveiller (1-2★)
+              </h2>
+              <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>
+                Faux avis, diffamatoire, posté par un concurrent ? On monte le dossier pour vous — 19,90€/signalement, satisfait ou remboursé.
+              </p>
+            </div>
+          </div>
+          <div>
+            {stats.flagCandidates.map(({ review, businessName }, i) => (
+              <div key={review.id} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px",
+                padding: "14px 24px", borderBottom: i < stats.flagCandidates.length - 1 ? "1px solid #F8F9FA" : "none",
+                flexWrap: "wrap",
+              }}>
+                <div style={{ flex: "1 1 320px", minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                    <Stars rating={review.rating} />
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#202124" }}>{review.authorName}</span>
+                    {businessName && <span style={{ fontSize: "11px", color: "#80868B" }}>· {businessName}</span>}
+                  </div>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#5F6368", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {review.text || "(sans texte)"}
+                  </p>
+                </div>
+                <a
+                  href={`mailto:contact@caela.fr?subject=${encodeURIComponent("Signalement avis — " + (businessName || ""))}&body=${encodeURIComponent(`Avis de ${review.authorName} (${review.rating}★) à faire signaler :\n\n"${review.text || ""}"\n\nÉtablissement : ${businessName || ""}`)}`}
+                  style={{
+                    flexShrink: 0, padding: "8px 14px", background: G.red, color: "#fff", textDecoration: "none",
+                    borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap",
+                  }}
+                >
+                  Signaler cet avis →
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* History + evolution row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px", marginBottom: "24px" }}>
