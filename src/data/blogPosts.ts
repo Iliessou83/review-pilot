@@ -194,6 +194,35 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "p", text: "Une plaque NFC résout la collecte, pas le suivi. Une fois les avis multipliés par 5, y répondre un par un devient vite ingérable manuellement. C'est le complément naturel : Caela Réputation combine plaque NFC pour la collecte et réponses automatiques par IA pour le suivi, sans que le volume d'avis supplémentaire ne devienne une charge de travail supplémentaire." },
     ],
   },
+  {
+    slug: "faire-retirer-faux-avis-google",
+    title: "Faire retirer un faux avis Google : ce qui marche, et ce qui ne sert à rien",
+    description:
+      "Un faux avis, un avis diffamatoire ou posté par un concurrent peut être retiré par Google — à condition de viser le bon motif. La méthode, et pourquoi répondre poliment ne suffit jamais.",
+    category: "Réputation",
+    date: "2026-08-29",
+    readMinutes: 5,
+    excerpt:
+      "Un avis 1★ mensonger, jamais un vrai client, posté par un concurrent : Google le retire dans une vraie proportion de cas, à condition de ne pas se contenter d'y répondre.",
+    blocks: [
+      { type: "p", text: "Un commerçant confronté à un faux avis fait presque toujours la même erreur : il y répond, poliment, en espérant calmer le jeu. Répondre ne retire jamais un avis. Seul un signalement argumenté auprès de Google peut le faire disparaître — et encore, uniquement s'il viole une règle précise des CGU Google, pas simplement parce qu'il est injuste." },
+      { type: "h2", text: "Ce que Google retire réellement" },
+      { type: "p", text: "Google ne retire pas un avis parce qu'il est négatif, dur, ou même de mauvaise foi ressentie. Il le retire quand il viole une règle documentée de sa politique de contenu : contenu non pertinent (l'avis ne parle pas d'une expérience vécue dans l'établissement), conflit d'intérêt (posté par un concurrent, un ex-salarié, ou un tiers sans lien client réel), contenu offensant ou diffamatoire, spam, ou usurpation. Un avis simplement injuste mais sincère — un vrai client mécontent à tort — ne sera presque jamais retiré, et le signaler abîme la crédibilité du dossier pour les cas suivants." },
+      { type: "h2", text: "Les signaux qui rendent un signalement crédible" },
+      { type: "ul", items: [
+        "Aucune trace du client dans le système de réservation, de caisse ou de facturation sur la période mentionnée.",
+        "Le profil de l'auteur n'a laissé qu'un seul avis, extrêmement négatif, sur un compte créé récemment — schéma classique d'un avis acheté ou d'un règlement de comptes.",
+        "Des détails factuellement impossibles : un établissement fermé ce jour-là, un produit qui n'a jamais été au menu, un prix qui n'a jamais existé.",
+        "Un langage qui ressemble à une accusation personnelle contre un salarié nommément visé, plutôt qu'à un retour sur un produit ou un service.",
+      ] },
+      { type: "h2", text: "Pourquoi la capture d'écran seule ne suffit pas" },
+      { type: "p", text: "Le bouton « signaler comme inapproprié » sur Google Maps ouvre une file automatisée, souvent traitée par un système qui ne lit pas le contexte. Un signalement qui aboutit contient un argumentaire écrit : quelle règle précise est violée, quelles preuves l'appuient (facture, planning, échange écrit avec le vrai client si l'usurpation est suspectée), et une demande claire de retrait — pas juste « cet avis est faux »." },
+      { type: "h2", text: "Le délai réel" },
+      { type: "p", text: "Compter entre 3 et 10 jours ouvrés pour une première réponse de Google, parfois plus sur un dossier contesté. Une relance après 10 jours de silence fait partie du processus normal, pas un signe d'échec." },
+      { type: "h2", text: "Ce que fait Caela Réputation" },
+      { type: "p", text: "On monte le dossier à votre place — argumentaire, preuves, dépôt et suivi jusqu'à la décision de Google — pour 19,90€ par avis retiré. Satisfait ou remboursé : si Google refuse le retrait, vous êtes intégralement remboursé, sans démarche supplémentaire de votre part." },
+    ],
+  },
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {

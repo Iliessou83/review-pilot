@@ -926,9 +926,8 @@ const GMB_SERVICES = [
 ];
 
 const FAKE_REVIEW_REMOVAL = {
-  title: "Un faux avis, un avis diffamatoire ou posté par un concurrent ?",
-  desc: "On monte le dossier et on le signale à Google pour vous : capture, argumentaire, suivi jusqu'à la décision. Démarche à part, à l'unité — satisfait ou remboursé : si le retrait échoue, vous êtes intégralement remboursé.",
-  price: "19,90€ / signalement",
+  title: "On fait retirer vos faux avis Google",
+  desc: "19,90€ par avis retiré. Satisfait ou remboursé : si Google refuse, vous êtes intégralement remboursé — sans rien à faire.",
 };
 
 // Paliers revus le 08/08 : 1, 3 et 5 plaques (au lieu de 1, 5, 25) — mieux
@@ -1489,16 +1488,22 @@ export default function HomeClient() {
                 <span style={{ fontSize: "22px" }}>🚫</span>
                 <div>
                   <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>{FAKE_REVIEW_REMOVAL.title}</h3>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>{FAKE_REVIEW_REMOVAL.desc}</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>
+                    {FAKE_REVIEW_REMOVAL.desc}{" "}
+                    <a href="/blog/faire-retirer-faux-avis-google" style={{ color: G.red, fontWeight: 600, textDecoration: "underline", whiteSpace: "nowrap" }}>ⓘ En savoir plus</a>
+                  </p>
                 </div>
               </div>
               <a href="mailto:contact@caela.fr?subject=Signalement%20avis" style={{ padding: "8px 14px", background: G.red, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>Signaler un avis →</a>
             </div>
 
             <div style={{ background: "linear-gradient(135deg, #E8F0FE, #E6F4EA)", border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-              <div>
-                <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>-20% sur vos plaques NFC</h3>
-                <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Client d&apos;un de nos 3 packs GMB : code envoyé par email à la souscription.</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ fontSize: "22px" }}>🏷️</span>
+                <div>
+                  <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>Client GMB ? -20% sur vos plaques NFC</h3>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Le code de réduction vous est envoyé automatiquement par email dès votre souscription à un pack GMB.</p>
+                </div>
               </div>
               <a href="#nfc" style={{ padding: "8px 14px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
                 Voir les plaques →
