@@ -49,7 +49,10 @@ export async function POST(req: NextRequest) {
 
   // Notification interne — même mécanisme que le reste des demandes GMB,
   // mais avec toutes les infos structurées au lieu d'un mailto en vrac.
-  await envoyer({
+  // La demande est déjà en base même si l'email échoue : le retour de
+  // envoyer() est lu et loggé pour ne pas répéter la panne "email envoyé
+  // dont personne ne lit la réponse" (catalogue pannes-silencieuses #83).
+  const emailEnvoye = await envoyer({
     from: EXPEDITEUR,
     to: process.env.CLIENT_NOTIFICATION_EMAIL || "contact@caela.fr",
     replyTo: contactEmail,
@@ -70,5 +73,9 @@ export async function POST(req: NextRequest) {
     `,
   });
 
-  return NextResponse.json({ ok: true, id: created.id });
+  if (!emailEnvoye) {
+    console.error(`[removal-requests] demande #${created.id} enregistrée en base mais la notification email a échoué`);
+  }
+
+  return NextResponse.json({ ok: true, id: created.id, notified: emailEnvoye });
 }
