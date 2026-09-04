@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BLOG_POSTS, getBlogPost, type BlogBlock } from "@/data/blogPosts";
-import Linkify from "@/components/Linkify";
+import { BLOG_POSTS, getBlogPost, CATEGORY_STYLE, type BlogBlock } from "@/data/blogPosts";
+import RichText from "@/components/RichText";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
@@ -24,11 +24,11 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-function Block({ block }: { block: BlogBlock }) {
+function Block({ block, accent }: { block: BlogBlock; accent: string }) {
   switch (block.type) {
     case "h2":
       return (
-        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#202124", margin: "36px 0 14px" }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#202124", margin: "36px 0 14px", paddingLeft: "14px", borderLeft: `4px solid ${accent}` }}>
           {block.text}
         </h2>
       );
@@ -43,7 +43,7 @@ function Block({ block }: { block: BlogBlock }) {
         <ul style={{ margin: "0 0 18px", padding: "0 0 0 22px", display: "flex", flexDirection: "column", gap: "8px" }}>
           {block.items.map((item, i) => (
             <li key={i} style={{ fontSize: "15px", color: "#3C4043", lineHeight: 1.7 }}>
-              <Linkify text={item} />
+              <RichText text={item} accent={accent} />
             </li>
           ))}
         </ul>
@@ -51,7 +51,7 @@ function Block({ block }: { block: BlogBlock }) {
     case "quote":
       return (
         <blockquote style={{
-          margin: "0 0 18px", padding: "14px 20px", borderLeft: `3px solid ${G.blue}`,
+          margin: "0 0 18px", padding: "14px 20px", borderLeft: `3px solid ${accent}`,
           background: "#F8F9FA", borderRadius: "0 8px 8px 0",
         }}>
           <p style={{ fontSize: "14.5px", color: "#3C4043", lineHeight: 1.7, fontStyle: "italic", margin: 0 }}>
@@ -63,7 +63,7 @@ function Block({ block }: { block: BlogBlock }) {
     default:
       return (
         <p style={{ fontSize: "15.5px", color: "#3C4043", lineHeight: 1.8, margin: "0 0 18px" }}>
-          <Linkify text={block.text} />
+          <RichText text={block.text} accent={accent} />
         </p>
       );
   }
@@ -75,6 +75,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   if (!post) notFound();
 
   const others = BLOG_POSTS.filter(p => p.slug !== post.slug).slice(0, 3);
+  const catStyle = CATEGORY_STYLE[post.category] ?? { icon: "📝", color: G.blue, bg: `linear-gradient(135deg, ${G.blue}, #174EA6)` };
 
   return (
     <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
@@ -97,9 +98,20 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           aussi) au lieu de laisser un grand vide de chaque côté. */}
       <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "48px 24px 64px", display: "flex", gap: "56px", flexWrap: "wrap", alignItems: "flex-start" }}>
         <article style={{ flex: "1 1 640px", minWidth: 0, maxWidth: "720px" }}>
+          <div
+            role="img"
+            aria-label={`Illustration — ${post.category}`}
+            style={{
+              height: "180px", borderRadius: "16px", marginBottom: "24px",
+              background: catStyle.bg, display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "56px",
+            }}
+          >
+            {catStyle.icon}
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-            <span style={{ fontSize: "12px", fontWeight: 700, color: G.green, background: "#E6F4EA", padding: "3px 10px", borderRadius: "12px" }}>
-              {post.category}
+            <span style={{ fontSize: "12px", fontWeight: 700, color: catStyle.color, background: `${catStyle.color}1A`, padding: "3px 10px", borderRadius: "12px" }}>
+              {catStyle.icon} {post.category}
             </span>
             <span style={{ fontSize: "12px", color: "#80868B" }}>{formatDate(post.date)} · {post.readMinutes} min de lecture</span>
           </div>
@@ -107,10 +119,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {post.title}
           </h1>
           <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.6, margin: "0 0 36px", paddingBottom: "28px", borderBottom: "1px solid #DADCE0" }}>
-            {post.excerpt}
+            <RichText text={post.excerpt} accent={catStyle.color} />
           </p>
 
-          {post.blocks.map((block, i) => <Block key={i} block={block} />)}
+          {post.blocks.map((block, i) => <Block key={i} block={block} accent={catStyle.color} />)}
 
           <div style={{ marginTop: "40px", padding: "24px", background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: "12px", textAlign: "center" }}>
             <p style={{ fontSize: "15px", fontWeight: 700, color: "#202124", margin: "0 0 6px" }}>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BLOG_POSTS } from "@/data/blogPosts";
+import { BLOG_POSTS, CATEGORY_STYLE } from "@/data/blogPosts";
+import RichText from "@/components/RichText";
 
 const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
 
@@ -39,26 +40,40 @@ export default function BlogIndexPage() {
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
-          {posts.map((post) => (
-            <Link
-              key={post.slug}
-              href={`/blog/${post.slug}`}
-              style={{
-                display: "block", padding: "24px", border: "1px solid #DADCE0", borderRadius: "14px",
-                textDecoration: "none", color: "inherit", background: "#fff",
-                transition: "box-shadow 0.15s ease, transform 0.15s ease",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: G.green, background: "#E6F4EA", padding: "3px 10px", borderRadius: "12px" }}>
-                  {post.category}
-                </span>
-                <span style={{ fontSize: "12px", color: "#80868B" }}>{formatDate(post.date)} · {post.readMinutes} min de lecture</span>
-              </div>
-              <h2 style={{ fontSize: "18px", fontWeight: 700, margin: "0 0 8px", color: "#202124", lineHeight: 1.35 }}>{post.title}</h2>
-              <p style={{ fontSize: "13.5px", color: "#5F6368", lineHeight: 1.6, margin: 0 }}>{post.excerpt}</p>
-            </Link>
-          ))}
+          {posts.map((post) => {
+            const catStyle = CATEGORY_STYLE[post.category] ?? { icon: "📝", color: G.blue, bg: `linear-gradient(135deg, ${G.blue}, #174EA6)` };
+            return (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                style={{
+                  display: "flex", flexDirection: "column", border: "1px solid #DADCE0", borderRadius: "14px",
+                  textDecoration: "none", color: "inherit", background: "#fff", overflow: "hidden",
+                  transition: "box-shadow 0.15s ease, transform 0.15s ease",
+                }}
+              >
+                <div
+                  role="img"
+                  aria-label={`Illustration — ${post.category}`}
+                  style={{ height: "100px", background: catStyle.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "34px" }}
+                >
+                  {catStyle.icon}
+                </div>
+                <div style={{ padding: "20px 24px 24px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: catStyle.color, background: `${catStyle.color}1A`, padding: "3px 10px", borderRadius: "12px" }}>
+                      {post.category}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#80868B" }}>{formatDate(post.date)} · {post.readMinutes} min de lecture</span>
+                  </div>
+                  <h2 style={{ fontSize: "18px", fontWeight: 700, margin: "0 0 8px", color: "#202124", lineHeight: 1.35 }}>{post.title}</h2>
+                  <p style={{ fontSize: "13.5px", color: "#5F6368", lineHeight: 1.6, margin: 0 }}>
+                    <RichText text={post.excerpt} accent={catStyle.color} />
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
