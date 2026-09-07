@@ -22,10 +22,9 @@ import { escapeHtml } from "@/lib/escape-html";
 // données du commerce associé — le client peut se reconnecter et repartir
 // de zéro sans que son login disparaisse.
 //
-// Pas encore construit : le bouton "télécharger mes données" avant purge
-// (proposé dans le playbook, pas demandé pour cette itération) — un client
-// qui résilie n'a aujourd'hui aucun moyen d'exporter son historique avant
-// que ce cron ne l'efface un an plus tard.
+// Un export JSON est disponible depuis Paramètres et via GET
+// /api/account/export, avant la purge. Les secrets OAuth/API ne sont jamais
+// inclus dans cet export.
 
 const UN_AN_MS = 365 * 24 * 60 * 60 * 1000;
 

@@ -16,6 +16,9 @@ const embeddableHeaders = securityHeaders.filter((h) => h.key !== "X-Frame-Optio
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["bcryptjs"],
+  // Évite que Next.js choisisse le package-lock du dossier parent comme racine
+  // du workspace lors du build Vercel.
+  turbopack: { root: process.cwd() },
   async headers() {
     return [
       { source: "/r/:path*", headers: embeddableHeaders },

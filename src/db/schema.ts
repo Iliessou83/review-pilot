@@ -175,7 +175,8 @@ export const pendingResponses = pgTable("pending_responses", {
   notifiedAt: timestamp("notified_at").defaultNow().notNull(),
   chosenSuggestionIndex: integer("chosen_suggestion_index"),
   customResponse: text("custom_response"),
-  status: text("status", { enum: ["pending", "sent"] }).default("pending").notNull(),
+  status: text("status", { enum: ["pending", "processing", "sent"] }).default("pending").notNull(),
+  processingAt: timestamp("processing_at"),
 });
 
 // --- Roue de la chance (collecte d'avis + jeu-concours) ---
@@ -320,6 +321,7 @@ export const subscriptions = pgTable("subscriptions", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   planId: text("plan_id"), // "starter" | "solo" | "pro" | "studio"
+  billingCycle: text("billing_cycle", { enum: ["monthly", "annual"] }).default("monthly").notNull(),
   // trialing | active | past_due | canceled | incomplete | unpaid
   status: text("status").default("incomplete").notNull(),
   trialEndsAt: timestamp("trial_ends_at"),

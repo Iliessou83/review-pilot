@@ -5,6 +5,7 @@ import { put } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { businesses, posts } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getClientIp, limitePartagee } from "@/lib/rate-limit";
 
 const MAX_BYTES = 80 * 1024 * 1024; // 80 Mo — large assez pour une courte vidéo téléphone
 const ALLOWED_IMAGE = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
@@ -15,6 +16,9 @@ const ALLOWED_VIDEO = new Set(["video/mp4", "video/quicktime", "video/webm"]);
 // devinable (32 caractères hex). Ne jamais exposer d'ID interne ni de liste
 // de posts existants ici — uniquement accepter un dépôt.
 export async function POST(request: NextRequest) {
+  if (!(await limitePartagee(`media-upload:${getClientIp(request)}`, 10, 60 * 60 * 1000))) {
+    return NextResponse.json({ error: "Trop de dépôts depuis cette adresse. Réessayez plus tard." }, { status: 429 });
+  }
   const token = request.nextUrl.searchParams.get("token");
   if (!token) return NextResponse.json({ error: "Lien invalide" }, { status: 400 });
 

@@ -77,7 +77,7 @@ export default function ChatBot() {
           zone de messages teintée pour donner de la profondeur, entrée +
           pied de page fusionnés en une seule barre. */}
       {open && (
-        <div style={{
+        <div className="rp-chat-window" style={{
           position: "fixed", bottom: "94px", right: "20px",
           width: "384px", maxWidth: "calc(100vw - 32px)",
           height: "min(600px, calc(100vh - 150px))",
@@ -246,7 +246,7 @@ export default function ChatBot() {
       <button
         onClick={() => setOpen(o => !o)}
         aria-label={open ? "Fermer le chat" : "Ouvrir le chat avec Aria"}
-        className={open ? "" : "rp-chat-pulse"}
+        className={open ? "rp-chat-button" : "rp-chat-button rp-chat-pulse"}
         style={{
           position: "fixed", bottom: "24px", right: "24px",
           width: "60px", height: "60px", borderRadius: "50%",

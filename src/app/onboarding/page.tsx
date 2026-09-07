@@ -56,7 +56,7 @@ export default async function OnboardingPage({
 
   const steps = [
     { n: "1", c: G.blue, t: "Connecte ta fiche Google", d: "En un clic, sans mot de passe à nous confier." },
-    { n: "2", c: G.green, t: "On récolte tes avis", d: "Historique complet et nouveaux avis en temps réel." },
+    { n: "2", c: G.green, t: "On récolte tes avis", d: "Historique complet, puis vérification automatique des nouveaux avis chaque heure." },
     { n: "3", c: G.yellow, t: "On répond pour toi", d: "Réponses proposées ou automatiques, à ta main." },
   ];
 

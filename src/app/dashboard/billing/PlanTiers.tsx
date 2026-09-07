@@ -8,15 +8,15 @@ const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", 
 
 /**
  * Mêmes 3 formules, mêmes chiffres que la page publique (src/app/HomeClient.tsx
- * `PLANS`) : Starter 29€, Solo 69€ (mise en avant), Pro 149€. On ne veut jamais
+ * `PLANS`) : Starter 49€, Solo 69€ (mise en avant), Pro 149€. On ne veut jamais
  * afficher un prix différent entre la landing et le dashboard.
  */
 const PLANS = [
   {
     id: "starter",
     name: "Starter",
-    price: 29,
-    annual: 23,
+    price: 49,
+    annual: 39,
     desc: "1 établissement",
     color: G.green,
     best: "Moins de 30 avis/mois — débutez sans risque",
@@ -39,7 +39,7 @@ const PLANS = [
     best: "Restaurant, commerce — le plus populaire",
     features: [
       "1 établissement connecté",
-      "Auto-réponse 4-5★ en 30 secondes",
+      "Auto-réponse 4-5★ dès la détection",
       "3 suggestions IA + email 1-clic",
       "Rapport hebdomadaire par email",
       "Rappels avis sans réponse",
@@ -85,7 +85,7 @@ export default function PlanTiers({ currentPlanId, email }: { currentPlanId?: st
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, email }),
+        body: JSON.stringify({ planId, email, billingCycle }),
       });
       const data = await res.json();
       if (res.ok && data.url) {

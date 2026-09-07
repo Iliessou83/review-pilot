@@ -458,7 +458,7 @@ export default function PlaquesNfcClient() {
             Encore plus fort avec Caela Réputation
           </h2>
           <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.7, margin: "0 0 32px" }}>
-            La plaque NFC amène le client sur Google. Caela Réputation répond automatiquement en 30 secondes aux bons avis, et vous notifie avec 3 suggestions de réponse pour les avis négatifs.
+            La plaque NFC amène le client sur Google. Caela Réputation vérifie les nouveaux avis chaque heure, répond automatiquement aux avis 4-5★ après détection et vous notifie avec 3 suggestions pour les avis 1-3★.
           </p>
           <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
             <div style={{ background: "#fff", borderRadius: "12px", padding: "16px 24px", border: "1px solid #DADCE0", boxShadow: SHADOW_SM, fontSize: "14px", color: "#202124" }}>
@@ -466,7 +466,7 @@ export default function PlaquesNfcClient() {
             </div>
             <div style={{ fontSize: "20px", display: "flex", alignItems: "center", color: "#DADCE0" }}>→</div>
             <div style={{ background: "#fff", borderRadius: "12px", padding: "16px 24px", border: "1px solid #DADCE0", boxShadow: SHADOW_SM, fontSize: "14px", color: "#202124" }}>
-              ⭐⭐⭐⭐⭐ Caela Réputation répond en 30 sec
+              ⭐⭐⭐⭐⭐ Caela Réputation répond dès la détection
             </div>
           </div>
           <a href="/" style={{ display: "inline-block", padding: "14px 32px", background: G.blue, color: "#fff", borderRadius: "10px", textDecoration: "none", fontWeight: 700, fontSize: "15px", boxShadow: `0 4px 16px ${G.blue}40` }}>

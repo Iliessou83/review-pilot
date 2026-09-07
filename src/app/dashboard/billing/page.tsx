@@ -39,6 +39,7 @@ export default async function BillingPage() {
     .limit(1);
   const sub = rows[0];
   const plan = sub?.planId ? planById(sub.planId) : undefined;
+  const annualMonthlyPrice = plan ? Math.round(plan.priceMonthly * 0.8) : null;
   const isTrial = sub?.status === "trialing";
   const endDate = isTrial ? sub?.trialEndsAt : sub?.currentPeriodEnd;
   const quotaStatus = sub ? await getReviewQuotaStatus(session.email) : null;
@@ -70,7 +71,7 @@ export default async function BillingPage() {
             <div>
               <div style={{ fontSize: "13px", color: G.grey, marginBottom: "4px" }}>Formule</div>
               <div style={{ fontSize: "20px", fontWeight: 700, color: "#202124" }}>
-                {plan?.name ?? sub.planId} {plan && <span style={{ fontSize: "14px", color: G.grey, fontWeight: 500 }}>· {plan.priceMonthly}€/mois</span>}
+                {plan?.name ?? sub.planId} {plan && <span style={{ fontSize: "14px", color: G.grey, fontWeight: 500 }}>· {sub.billingCycle === "annual" ? `${annualMonthlyPrice}€/mois, facturé annuellement` : `${plan.priceMonthly}€/mois`}</span>}
               </div>
             </div>
             <span style={{ padding: "6px 12px", background: isTrial ? "#E8F0FE" : "#E6F4EA", color: isTrial ? G.blue : G.green, borderRadius: "20px", fontSize: "13px", fontWeight: 600 }}>
@@ -88,7 +89,7 @@ export default async function BillingPage() {
             <p style={{ fontSize: "14px", color: G.grey, margin: 0, lineHeight: 1.6 }}>
               {isTrial ? (
                 <>Fin de l&apos;essai gratuit : <strong style={{ color: "#202124" }}>{fmt(endDate)}</strong>.<br/>
-                À cette date, votre abonnement {plan?.name} démarre à {plan?.priceMonthly}€/mois, sauf résiliation.</>
+                À cette date, votre abonnement {plan?.name} démarre à {sub.billingCycle === "annual" ? `${annualMonthlyPrice}€/mois, facturé annuellement` : `${plan?.priceMonthly}€/mois`}, sauf résiliation.</>
               ) : (
                 <>Prochain prélèvement : <strong style={{ color: "#202124" }}>{fmt(endDate)}</strong>.</>
               )}

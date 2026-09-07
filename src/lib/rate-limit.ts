@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import crypto from "node:crypto";
 import { db } from "@/lib/db";
 import { loginAttempts } from "@/db/schema";
 import { sql } from "drizzle-orm";
@@ -50,10 +51,16 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
  * compteur résultant ne dépasse pas `limit`.
  */
 export async function dbRateLimit(key: string, limit: number, windowMs: number): Promise<boolean> {
+  // Ne stocke jamais l'IP brute : la table est un compteur technique, pas un
+  // journal d'adresses. On conserve le préfixe fonctionnel et un hash court.
+  const separator = key.indexOf(":");
+  const ipKey = separator === -1
+    ? key
+    : `${key.slice(0, separator)}:${crypto.createHash("sha256").update(key.slice(separator + 1)).digest("hex").slice(0, 24)}`;
   const resetAt = new Date(Date.now() + windowMs);
   const rows = await db
     .insert(loginAttempts)
-    .values({ ipKey: key, count: 1, resetAt })
+    .values({ ipKey, count: 1, resetAt })
     .onConflictDoUpdate({
       target: loginAttempts.ipKey,
       set: {

@@ -28,6 +28,7 @@ export default function SignupClient() {
   const [existingModules, setExistingModules] = useState<string[] | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [planId, setPlanId] = useState("solo");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [addonAvisNegatifs, setAddonAvisNegatifs] = useState(false);
 
   // Pré-remplit depuis un lien de parrainage partagé (?ref=CAELA-XXXXXX) et
@@ -40,6 +41,7 @@ export default function SignupClient() {
     if (ref) setReferralCode(ref.toUpperCase());
     const plan = params.get("plan")?.toLowerCase();
     if (plan && KNOWN_PLANS.includes(plan)) setPlanId(plan);
+    if (params.get("billing") === "annual") setBillingCycle("annual");
     if (params.get("addon") === "avis-negatifs") setAddonAvisNegatifs(true);
   }, []);
 
@@ -70,7 +72,7 @@ export default function SignupClient() {
           const checkoutRes = await fetch("/api/billing/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ planId, email }),
+            body: JSON.stringify({ planId, email, billingCycle }),
           });
           const checkoutData = await checkoutRes.json().catch(() => ({}));
           if (checkoutRes.ok && checkoutData.url) {

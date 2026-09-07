@@ -4,6 +4,8 @@ import { planById, billing, trialDisclosure } from "@/config/legal.config";
 import { db } from "@/lib/db";
 import { subscriptions } from "@/db/schema";
 import { pendingReferralDiscount } from "@/lib/referral";
+import { getClientIp, limitePartagee } from "@/lib/rate-limit";
+import { requireAuth } from "@/lib/auth";
 
 /**
  * Crée une session Stripe Checkout en mode abonnement avec :
@@ -17,7 +19,12 @@ import { pendingReferralDiscount } from "@/lib/referral";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { planId, email } = await request.json();
+    const authSession = await requireAuth(request);
+    if (!authSession) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+    if (!(await limitePartagee(`checkout:${getClientIp(request)}`, 10, 60 * 60 * 1000))) {
+      return NextResponse.json({ error: "Trop de demandes. Réessayez plus tard." }, { status: 429 });
+    }
+    const { planId, email, billingCycle } = await request.json();
 
     const plan = planById(planId);
     if (!plan) {
@@ -26,6 +33,15 @@ export async function POST(request: NextRequest) {
     if (!email || typeof email !== "string") {
       return NextResponse.json({ error: "Email requis" }, { status: 400 });
     }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail !== authSession.email.toLowerCase()) {
+      return NextResponse.json({ error: "Email du compte invalide" }, { status: 403 });
+    }
+    const cycle = billingCycle === "annual" ? "annual" : "monthly";
+    const annualMonthlyPrice = Math.round(plan.priceMonthly * 0.8);
+    const chargeLabel = cycle === "annual"
+      ? `${annualMonthlyPrice * 12}€/an (équivalent ${annualMonthlyPrice}€/mois)`
+      : `${plan.priceMonthly}€/mois`;
 
     const stripe = getStripe();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
@@ -36,17 +52,17 @@ export async function POST(request: NextRequest) {
     // doit jamais empêcher quelqu'un de payer.
     let discounts: { coupon: string }[] | undefined;
     try {
-      if (await pendingReferralDiscount(email)) {
+      if (await pendingReferralDiscount(normalizedEmail)) {
         discounts = [{ coupon: await ensureReferralCoupon(stripe) }];
       }
     } catch (err) {
       console.error("[billing/checkout] coupon parrainage non appliqué", err);
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: email,
-      line_items: [{ price: priceIdFor(plan.priceEnv), quantity: 1 }],
+      customer_email: normalizedEmail,
+      line_items: [{ price: priceIdFor(cycle === "annual" ? plan.annualPriceEnv : plan.priceEnv), quantity: 1 }],
       ...(discounts ? { discounts } : {}),
 
       // CB obligatoire même pendant l'essai. Sans ça, Stripe peut sauter la
@@ -62,7 +78,8 @@ export async function POST(request: NextRequest) {
         },
         metadata: {
           planId: plan.id,
-          disclosure: trialDisclosure(plan),
+          disclosure: trialDisclosure(plan, cycle),
+          billingCycle: cycle,
         },
       },
 
@@ -73,7 +90,7 @@ export async function POST(request: NextRequest) {
           message:
             "J'accepte les CGV et je comprends qu'à la fin de l'essai de " +
             `${billing.trialDays} jours, mon abonnement ${plan.name} sera ` +
-            `facturé ${plan.priceMonthly}€/mois sauf résiliation avant la fin de l'essai.`,
+            `facturé ${chargeLabel} sauf résiliation avant la fin de l'essai.`,
         },
         submit: {
           message: `Aucun débit aujourd'hui. Premier prélèvement après ${billing.trialDays} jours d'essai.`,
@@ -82,19 +99,19 @@ export async function POST(request: NextRequest) {
 
       success_url: `${appUrl}/dashboard?checkout=success`,
       cancel_url: `${appUrl}/?checkout=cancelled`,
-      metadata: { planId: plan.id, email },
+      metadata: { planId: plan.id, email: normalizedEmail, billingCycle: cycle },
     });
 
     // Pré-enregistre la souscription en "incomplete" (sera confirmée par webhook).
     await db
       .insert(subscriptions)
-      .values({ email, planId: plan.id, status: "incomplete" })
+      .values({ email: normalizedEmail, planId: plan.id, billingCycle: cycle, status: "incomplete" })
       .onConflictDoUpdate({
         target: subscriptions.email,
-        set: { planId: plan.id, updatedAt: new Date() },
+        set: { planId: plan.id, billingCycle: cycle, updatedAt: new Date() },
       });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: checkoutSession.url });
   } catch (err) {
     console.error("[billing/checkout]", err);
     return NextResponse.json({ error: "Erreur création session" }, { status: 500 });

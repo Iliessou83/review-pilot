@@ -36,7 +36,7 @@ Le service est hébergé par Vercel Inc. (infrastructure applicative), Supabase 
     title: "3. Objet du service",
     content: `Caela Réputation est une plateforme SaaS (Software as a Service) permettant aux professionnels de :
 
-— Centraliser et consulter leurs avis Google Business Profile et Trustpilot en temps réel via les APIs officielles
+— Centraliser et consulter leurs avis Google Business Profile et Trustpilot après synchronisation automatique, actuellement exécutée chaque heure via les APIs officielles
 — Générer automatiquement des réponses personnalisées aux avis positifs (4-5 étoiles) via l'IA Claude (Anthropic)
 — Recevoir par email des suggestions de réponse pour les avis négatifs (1-3 étoiles) et les valider en un clic
 — Accéder à des statistiques et analytics de réputation sur 12 mois
@@ -156,7 +156,7 @@ Points clés : nous ne revendons aucune donnée, nous utilisons Anthropic (Claud
 — Usage frauduleux ou illégal du Service
 — Injonction judiciaire
 
-11.3 En cas de résiliation ou suspension, les données du Client sont conservées 30 jours dans notre système pour permettre une éventuelle réactivation, puis supprimées définitivement. Sur demande expresse du Client, la suppression peut intervenir immédiatement.
+11.3 En cas de résiliation ou suspension, les données opérationnelles du Client (établissements, avis importés et réponses) sont conservées jusqu'à 12 mois pour permettre une éventuelle réactivation ou l'export des données, puis supprimées automatiquement. Le compte de connexion et les données de facturation peuvent être conservés séparément lorsque la loi l'impose. Sur demande expresse du Client, la suppression peut intervenir immédiatement, sous réserve des obligations légales.
 
 11.4 Caela Agency se réserve le droit de mettre fin au Service dans son intégralité avec un préavis de 3 mois notifié par email. Dans ce cas, les sommes versées pour des périodes non encore entamées seront remboursées au prorata.`,
   },
@@ -184,7 +184,7 @@ Email : contact@caela.fr
 Objet : [CGV] Votre demande
 Délai de réponse garanti : 48h ouvrées
 
-Ces CGV ont été mises à jour en juin 2026 et annulent et remplacent toutes versions antérieures.`,
+Ces CGV ont été mises à jour en septembre 2026 et annulent et remplacent toutes versions antérieures.`,
   },
 ];
 
@@ -205,7 +205,7 @@ export default function CGVPage() {
 
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "48px 24px 80px" }}>
         <h1 style={{ fontSize: "32px", fontWeight: 800, margin: "0 0 8px", color: "#202124" }}>Conditions générales de vente et d&apos;utilisation</h1>
-        <p style={{ fontSize: "14px", color: "#80868B", margin: "0 0 8px" }}>Dernière mise à jour : juin 2026 — Version 2.0</p>
+        <p style={{ fontSize: "14px", color: "#80868B", margin: "0 0 8px" }}>Dernière mise à jour : septembre 2026 — Version 2.1</p>
 
         <div style={{ fontSize: "13px", color: "#202124", margin: "0 0 32px", lineHeight: 1.6, padding: "16px 20px", background: "#FEF7E0", borderRadius: "8px", border: "1px solid #F9E097" }}>
           <strong>Important :</strong> Caela Réputation est un outil indépendant. Il n&apos;est ni affilié, ni approuvé, ni sponsorisé par Google LLC ou Trustpilot A/S. L&apos;utilisation de ce service n&apos;est pas garantie par Google.

@@ -63,7 +63,7 @@ export default function PolitiqueConfidentialitePage() {
 
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "48px 24px 80px" }}>
         <h1 style={{ fontSize: "32px", fontWeight: 800, margin: "0 0 8px", color: "#202124" }}>Politique de confidentialité</h1>
-        <p style={{ fontSize: "14px", color: "#80868B", margin: "0 0 8px" }}>Dernière mise à jour : juin 2026</p>
+        <p style={{ fontSize: "14px", color: "#80868B", margin: "0 0 8px" }}>Dernière mise à jour : septembre 2026</p>
 
         <div style={{ fontSize: "13px", color: "#202124", margin: "0 0 48px", lineHeight: 1.6, padding: "16px 20px", background: "#E8F0FE", borderRadius: "8px", border: "1px solid #C5D9FB" }}>
           <strong>Résumé :</strong> Caela Réputation collecte vos données uniquement pour faire fonctionner le service. Nous ne revendons aucune donnée. Nous ne faisons pas de publicité ciblée. Vous pouvez demander la suppression de vos données à tout moment.
@@ -153,12 +153,12 @@ export default function PolitiqueConfidentialitePage() {
           <Table
             headers={["Catégorie de données", "Durée de conservation"]}
             rows={[
-              ["Données de compte (email, établissements)", "Durée de l'abonnement + 30 jours après résiliation (sauf demande de suppression anticipée)"],
-              ["Avis Google et réponses publiées", "Durée de l'abonnement + 30 jours"],
-              ["Suggestions de réponse en attente", "90 jours maximum, puis suppression automatique"],
+              ["Données de compte (email, établissement)", "Compte conservé jusqu'à suppression demandée ; établissement et données opérationnelles jusqu'à 12 mois après résiliation"],
+              ["Avis Google et réponses publiées", "Durée de l'abonnement, puis jusqu'à 12 mois après résiliation"],
+              ["Suggestions de réponse en attente", "Jusqu'à 12 mois après résiliation, avec suppression anticipée sur demande"],
               ["Logs d'erreurs techniques", "30 jours glissants"],
               ["Données de facturation", "10 ans (obligation légale comptable, L.123-22 Code de commerce)"],
-              ["Cookie de session JWT", "7 jours (expiration automatique)"],
+              ["Cookie de session JWT (rp_session)", "24 heures (expiration automatique)"],
             ]}
           />
         </Section>
@@ -193,7 +193,7 @@ export default function PolitiqueConfidentialitePage() {
             <li style={{ marginBottom: "6px" }}><strong>Chiffrement en transit :</strong> toutes les communications sont chiffrées via TLS 1.2+ (HTTPS).</li>
             <li style={{ marginBottom: "6px" }}><strong>Chiffrement au repos :</strong> la base de données Supabase est chiffrée au repos (AES-256).</li>
             <li style={{ marginBottom: "6px" }}><strong>Tokens OAuth :</strong> les tokens Google sont stockés en base de données chiffrée. Ils ne sont jamais exposés côté client.</li>
-            <li style={{ marginBottom: "6px" }}><strong>Authentification :</strong> les accès au dashboard sont protégés par JWT avec expiration à 7 jours. Les mots de passe sont hachés avec bcrypt (coût 12).</li>
+            <li style={{ marginBottom: "6px" }}><strong>Authentification :</strong> les accès au dashboard sont protégés par JWT avec expiration à 24 heures. Les mots de passe sont hachés avec bcrypt (coût 12).</li>
             <li style={{ marginBottom: "6px" }}><strong>Variables d&apos;environnement :</strong> les clés API tierces (Anthropic, Resend, Google) sont stockées dans des variables d&apos;environnement Vercel chiffrées, jamais dans le code source.</li>
             <li style={{ marginBottom: "6px" }}><strong>Accès restreint :</strong> seul le responsable (Iliès Bourbouane) a accès à l&apos;infrastructure de production.</li>
           </ul>
@@ -204,7 +204,7 @@ export default function PolitiqueConfidentialitePage() {
           <p>Caela Réputation utilise un cookie de session technique (JWT) strictement nécessaire au fonctionnement du dashboard. Ce cookie :</p>
           <ul style={{ paddingLeft: "20px", margin: "8px 0 12px" }}>
             <li>Ne contient pas de données personnelles en clair (token opaque signé)</li>
-            <li>Expire automatiquement après 7 jours</li>
+            <li>Expire automatiquement après 24 heures</li>
             <li>N&apos;est pas accessible côté JavaScript (httpOnly)</li>
             <li>Est transmis uniquement en HTTPS (secure)</li>
           </ul>

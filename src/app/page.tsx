@@ -3,11 +3,11 @@ import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
   title: "Caela Réputation — Réponses automatiques aux avis Google par IA",
-  description: "L'IA détecte chaque avis Google, répond aux 4-5★ en 30 secondes et vous envoie 3 suggestions par email pour les avis négatifs. Un clic pour publier. Essai gratuit 14 jours.",
+  description: "L'IA surveille vos avis Google, répond automatiquement après détection aux 4-5★ et vous envoie 3 suggestions par email pour les avis négatifs. Un clic pour publier. Essai gratuit 14 jours.",
 };
 
 // Balisage schema.org : décrit le produit (offres réelles alignées sur PLANS
-// dans HomeClient.tsx — Starter 49€/mois (39€/mois en annuel), Solo 69€,
+// dans legal.config.ts — Starter 49€/mois (39€/mois en annuel), Solo 69€,
 // Pro 149€/mois) pour que Google puisse afficher un extrait enrichi (prix,
 // note) dans les résultats.
 const JSON_LD = {

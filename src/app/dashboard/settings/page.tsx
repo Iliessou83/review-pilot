@@ -208,7 +208,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", background: "#F8F9FA", borderRadius: "10px" }}>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Réponse automatique 4-5 ★</div>
-            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>L&apos;IA répond en 30s. Personnalisée avec le prénom.</div>
+            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>L&apos;IA répond dès la détection. Personnalisée avec le prénom.</div>
           </div>
           <Toggle value={local.autoReply5Star} onChange={v => update("autoReply5Star", v)} color={G.green} />
         </div>
@@ -653,6 +653,9 @@ export default function SettingsPage() {
         <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>
           Configuration du bot de réponse par établissement
         </p>
+        <a href="/api/account/export" download style={{ display: "inline-block", marginTop: "12px", color: G.blue, fontSize: "13px", textDecoration: "none", fontWeight: 600 }}>
+          Télécharger mes données (export RGPD) ↓
+        </a>
       </div>
 
       {loading && (

@@ -58,7 +58,7 @@ export default function QuickReplyErrorPage() {
             lineHeight: 1.6,
           }}
         >
-          Ce lien de réponse rapide a expiré (validité 7 jours) ou a déjà été
+          Ce lien de réponse rapide a expiré (validité 48 heures) ou a déjà été
           utilisé.
         </p>
 

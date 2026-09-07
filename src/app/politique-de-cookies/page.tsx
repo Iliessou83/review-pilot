@@ -24,10 +24,10 @@ export default function PolitiqueCookiesPage() {
 
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "48px 24px 80px" }}>
         <h1 style={{ fontSize: "32px", fontWeight: 800, margin: "0 0 8px", color: "#202124" }}>Politique de cookies</h1>
-        <p style={{ fontSize: "14px", color: "#80868B", margin: "0 0 8px" }}>Dernière mise à jour : juin 2026</p>
+        <p style={{ fontSize: "14px", color: "#80868B", margin: "0 0 8px" }}>Dernière mise à jour : septembre 2026</p>
 
         <div style={{ fontSize: "13px", color: "#202124", margin: "0 0 48px", lineHeight: 1.6, padding: "16px 20px", background: "#E6F4EA", borderRadius: "8px", border: "1px solid #A8D5B5" }}>
-          <strong>En résumé :</strong> Caela Réputation utilise <strong>uniquement un cookie technique strictement nécessaire</strong> à votre connexion au dashboard. Aucun cookie publicitaire, aucun tracker tiers, aucune analyse comportementale.
+          <strong>En résumé :</strong> Caela Réputation utilise un cookie de session nécessaire au dashboard et un identifiant de mesure d&apos;audience anonyme, désactivable à tout moment. Aucun cookie publicitaire ni tracker tiers.
         </div>
 
         {[
@@ -41,11 +41,11 @@ export default function PolitiqueCookiesPage() {
             title: "2. Les cookies que nous utilisons",
             content: (
               <>
-                <p style={{ marginBottom: "16px" }}>Caela Réputation utilise <strong>un seul cookie</strong> :</p>
+                <p style={{ marginBottom: "16px" }}>Caela Réputation utilise les cookies suivants :</p>
                 <div style={{ border: "1px solid #DADCE0", borderRadius: "8px", overflow: "hidden" }}>
                   <div style={{ padding: "14px 18px", background: "#F8F9FA", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px", borderBottom: "1px solid #DADCE0" }}>
                     <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Nom</div>
-                    <div style={{ fontSize: "13px", color: "#5F6368" }}><code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px" }}>caela_session</code></div>
+                    <div style={{ fontSize: "13px", color: "#5F6368" }}><code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px" }}>rp_session</code></div>
                   </div>
                   <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px", borderBottom: "1px solid #DADCE0" }}>
                     <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Type</div>
@@ -57,15 +57,15 @@ export default function PolitiqueCookiesPage() {
                   </div>
                   <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px", borderBottom: "1px solid #DADCE0" }}>
                     <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Contenu</div>
-                    <div style={{ fontSize: "13px", color: "#5F6368" }}>Un token JWT signé (opaque — ne contient pas de données personnelles en clair). Le token contient uniquement un identifiant de session et une date d&apos;expiration.</div>
+                    <div style={{ fontSize: "13px", color: "#5F6368" }}>Un token JWT signé, utilisé pour maintenir la session authentifiée.</div>
                   </div>
                   <div style={{ padding: "14px 18px", background: "#F8F9FA", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px", borderBottom: "1px solid #DADCE0" }}>
                     <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Durée</div>
-                    <div style={{ fontSize: "13px", color: "#5F6368" }}>7 jours (expiration automatique)</div>
+                    <div style={{ fontSize: "13px", color: "#5F6368" }}>24 heures (expiration automatique)</div>
                   </div>
                   <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px", borderBottom: "1px solid #DADCE0" }}>
                     <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Sécurité</div>
-                    <div style={{ fontSize: "13px", color: "#5F6368" }}><code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px", fontSize: "12px" }}>HttpOnly</code> (inaccessible via JavaScript) · <code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px", fontSize: "12px" }}>Secure</code> (HTTPS uniquement) · <code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px", fontSize: "12px" }}>SameSite=Strict</code></div>
+                    <div style={{ fontSize: "13px", color: "#5F6368" }}><code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px", fontSize: "12px" }}>HttpOnly</code> · <code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px", fontSize: "12px" }}>Secure</code> · <code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px", fontSize: "12px" }}>SameSite=Lax</code></div>
                   </div>
                   <div style={{ padding: "14px 18px", background: "#F8F9FA", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px" }}>
                     <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Tiers</div>
@@ -73,7 +73,18 @@ export default function PolitiqueCookiesPage() {
                   </div>
                 </div>
 
-                <p style={{ marginTop: "16px" }}>Ce cookie est classé comme <strong>« strictement nécessaire »</strong> au sens de la directive ePrivacy 2002/58/CE et des recommandations CNIL. Il est exempté de consentement préalable car il est indispensable au fonctionnement du service demandé.</p>
+                <div style={{ marginTop: "16px", border: "1px solid #DADCE0", borderRadius: "8px", overflow: "hidden" }}>
+                  <div style={{ padding: "14px 18px", background: "#F8F9FA", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px", borderBottom: "1px solid #DADCE0" }}>
+                    <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Nom</div>
+                    <div style={{ fontSize: "13px", color: "#5F6368" }}><code style={{ background: "#E8F0FE", padding: "2px 6px", borderRadius: "4px" }}>caela_aid</code></div>
+                  </div>
+                  <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "180px 1fr", gap: "8px" }}>
+                    <div style={{ fontWeight: 600, color: "#202124", fontSize: "13px" }}>Finalité et durée</div>
+                    <div style={{ fontSize: "13px", color: "#5F6368" }}>Mesure d&apos;audience anonyme et attribution de campagne, 395 jours maximum. Il peut être refusé via le mécanisme d&apos;opposition du site.</div>
+                  </div>
+                </div>
+
+                <p style={{ marginTop: "16px" }}>Le cookie <strong>rp_session</strong> est classé comme « strictement nécessaire » au sens de la directive ePrivacy 2002/58/CE et des recommandations CNIL. L&apos;identifiant <strong>caela_aid</strong> sert uniquement à une mesure d&apos;audience interne et peut être refusé.</p>
               </>
             ),
           },
@@ -84,7 +95,7 @@ export default function PolitiqueCookiesPage() {
                 <p style={{ marginBottom: "12px" }}>Caela Réputation <strong>ne dépose aucun</strong> des cookies suivants :</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {[
-                    ["❌ Cookies analytiques", "Pas de Google Analytics, Matomo, Hotjar ou équivalent"],
+                    ["✅ Mesure interne limitée", "Pas de Google Analytics, Matomo, Hotjar ou équivalent ; seul caela_aid mesure anonymement les visites et peut être refusé"],
                     ["❌ Cookies publicitaires", "Pas de pixel Facebook/Meta, Google Ads, TikTok ou équivalent"],
                     ["❌ Cookies de réseaux sociaux", "Pas de bouton \"J'aime\" ou \"Partager\" avec tracking"],
                     ["❌ Cookies de personnalisation tiers", "Pas de service de personnalisation externe"],
@@ -107,7 +118,7 @@ export default function PolitiqueCookiesPage() {
                 <p style={{ marginBottom: "12px" }}>Le cookie de session est automatiquement supprimé :</p>
                 <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
                   <li style={{ marginBottom: "6px" }}>Quand vous cliquez sur <strong>« Déconnexion »</strong> dans le dashboard (suppression côté serveur et côté client)</li>
-                  <li style={{ marginBottom: "6px" }}>Automatiquement après <strong>7 jours</strong> d&apos;inactivité</li>
+                  <li style={{ marginBottom: "6px" }}>Automatiquement après <strong>24 heures</strong></li>
                 </ul>
                 <p style={{ marginBottom: "12px" }}>Vous pouvez également le supprimer manuellement depuis votre navigateur :</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

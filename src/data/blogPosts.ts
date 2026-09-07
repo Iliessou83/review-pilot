@@ -64,7 +64,7 @@ export const BLOG_POSTS: BlogPost[] = [
         "Discuter les détails du litige en commentaire public — ça nourrit la polémique au lieu de l'éteindre.",
       ] },
       { type: "h2", text: "Et si vous n'avez pas le temps de répondre à chaque avis" },
-      { type: "p", text: "C'est le cas le plus fréquent chez les commerçants qui reçoivent 15 à 40 avis par mois : la réponse aux avis positifs (4-5★) prend un temps qu'ils n'ont pas, et les avis négatifs finissent par attendre des semaines sans réponse — ce qui aggrave l'impression laissée. Caela Réputation répond automatiquement aux avis 4-5★ en **30 secondes** et envoie 3 suggestions de réponse par email pour chaque avis négatif, à valider ou modifier en un clic." },
+      { type: "p", text: "C'est le cas le plus fréquent chez les commerçants qui reçoivent 15 à 40 avis par mois : la réponse aux avis positifs (4-5★) prend un temps qu'ils n'ont pas, et les avis négatifs finissent par attendre des semaines sans réponse — ce qui aggrave l'impression laissée. Caela Réputation répond automatiquement aux avis 4-5★ dès leur détection et envoie 3 suggestions de réponse par email pour chaque avis négatif, à valider ou modifier en un clic." },
     ],
   },
   {

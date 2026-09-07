@@ -229,7 +229,7 @@ function ROICalculator() {
   const roi = Math.round((savings / plan.price) * 100);
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "36px 40px", boxShadow: SHADOW_MD }}>
+    <div className="rp-calculator-card" style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "36px 40px", boxShadow: SHADOW_MD }}>
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <div style={{ display: "inline-block", padding: "4px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>
           Calculez vos économies
@@ -271,7 +271,7 @@ function ROICalculator() {
         ))}
       </div>
 
-      <div style={{
+      <div className="rp-calculator-result" style={{
         background: savings > 0 ? "#E6F4EA" : "#F8F9FA",
         borderRadius: "12px", padding: "16px 20px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -295,10 +295,10 @@ function ROICalculator() {
 
 function ReviewFlow() {
   const steps = [
-    { icon: "⭐", color: G.red, label: "Avis 2⭐ détecté", sub: "Sync automatique toutes les heures", timing: "0 sec" },
-    { icon: "🧠", color: G.blue, label: "IA génère 3 suggestions", sub: "Empathique, Direct, Solution, Détaillé, Pro", timing: "+8 sec" },
-    { icon: "📧", color: G.yellow, label: "Email envoyé avec boutons", sub: "1 clic = réponse choisie, directement dans le mail", timing: "+10 sec" },
-    { icon: "✅", color: G.green, label: "Publié sur Google", sub: "La réponse apparaît sous le nom du restaurant", timing: "+2 sec" },
+    { icon: "⭐", color: G.red, label: "Avis 2⭐ détecté", sub: "Synchronisation automatique chaque heure", timing: "≤ 1 h" },
+    { icon: "🧠", color: G.blue, label: "IA génère 3 suggestions", sub: "Trois tons adaptés au contexte de l'avis", timing: "Puis quelques sec." },
+    { icon: "📧", color: G.yellow, label: "Email de validation envoyé", sub: "Choisissez une suggestion ou rédigez la vôtre", timing: "Après génération" },
+    { icon: "✅", color: G.green, label: "Publié sur Google", sub: "Publication uniquement après votre confirmation", timing: "Après votre clic" },
   ];
   // Révèle les 4 étapes une à une dès que la carte entre dans le viewport,
   // et REJOUE l'animation à chaque nouvelle entrée (remontée puis retour,
@@ -316,13 +316,13 @@ function ReviewFlow() {
     return () => obs.disconnect();
   }, []);
   return (
-    <div ref={ref} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "32px", boxShadow: SHADOW_SM }}>
+    <div ref={ref} className="rp-review-flow-card" style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", padding: "32px", boxShadow: SHADOW_SM }}>
       <div style={{ textAlign: "center", marginBottom: "28px" }}>
         <h3 style={{ margin: "0 0 6px", fontSize: "19px", fontWeight: 700, color: "#202124" }}>
           Un avis 2⭐ arrive. Voici ce qui se passe.
         </h3>
         <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>
-          Votre rôle total : <strong>8 secondes.</strong> Taper sur un bouton dans votre email.
+          Votre rôle : choisir une suggestion, la modifier ou écrire votre propre réponse, puis confirmer la publication.
         </p>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "6px" }}>
@@ -371,6 +371,10 @@ function CalculatorFlowBanner() {
 
   useEffect(() => {
     if (paused) return;
+    // Sur téléphone, une rotation automatique entre deux panneaux de hauteurs
+    // différentes déplace brutalement tout le contenu sous le doigt. Les
+    // onglets restent disponibles, mais le changement devient volontaire.
+    if (window.matchMedia("(max-width: 768px)").matches) return;
     const id = setInterval(() => setTab((t) => (t === "calc" ? "flow" : "calc")), 7000);
     return () => clearInterval(id);
   }, [paused]);
@@ -408,8 +412,8 @@ function CalculatorFlowBanner() {
           Largeur remontée à 1100px (au lieu de 620px, trop compressé — la
           grille des 4 étapes "Comment ça marche" renvoyait un 4e élément
           orphelin sur sa propre ligne faute de place). */}
-      <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid" }}>
-        <div style={{
+      <div className="rp-calculator-panels" style={{ maxWidth: "1100px", margin: "0 auto", display: "grid" }}>
+        <div className={`rp-calculator-panel ${tab === "calc" ? "rp-calculator-panel-active" : ""}`} style={{
           gridArea: "1 / 1",
           opacity: tab === "calc" ? 1 : 0,
           transform: tab === "calc" ? "translateY(0) scale(1)" : "translateY(10px) scale(0.98)",
@@ -418,7 +422,7 @@ function CalculatorFlowBanner() {
         }}>
           <ROICalculator />
         </div>
-        <div style={{
+        <div className={`rp-calculator-panel ${tab === "flow" ? "rp-calculator-panel-active" : ""}`} style={{
           gridArea: "1 / 1",
           opacity: tab === "flow" ? 1 : 0,
           transform: tab === "flow" ? "translateY(0) scale(1)" : "translateY(10px) scale(0.98)",
@@ -436,7 +440,7 @@ function CalculatorFlowBanner() {
 // "avec" correspondante s'allume juste après — visualise le lien entre le
 // problème et sa solution au lieu de deux colonnes statiques.
 const DIY_COMPARISON_ROWS = [
-  { bad: "Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", good: "Réponse en 30 secondes, 24h/24, même la nuit du réveillon" },
+  { bad: "Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", good: "Alerte et 3 suggestions après la prochaine synchronisation" },
   { bad: "Tu écris la même réponse générique pour la 12ème fois", good: "Chaque réponse cite le prénom et un détail. Jamais générique." },
   { bad: "Tu réponds énervé. Ça se voit et ça coûte des clients", good: "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic." },
   { bad: "3h/semaine perdues sur les avis au lieu de gérer", good: "Taux de réponse >95%. Google t'en récompense sur Maps." },
@@ -581,9 +585,10 @@ const PLANS = [
     best: "Moins de 30 avis/mois — débutez sans risque",
     features: [
       "1 établissement connecté",
-      "Surveillance des avis 24/7",
+      "Jusqu'à 30 avis traités/mois",
+      "Synchronisation automatique chaque heure",
       "3 suggestions IA par avis négatif",
-      "Notifications email instantanées",
+      "Notification email après détection",
       "Dashboard centralisé",
     ],
     missing: ["Auto-réponse automatique"],
@@ -599,7 +604,9 @@ const PLANS = [
     best: "Restaurant, commerce — le plus populaire",
     features: [
       "1 établissement connecté",
-      "Auto-réponse 4-5⭐ en 30 secondes",
+      "Jusqu'à 100 avis traités/mois",
+      "Synchronisation automatique chaque heure",
+      "Auto-réponse 4-5⭐ dès la détection",
       "3 suggestions IA + email 1-clic",
       "Rapport hebdomadaire par email",
       "Rappels avis sans réponse",
@@ -617,6 +624,7 @@ const PLANS = [
     best: "Chaîne locale, franchise 3-5 lieux",
     features: [
       "5 établissements connectés",
+      "Jusqu'à 300 avis traités/mois au total",
       "Tout Solo inclus",
       "Personnalisation du ton par lieu",
       "Support prioritaire",
@@ -669,7 +677,10 @@ function DIYCardsCarousel() {
     let minDist = Infinity;
     Array.from(track.children).forEach((child, i) => {
       const el = child as HTMLElement;
-      const center = el.offsetLeft + el.offsetWidth / 2;
+      // Les offsets sont exprimés par rapport au premier ancêtre positionné.
+      // On retire l'offset du rail (notamment -16 px sur mobile) pour obtenir
+      // une coordonnée interne au scroll réellement comparable à scrollLeft.
+      const center = el.offsetLeft - track.offsetLeft + el.offsetWidth / 2;
       const dist = Math.abs(center - viewportCenter);
       if (dist < minDist) { minDist = dist; closest = i; }
     });
@@ -685,7 +696,7 @@ function DIYCardsCarousel() {
     const track = trackRef.current;
     const el = track?.children[index] as HTMLElement | undefined;
     if (!track || !el) return;
-    const target = el.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
+    const target = el.offsetLeft - track.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
     if (Math.abs(track.scrollLeft - target) < 1) return;
     track.scrollTo({ left: target, behavior: smooth ? "smooth" : "auto" });
   };
@@ -706,7 +717,7 @@ function DIYCardsCarousel() {
     const middleIndex = DIY_N + target;
     const el = track.children[middleIndex] as HTMLElement | undefined;
     if (!el) return;
-    track.scrollLeft = el.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
+    track.scrollLeft = el.offsetLeft - track.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
     setCenterIndex(middleIndex);
   };
 
@@ -733,17 +744,42 @@ function DIYCardsCarousel() {
   }, []);
 
   const scrollByCard = (dir: number) => {
-    centerOnIndex(centerIndex + dir);
+    const track = trackRef.current;
+    if (!track) return;
+
+    // On repart de la position réellement visible (et non d'un state qui
+    // peut avoir quelques millisecondes de retard lors de clics rapides).
+    let current = getClosestIndex();
+    let target = current + dir;
+
+    // Même en martelant une flèche avant que le debounce de fin de scroll ne
+    // s'exécute, on ne peut jamais atteindre un bord du DOM : on replace
+    // d'abord la carte courante sur sa jumelle du bloc central, sans animation.
+    if (target < 0 || target >= DIY_LOOP.length) {
+      const logicalIndex = ((current % DIY_N) + DIY_N) % DIY_N;
+      current = DIY_N + logicalIndex;
+      const currentEl = track.children[current] as HTMLElement | undefined;
+      if (!currentEl) return;
+      track.scrollLeft = currentEl.offsetLeft - track.offsetLeft + currentEl.offsetWidth / 2 - track.clientWidth / 2;
+      setCenterIndex(current);
+      target = current + dir;
+    }
+
+    centerOnIndex(target);
   };
 
   return (
     <div style={{ position: "relative", marginBottom: "20px" }}>
       <div
         ref={trackRef}
-        className="rp-no-scrollbar"
+        className="rp-no-scrollbar rp-diy-track"
         style={{
           display: "flex", gap: "16px", overflowX: "auto", scrollSnapType: "x mandatory",
-          padding: "36px 10vw 28px", scrollBehavior: "smooth",
+          // Ne pas mettre scrollBehavior:"smooth" en CSS : il s'appliquerait
+          // aussi au saut technique entre deux copies et rendrait la boucle
+          // visible. Seuls les déplacements volontaires sont animés via
+          // centerOnIndex(..., true).
+          padding: "36px 10vw 28px",
           maskImage: "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
           WebkitMaskImage: "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
         }}
@@ -756,8 +792,9 @@ function DIYCardsCarousel() {
           return (
             <div
               key={`${a.title}-${i}`}
+              className="rp-diy-card"
               style={{
-                flex: "0 0 auto", width: "300px", scrollSnapAlign: "center",
+                flex: "0 0 auto", width: "min(300px, calc(100vw - 80px))", scrollSnapAlign: "center",
                 background: "#fff", border: `1px solid ${isActive ? a.color : "#DADCE0"}`, borderRadius: "14px", padding: "22px",
                 boxShadow: isActive ? SHADOW_LG : SHADOW_SM,
                 opacity,
@@ -791,7 +828,7 @@ function DIYCardsCarousel() {
 }
 
 const COMPETITORS = [
-  { name: "Caela Réputation 🇫🇷", solo: "29-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
+  { name: "Caela Réputation 🇫🇷", solo: "49-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
   { name: "getreviewpilot.ai 🇺🇸", solo: "$29-49", business: "$49", agency: "—", aiAuto: true, fr: false, gmb: true, trial: true, highlight: false },
   { name: "Partoo 🇫🇷", solo: "~150€", business: "~250€", agency: "Custom", aiAuto: false, fr: true, gmb: true, trial: false, highlight: false },
   { name: "Birdeye 🇺🇸", solo: "~290€", business: "~450€", agency: "Custom", aiAuto: true, fr: false, gmb: true, trial: false, highlight: false },
@@ -1154,10 +1191,10 @@ export default function HomeClient() {
   }
 
   return (
-    <div style={{ background: "#fff", color: "#202124", paddingBottom: isMobile ? (showEcoBanner ? "132px" : "58px") : "64px" }}>
+    <div className="rp-home" style={{ background: "#fff", color: "#202124", paddingBottom: isMobile ? "58px" : "64px" }}>
 
       {/* ── TRUST STRIP ── */}
-      <div style={{ background: G.blue, padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
+      <div className="rp-trust-strip" style={{ background: G.blue, marginTop: "64px", padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
         {[
           { icon: "🇫🇷", label: "Made in France" },
           { icon: "🔒", label: "RGPD conforme" },
@@ -1188,7 +1225,7 @@ export default function HomeClient() {
           style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flexShrink: 1, cursor: "pointer" }}
         >
           <GDots size={9} />
-          <span style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Caela Réputation</span>
+          <span className="rp-brand-name" style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: 700, color: "#202124", letterSpacing: "-0.3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Caela Réputation</span>
           {!isMobile && (
             <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", background: "#E8F0FE", color: G.blue, borderRadius: "12px" }}>by Caela</span>
           )}
@@ -1217,8 +1254,8 @@ export default function HomeClient() {
         {/* Mobile: CTA compact toujours visible + burger */}
         {isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_nav-mobile")} style={{ padding: "8px 14px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", whiteSpace: "nowrap" }}>
-              Essai gratuit
+            <a className="rp-mobile-nav-cta" href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_nav-mobile")} style={{ padding: "8px 12px", fontSize: "13px", fontWeight: 600, background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", whiteSpace: "nowrap" }}>
+              Essai 14 j
             </a>
             <button
               onClick={() => setMenuOpen(o => !o)}
@@ -1243,7 +1280,8 @@ export default function HomeClient() {
       </nav>
       {/* La nav étant fixed (hors flux), ce spacer réserve sa hauteur pour
           que le contenu ne saute pas sous elle. */}
-      <div style={{ height: "64px" }} />
+      {/* La marge haute de la barre de réassurance réserve déjà la hauteur de
+          la navigation fixe. Aucun second espace n'est nécessaire. */}
 
       {/* CTA persistant : quand la nav se masque au défilement, "Se connecter"
           et "Essai gratuit" restent joignables via ce mini-groupe flottant —
@@ -1316,7 +1354,7 @@ export default function HomeClient() {
             <span style={{ color: G.green }}>Automatiquement.</span>
           </h1>
           <p style={{ margin: "0 0 36px", fontSize: "20px", lineHeight: 1.6, color: "#5F6368", maxWidth: "660px" }}>
-            Caela Réputation détecte chaque avis, répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> en 30 secondes, et vous envoie par email 3 suggestions pour les avis négatifs.<br />
+            Vos nouveaux avis sont vérifiés <strong>chaque heure</strong>. Après détection, Caela Réputation répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> et vous envoie par email 3 suggestions pour les avis de 1 à 3★.<br />
             <strong style={{ whiteSpace: "nowrap" }}>Un clic pour publier.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -1333,7 +1371,7 @@ export default function HomeClient() {
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {[
               { icon: "🇫🇷", label: "100% français", color: G.blue },
-              { icon: "⚡", label: "Réponse en 30s", color: G.green },
+              { icon: "⚡", label: "Synchronisation horaire", color: G.green },
               { icon: "🔒", label: "RGPD · API officielle", color: G.red },
             ].map(item => (
               <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1360,7 +1398,7 @@ export default function HomeClient() {
         <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", flexWrap: "wrap" }}>
           {[
             { value: "4-5★", label: "Réponse automatique", color: G.yellow },
-            { value: "< 30s", label: "Délai de réponse IA", color: G.green },
+            { value: "≤ 1 h", label: "Délai de détection maximal", color: G.green },
             { value: "3 tons", label: "Suggestions par avis négatif", color: G.blue },
             { value: "24/7", label: "Surveillance active", color: G.red },
           ].map((s, i) => (
@@ -1548,7 +1586,7 @@ export default function HomeClient() {
             <p style={{ margin: 0, fontSize: "15px", color: "#5F6368" }}>Exemples illustratifs du ton de l&apos;IA. Caela Réputation est en lancement — aucun de ces avis n&apos;est réel.</p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(300px, 100%), 1fr))", gap: "20px" }}>
             {REPLY_EXAMPLES.map((ex, i) => <ReplyExampleCard key={ex.incoming} ex={ex} index={i} />)}
           </div>
         </div>
@@ -1603,7 +1641,7 @@ export default function HomeClient() {
               rangée, plus de vide mort. CTA NFC corrigé : "audit gratuit"
               n'a aucun sens sur une offre plaques (l'audit, c'est pour la
               fiche GMB) — remplacé par un lien direct vers la section NFC. */}
-          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "12px" }}>
+          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(360px, 100%), 1fr))", gap: "12px" }}>
             <div style={{ background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "18px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "22px" }}>🚫</span>
@@ -1670,7 +1708,7 @@ export default function HomeClient() {
           trop gris pour être vu), une bannière pleine largeur, impossible à
           manquer, explique que les deux offres sont complémentaires — pas
           deux façons concurrentes de payer pour la même chose. */}
-      <div style={{ padding: "0 40px" }}>
+      <div className="rp-section-bridge" style={{ padding: "0 40px" }}>
         <a href="#pricing" style={{
           display: "block", maxWidth: "1700px", margin: "0 auto", textDecoration: "none",
           background: "linear-gradient(90deg, #E6F4EA, #E8F0FE)", border: "1px solid #DADCE0",
@@ -1761,7 +1799,7 @@ export default function HomeClient() {
                     ))}
                   </div>
 
-                  <a href={`/signup?plan=${plan.name.toLowerCase()}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
+                  <a href={`/signup?plan=${plan.name.toLowerCase()}&billing=${billing}`} onClick={() => trackClic(`bouton_essai-gratuit_pricing-${plan.name.toLowerCase()}`)} style={{ display: "block", textAlign: "center", padding: "12px", background: plan.highlight ? plan.color : plan.color + "12", border: `1px solid ${plan.color}${plan.highlight ? "00" : "25"}`, borderRadius: "8px", color: plan.highlight ? "#fff" : plan.color, textDecoration: "none", fontSize: "14.5px", fontWeight: 700 }}>
                     {plan.cta}
                   </a>
                 </div>
@@ -1803,7 +1841,7 @@ export default function HomeClient() {
               tarifs juste au-dessus (au lieu de pleine largeur 1700px, qui
               laissait un grand vide coloré à droite du texte) et mises côte
               à côte plutôt qu'empilées. */}
-          <div style={{ marginTop: "20px", maxWidth: "940px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "12px" }}>
+          <div style={{ marginTop: "20px", maxWidth: "940px", margin: "20px auto 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(340px, 100%), 1fr))", gap: "12px" }}>
             <div style={{ padding: "18px 22px", background: "#FEF7E0", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
               <span style={{ fontSize: "17px" }}>🎁</span>
               <div>
@@ -1827,20 +1865,6 @@ export default function HomeClient() {
           #login (scroll-behavior smooth global) — le widget lui-même est en
           position fixed plus bas et s'ouvre via setLoginWidgetOpen. */}
       <div id="login" />
-
-      {/* ── ÉCOSYSTÈME CAELA ── */}
-      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "56px 40px" }}>
-        <div style={{ maxWidth: "820px", margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ margin: "0 0 12px", fontSize: "22px", fontWeight: 700, color: "#202124" }}>
-            Fait partie de l&apos;écosystème Caela
-          </h2>
-          <p style={{ margin: 0, fontSize: "15.5px", color: "#5F6368", lineHeight: 1.7 }}>
-            Un compte, tous vos outils : Réservation (<a href="https://caelenda.fr" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Caelenda</a>) · Fidélité (<a href="https://caela-rewards.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Rewards</a>) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (<a href="https://caela-pulse.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Pulse</a>) · QR dynamique (<a href="https://caela-qr.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>CaelaQR</a>).
-            <br />
-            Connexion unique entre tous les produits.
-          </p>
-        </div>
-      </section>
 
       {/* ── NFC PLATES ── */}
       <section id="nfc" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "80px 40px" }}>
@@ -1919,7 +1943,7 @@ export default function HomeClient() {
               <div style={{ padding: "24px 28px", background: "#F6FBF7" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>La plaque + le moteur Caela Réputation</div>
                 {[
-                  "Collecte les avis ET les exploite : l'IA répond en 30 secondes.",
+                  "Collecte les avis ET les exploite : l'IA répond dès la détection.",
                   "Roue de la fortune (propulsée par Gagnify) : le client laisse son email/SMS avant de jouer. Vous gardez le contact.",
                   "Les mécontents sont invités à vous écrire en privé d'abord.",
                   "Chaque avis négatif : 3 réponses prêtes, 1 clic pour publier.",
@@ -1942,10 +1966,10 @@ export default function HomeClient() {
             défiler d'un bord d'écran à l'autre (demandé le 08/08), cartes
             agrandies. Défilement manuel (pas de marquee auto : ce sont des
             offres à lire et cliquer, pas de la réassurance passive). */}
-        <div style={{ overflowX: "auto", paddingBottom: "10px" }}>
-          <div style={{ display: "flex", gap: "20px", padding: "0 40px", width: "max-content", margin: "0 auto" }}>
+        <div className="rp-nfc-packs-scroll" style={{ overflowX: "auto", paddingBottom: "10px" }}>
+          <div className="rp-nfc-packs-track" style={{ display: "flex", gap: "20px", padding: "0 40px", width: "max-content", margin: "0 auto" }}>
             {NFC_PACKS.map(p => (
-              <div key={p.name} style={{ width: "340px", flexShrink: 0, background: "#fff", border: p.highlight ? `2px solid ${p.color}` : "1px solid #DADCE0", borderRadius: "14px", padding: "30px", boxShadow: p.highlight ? `0 4px 16px ${p.color}20` : SHADOW_SM, position: "relative" }}>
+              <div className="rp-nfc-pack-card" key={p.name} style={{ width: "340px", flexShrink: 0, background: "#fff", border: p.highlight ? `2px solid ${p.color}` : "1px solid #DADCE0", borderRadius: "14px", padding: "30px", boxShadow: p.highlight ? `0 4px 16px ${p.color}20` : SHADOW_SM, position: "relative" }}>
                 {p.highlight && <div style={{ position: "absolute", top: "16px", right: "16px", padding: "3px 12px", background: p.color + "15", borderRadius: "20px", fontSize: "11px", fontWeight: 700, color: p.color }}>Le plus populaire</div>}
                 <div style={{ fontSize: "12px", fontWeight: 600, color: p.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "5px" }}>{p.qty}</div>
                 <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: 700, color: "#202124" }}>{p.name}</h3>
@@ -2015,27 +2039,7 @@ export default function HomeClient() {
           réserve à droite pour ne jamais chevaucher la bulle ChatBot
           (bas-droite, ~56px). Sur desktop la carte reste, l'espace ne
           manque pas et rien ne se superpose. */}
-      {showEcoBanner && (
-        isMobile ? (
-          <div className="rp-banner-enter" style={{
-            position: "fixed", bottom: "10px", left: "10px", right: "78px",
-            zIndex: 90, background: "#202124", borderRadius: "14px", padding: "10px 12px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.35)", display: "flex", gap: "8px", alignItems: "center",
-          }}>
-            <span className="rp-bounce-icon" style={{ fontSize: "18px", flexShrink: 0 }}>🎡</span>
-            <p style={{ margin: 0, flex: 1, fontSize: "11px", color: "#fff", lineHeight: 1.35 }}>
-              Gagnify + Rewards inclus dans votre compte Caela
-            </p>
-            <a href="#ecosysteme" onClick={() => setShowEcoBanner(false)} style={{ padding: "6px 10px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "16px", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
-                Voir →
-            </a>
-            <button
-              onClick={dismissEcoBanner}
-              aria-label="Fermer"
-              style={{ flexShrink: 0, width: "20px", height: "20px", borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", color: "#BDC1C6", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
-            >×</button>
-          </div>
-        ) : (
+      {showEcoBanner && !isMobile && (
           <div className="rp-banner-enter" style={{
             position: "fixed", bottom: "24px", left: "24px",
             zIndex: 90, maxWidth: "320px",
@@ -2065,7 +2069,6 @@ export default function HomeClient() {
               style={{ position: "absolute", top: "8px", right: "8px", width: "22px", height: "22px", borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", color: "#BDC1C6", fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
             >×</button>
           </div>
-        )
       )}
 
       {/* ── WIDGET S'INSCRIRE / SE CONNECTER ──
@@ -2087,7 +2090,7 @@ export default function HomeClient() {
           // Décalé au-dessus de la bannière écosystème mobile quand elle est
           // affichée (toutes deux fixed en bas, sinon superposition garantie
           // sur petit écran).
-          bottom: isMobile && showEcoBanner ? "62px" : 0,
+          bottom: 0,
           ...(isMobile
             ? { left: "10px", right: "78px", transform: `translateY(${loginWidgetOpen ? "0" : "calc(100% - 58px)"})` }
             : { left: "50%", width: "360px", maxWidth: "94vw", transform: `translateX(-50%) translateY(${loginWidgetOpen ? "0" : "calc(100% - 58px)"})` }),
@@ -2118,7 +2121,7 @@ export default function HomeClient() {
               <>
                 <p style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: 700, color: "#202124" }}>2 minutes pour tester, sans y penser ensuite.</p>
                 <p style={{ margin: "0 0 16px", fontSize: "12.5px", color: "#5F6368", lineHeight: 1.5 }}>
-                  L&apos;IA détecte, répond, publie. 14 jours d&apos;essai, résiliable en 2 clics.
+                  Synchronisation chaque heure. Réponse automatique aux avis 4-5★, validation humaine pour les avis 1-3★.
                 </p>
                 <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_widget-flottant")} style={{ display: "block", textAlign: "center", padding: "13px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 700, boxShadow: `0 2px 10px ${G.blue}40`, marginBottom: "14px" }}>
                   Créer un compte gratuit →
@@ -2180,8 +2183,22 @@ export default function HomeClient() {
 
       <ChatBot />
 
+      {/* ── ÉCOSYSTÈME CAELA ── */}
+      <section id="ecosysteme" style={{ background: "#F8F9FA", borderTop: "1px solid #DADCE0", padding: "56px 40px" }}>
+        <div style={{ maxWidth: "820px", margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ margin: "0 0 12px", fontSize: "22px", fontWeight: 700, color: "#202124" }}>
+            Fait partie de l&apos;écosystème Caela
+          </h2>
+          <p style={{ margin: 0, fontSize: "15.5px", color: "#5F6368", lineHeight: 1.7 }}>
+            Un compte, tous vos outils : Réservation (<a href="https://caelenda.fr" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Caelenda</a>) · Fidélité (<a href="https://caela-rewards.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Rewards</a>) · Jeux &amp; roues de la fortune (<a href="https://gagnify.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Gagnify</a>) · Campagnes (<a href="https://caela-pulse.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>Pulse</a>) · QR dynamique (<a href="https://caela-qr.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: G.blue, textDecoration: "underline" }}>CaelaQR</a>).
+            <br />
+            Connexion unique entre tous les produits.
+          </p>
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
-      <footer style={{ background: "#fff", borderTop: "1px solid #DADCE0", padding: "28px 40px" }}>
+      <footer className="rp-footer" style={{ background: "#fff", borderTop: "1px solid #DADCE0", padding: "28px 40px" }}>
         <div style={{ maxWidth: "1700px", margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

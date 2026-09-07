@@ -2,65 +2,88 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { and, eq, isNull, lt, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { reviews, pendingResponses, businesses } from "@/db/schema";
 import { getJwtSecret } from "@/lib/auth";
 import { publishReply } from "@/lib/platform-reply";
-import { eq } from "drizzle-orm";
 
-export async function GET(request: NextRequest) {
-  const token = request.nextUrl.searchParams.get("t");
-  if (!token) {
-    return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-  }
+type QuickPayload = { pendingId: number; choice: number };
 
+async function verifyQuickToken(token: string): Promise<QuickPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getJwtSecret());
-
     const pendingId = typeof payload.pendingId === "number" ? payload.pendingId : null;
     const choice = typeof payload.choice === "number" ? payload.choice : null;
-    if (pendingId === null || choice === null || choice < 0 || choice > 2) {
-      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-    }
+    if (pendingId === null || choice === null || choice < 0 || choice > 2) return null;
+    return { pendingId, choice };
+  } catch {
+    return null;
+  }
+}
 
-    const [pending] = await db
-      .select()
-      .from(pendingResponses)
-      .where(eq(pendingResponses.id, pendingId))
-      .limit(1);
+/**
+ * GET reste compatible avec les anciens emails, mais ne publie plus rien.
+ * Une lecture de lien email (prévisualisation, antivirus, navigateur) ne doit
+ * jamais déclencher une action externe irréversible.
+ */
+export async function GET(request: NextRequest) {
+  const token = request.nextUrl.searchParams.get("t");
+  const destination = new URL("/quick-reply", request.url);
+  if (token) destination.searchParams.set("t", token);
+  return NextResponse.redirect(destination);
+}
 
-    if (!pending) {
-      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-    }
+export async function POST(request: NextRequest) {
+  const body = await request.json().catch(() => ({}));
+  const token = typeof body.token === "string" ? body.token : "";
+  const decoded = await verifyQuickToken(token);
+  if (!decoded) return NextResponse.json({ error: "Lien invalide ou expiré" }, { status: 400 });
 
-    // Idempotent: link already used — redirect to success without re-posting
-    if (pending.status === "sent") {
-      return NextResponse.redirect(new URL("/quick-reply/success", request.url));
-    }
+  const [pending] = await db
+    .select()
+    .from(pendingResponses)
+    .where(eq(pendingResponses.id, decoded.pendingId))
+    .limit(1);
 
-    const suggestions = pending.suggestions as string[];
-    const responseText = suggestions[choice];
-    if (!responseText) {
-      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-    }
+  if (!pending) return NextResponse.json({ error: "Réponse introuvable" }, { status: 404 });
+  if (pending.status === "sent") return NextResponse.json({ ok: true, alreadySent: true });
+  const processingTimeout = new Date(Date.now() - 10 * 60 * 1000);
+  if (pending.status === "processing" && pending.processingAt && pending.processingAt > processingTimeout) {
+    return NextResponse.json({ error: "Cette réponse est déjà en cours de publication" }, { status: 409 });
+  }
 
-    // Charger l'avis + l'établissement pour publier RÉELLEMENT sur la plateforme.
+  const suggestions = pending.suggestions as string[];
+  const responseText = suggestions[decoded.choice];
+  if (!responseText) return NextResponse.json({ error: "Suggestion invalide" }, { status: 400 });
+
+  // Réclamation atomique : deux clics simultanés ne doivent pas publier deux
+  // fois la même réponse sur Google/Trustpilot.
+  const claimCondition = pending.status === "pending"
+    ? and(eq(pendingResponses.id, decoded.pendingId), eq(pendingResponses.status, "pending"))
+    : and(
+        eq(pendingResponses.id, decoded.pendingId),
+        eq(pendingResponses.status, "processing"),
+        or(isNull(pendingResponses.processingAt), lt(pendingResponses.processingAt, processingTimeout)),
+      );
+  const [claimed] = await db
+    .update(pendingResponses)
+    .set({ status: "processing", processingAt: new Date(), chosenSuggestionIndex: decoded.choice })
+    .where(claimCondition)
+    .returning({ id: pendingResponses.id });
+  if (!claimed) return NextResponse.json({ ok: true, alreadySent: true });
+
+  try {
     const [reviewRow] = await db
       .select()
       .from(reviews)
       .where(eq(reviews.id, pending.reviewId))
       .limit(1);
-    if (!reviewRow) {
-      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-    }
+    if (!reviewRow) throw new Error("Avis introuvable");
 
-    // Déjà répondu côté avis (autre canal) : on synchronise le pending et on sort.
     if (reviewRow.responded) {
-      await db
-        .update(pendingResponses)
-        .set({ status: "sent", chosenSuggestionIndex: choice })
-        .where(eq(pendingResponses.id, pendingId));
-      return NextResponse.redirect(new URL("/quick-reply/success", request.url));
+      await db.update(pendingResponses).set({ status: "sent", processingAt: null }).where(eq(pendingResponses.id, pending.id));
+      return NextResponse.json({ ok: true, alreadySent: true });
     }
 
     const [business] = await db
@@ -68,30 +91,27 @@ export async function GET(request: NextRequest) {
       .from(businesses)
       .where(eq(businesses.id, reviewRow.businessId))
       .limit(1);
-    if (!business) {
-      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-    }
+    if (!business) throw new Error("Établissement introuvable");
 
-    // Publication réelle. On ne marque "sent"/"responded" QUE si ça réussit.
-    try {
-      await publishReply(reviewRow, business, responseText);
-    } catch (err) {
-      console.error("[quick-reply] publication plateforme échouée:", err);
-      return NextResponse.redirect(new URL("/quick-reply/error", request.url));
-    }
-
+    await publishReply(reviewRow, business, responseText);
     await db
       .update(reviews)
       .set({ responded: true, responseText, respondedAt: new Date() })
-      .where(eq(reviews.id, pending.reviewId));
-
+      .where(eq(reviews.id, reviewRow.id));
     await db
       .update(pendingResponses)
-      .set({ status: "sent", chosenSuggestionIndex: choice })
-      .where(eq(pendingResponses.id, pendingId));
+      .set({ status: "sent", processingAt: null, chosenSuggestionIndex: decoded.choice })
+      .where(eq(pendingResponses.id, pending.id));
 
-    return NextResponse.redirect(new URL("/quick-reply/success", request.url));
-  } catch {
-    return NextResponse.redirect(new URL("/quick-reply/error", request.url));
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[quick-reply] publication plateforme échouée:", err);
+    await db
+      .update(pendingResponses)
+      .set({ status: "pending", processingAt: null })
+      .where(eq(pendingResponses.id, pending.id));
+    return NextResponse.json({ error: "La publication a échoué. Réessayez depuis le lien." }, { status: 502 });
   }
 }
+
+export { verifyQuickToken };

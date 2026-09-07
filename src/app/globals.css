@@ -37,6 +37,130 @@ canvas {
   textarea {
     font-size: 16px !important;
   }
+
+  /* La home utilise surtout des styles inline. Ces règles constituent sa
+     couche responsive commune : elles évitent de répéter une variante mobile
+     sur chaque section et garantissent une gouttière utilisable dès 320 px. */
+  .rp-home > section {
+    padding: 56px 16px !important;
+  }
+
+  .rp-home > section#hero {
+    padding-top: 52px !important;
+    padding-bottom: 64px !important;
+  }
+
+  .rp-home h2 {
+    font-size: 22px !important;
+    line-height: 1.22 !important;
+  }
+
+  .rp-home > section > div,
+  .rp-home > section > div > div,
+  .rp-home main,
+  .rp-home article {
+    min-width: 0;
+  }
+
+  .rp-trust-strip {
+    padding: 8px 12px !important;
+    gap: 8px 14px !important;
+  }
+
+  .rp-trust-strip > div {
+    flex: 0 1 auto;
+  }
+
+  .rp-calculator-card,
+  .rp-review-flow-card {
+    min-width: 0;
+    padding: 22px 18px !important;
+  }
+
+  /* Sur desktop les deux onglets restent superposés pour conserver une
+     hauteur stable. Sur téléphone cela créait plusieurs centaines de pixels
+     vides sous le panneau le plus court : seul l'onglet actif participe donc
+     au layout mobile. */
+  .rp-calculator-panel:not(.rp-calculator-panel-active) {
+    display: none;
+  }
+
+  .rp-calculator-panel-active {
+    grid-area: auto !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .rp-calculator-result {
+    align-items: stretch !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rp-calculator-result > a {
+    text-align: center;
+  }
+
+  .rp-section-bridge {
+    padding: 0 16px !important;
+  }
+
+  .rp-diy-track {
+    margin-inline: -16px;
+    padding-inline: 16px !important;
+    scroll-padding-inline: 16px;
+    mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%) !important;
+  }
+
+  .rp-nfc-packs-scroll {
+    margin-inline: -16px;
+    padding-inline: 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rp-nfc-packs-track {
+    gap: 12px !important;
+    padding-inline: 16px !important;
+  }
+
+  .rp-nfc-pack-card {
+    width: calc(100vw - 32px) !important;
+    max-width: 340px;
+    padding: 24px 20px !important;
+    scroll-snap-align: center;
+  }
+
+  .rp-footer {
+    padding: 28px 16px 40px !important;
+  }
+
+  .rp-chat-window {
+    right: 8px !important;
+    bottom: 76px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: none !important;
+    height: min(620px, calc(100dvh - 92px)) !important;
+    border-radius: 18px !important;
+  }
+
+  .rp-chat-button {
+    right: 14px !important;
+    bottom: 14px !important;
+    width: 52px !important;
+    height: 52px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .rp-brand-name {
+    max-width: 105px;
+  }
+
+  .rp-mobile-nav-cta {
+    display: none;
+  }
 }
 
 /* Helper : conteneur de table scrollable horizontalement sur petit écran. */

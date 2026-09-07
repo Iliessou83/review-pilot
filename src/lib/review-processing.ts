@@ -107,18 +107,18 @@ export function buildNotificationEmail(
       <div style="font-size:12px;color:#5F6368;margin-bottom:4px;">${safe.authorName} écrit :</div>
       <div style="font-size:14px;color:#202124;font-style:italic;">&ldquo;${safe.reviewText}&rdquo;</div>
     </div>
-    <div style="font-size:14px;font-weight:600;color:#202124;margin-bottom:14px;">Choisissez votre réponse en 1 clic :</div>
+    <div style="font-size:14px;font-weight:600;color:#202124;margin-bottom:14px;">Ouvrez une proposition, vérifiez-la, puis confirmez sa publication :</div>
   </div>
   <div style="padding:0 28px;">
-    <a href="${appUrl}/api/quick-reply?t=${tokens[0]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#FCE8E6;border:1px solid rgba(234,67,53,0.3);border-radius:10px;text-decoration:none;">
+    <a href="${appUrl}/quick-reply?t=${tokens[0]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#FCE8E6;border:1px solid rgba(234,67,53,0.3);border-radius:10px;text-decoration:none;">
       <div style="font-size:12px;font-weight:700;color:#EA4335;margin-bottom:5px;">💛 EMPATHIQUE</div>
       <div style="font-size:13px;color:#202124;">${safe.s0}</div>
     </a>
-    <a href="${appUrl}/api/quick-reply?t=${tokens[1]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E6F4EA;border:1px solid rgba(52,168,83,0.3);border-radius:10px;text-decoration:none;">
+    <a href="${appUrl}/quick-reply?t=${tokens[1]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E6F4EA;border:1px solid rgba(52,168,83,0.3);border-radius:10px;text-decoration:none;">
       <div style="font-size:12px;font-weight:700;color:#34A853;margin-bottom:5px;">🎯 SOLUTION</div>
       <div style="font-size:13px;color:#202124;">${safe.s1}</div>
     </a>
-    <a href="${appUrl}/api/quick-reply?t=${tokens[2]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E8F0FE;border:1px solid rgba(26,115,232,0.3);border-radius:10px;text-decoration:none;">
+    <a href="${appUrl}/quick-reply?t=${tokens[2]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E8F0FE;border:1px solid rgba(26,115,232,0.3);border-radius:10px;text-decoration:none;">
       <div style="font-size:12px;font-weight:700;color:#1A73E8;margin-bottom:5px;">🏆 PROFESSIONNEL</div>
       <div style="font-size:13px;color:#202124;">${safe.s2}</div>
     </a>

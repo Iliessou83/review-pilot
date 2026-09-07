@@ -3,8 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
-import { businesses, reviews } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { businesses, reviews, loginAttempts } from "@/db/schema";
+import { eq, and, lt } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 import { ADMIN_EMAILS } from "@/lib/auth";
 import { maybeSendQuotaAlert } from "@/lib/plan-limits";
@@ -98,6 +98,9 @@ async function handler(request: Request) {
 }
 
 async function runSync() {
+  // Les compteurs anti-bruteforce sont temporaires. Leur purge évite de faire
+  // grossir login_attempts indéfiniment, sans toucher aux données métier.
+  await db.delete(loginAttempts).where(lt(loginAttempts.resetAt, new Date()));
   const allBusinesses = await db.select().from(businesses);
   const results: Record<string, { synced: number; processed: number; errors: string[] }> = {};
 

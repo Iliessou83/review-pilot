@@ -125,7 +125,8 @@ export const billing = {
 } as const;
 
 // ── 4. OFFRES ────────────────────────────────────────────────────────────────
-// `priceEnv` = nom de la variable d'env contenant le Price ID Stripe.
+// `priceEnv` / `annualPriceEnv` = noms des variables d'env contenant les Price
+// IDs Stripe mensuel et annuel.
 // On ne hardcode jamais un Price ID : il vit dans les env Vercel.
 // `maxBusinesses` = nombre d'établissements inclus (null = illimité).
 // `monthlyReviewQuota` = avis traités/mois inclus (null = illimité).
@@ -142,8 +143,9 @@ export const plans = [
   {
     id: "starter",
     name: "Starter",
-    priceMonthly: 29,
+    priceMonthly: 49,
     priceEnv: "STRIPE_PRICE_STARTER",
+    annualPriceEnv: "STRIPE_PRICE_STARTER_ANNUAL",
     quota: "Jusqu'à 30 avis/mois",
     maxBusinesses: 1,
     monthlyReviewQuota: 30,
@@ -154,6 +156,7 @@ export const plans = [
     name: "Solo",
     priceMonthly: 69,
     priceEnv: "STRIPE_PRICE_SOLO",
+    annualPriceEnv: "STRIPE_PRICE_SOLO_ANNUAL",
     quota: "Jusqu'à 100 avis/mois",
     maxBusinesses: 1,
     monthlyReviewQuota: 100,
@@ -164,6 +167,7 @@ export const plans = [
     name: "Pro",
     priceMonthly: 149,
     priceEnv: "STRIPE_PRICE_PRO",
+    annualPriceEnv: "STRIPE_PRICE_PRO_ANNUAL",
     quota: "Jusqu'à 300 avis/mois — 5 établissements",
     maxBusinesses: 5,
     monthlyReviewQuota: 300,
@@ -174,6 +178,7 @@ export const plans = [
     name: "Studio",
     priceMonthly: 299,
     priceEnv: "STRIPE_PRICE_STUDIO",
+    annualPriceEnv: "STRIPE_PRICE_STUDIO_ANNUAL",
     quota: "Avis illimités — 5 établissements",
     maxBusinesses: 5,
     monthlyReviewQuota: null,
@@ -184,6 +189,7 @@ export const plans = [
     name: "Agence",
     priceMonthly: 449,
     priceEnv: "STRIPE_PRICE_AGENCE",
+    annualPriceEnv: "STRIPE_PRICE_AGENCE_ANNUAL",
     quota: "Avis illimités — établissements illimités",
     maxBusinesses: null,
     monthlyReviewQuota: null,
@@ -199,11 +205,15 @@ export function planById(id: string): Plan | undefined {
 
 // Phrase de divulgation standardisée affichée avant tout paiement d'essai.
 // Conforme à l'obligation d'information précontractuelle (art. L221-5 C. conso).
-export function trialDisclosure(plan: Plan): string {
+export function trialDisclosure(plan: Plan, cycle: "monthly" | "annual" = "monthly"): string {
+  const annualMonthlyPrice = Math.round(plan.priceMonthly * 0.8);
+  const charge = cycle === "annual"
+    ? `${annualMonthlyPrice * 12}€/an (équivalent ${annualMonthlyPrice}€/mois)`
+    : `${plan.priceMonthly}€/mois`;
   return (
     `Essai gratuit de ${billing.trialDays} jours. ` +
     `Carte bancaire requise. À la fin de l'essai, votre abonnement ${plan.name} ` +
-    `démarre automatiquement à ${plan.priceMonthly}€/mois, sauf résiliation ` +
+    `démarre automatiquement à ${charge}, sauf résiliation ` +
     `avant la fin de l'essai. Résiliable à tout moment en ligne en 2 clics. ` +
     `Email de rappel envoyé ${billing.guards.reminderEmailDaysBefore} jours ` +
     `avant le premier prélèvement.`
