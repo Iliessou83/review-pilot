@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const G = { blue: "#1A73E8", red: "#EA4335", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", green: "#16856B" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
 type Loc = { path: string; title: string; address: string };
@@ -60,7 +60,7 @@ export default function GoogleConnectPage() {
       {locations === null && !error && <p style={{ color: "#80868B" }}>Chargement de vos établissements…</p>}
 
       {locations && locations.length === 0 && (
-        <div style={{ background: "#FFF3E0", border: "1px solid #FBBC04", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#7A5900" }}>
+        <div style={{ background: "#FFF3E0", border: "1px solid #E0A11A", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#7A5900" }}>
           Aucun établissement trouvé sur ce compte Google.
         </div>
       )}

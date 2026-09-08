@@ -4,6 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { limitePartagee, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  // Désactivé par défaut tant que le cas d'usage de scoring commercial n'a
+  // pas été confirmé par écrit pour le compte de facturation EEE.
+  if (process.env.ENABLE_GOOGLE_PLACES_AUDIT !== "true") {
+    return NextResponse.json(
+      { error: "L’audit Google est temporairement indisponible pendant sa validation de conformité." },
+      { status: 503 }
+    );
+  }
+
   // 10 searches per minute per IP
   const ip = getClientIp(request);
   if (!(await limitePartagee(`audit-search:${ip}`, 10, 60 * 1000))) {

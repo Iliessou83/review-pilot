@@ -1,4 +1,4 @@
-const G = { blue: "#1A73E8" };
+const G = { blue: "#2457C5" };
 
 function Bar({ width = "100%", height = "14px", radius = "4px" }: { width?: string; height?: string; radius?: string }) {
   return (

@@ -228,7 +228,7 @@ export default function RouePage() {
                 · {w.mode === "concours" ? "Jeu-concours" : "Avis"} · {w.theme}
               </span>
             </div>
-            <a href={`/r/${w.slug}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#1A73E8" }}>
+            <a href={`/r/${w.slug}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#2457C5" }}>
               {origin}/r/{w.slug} ↗
             </a>
             <div style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>
@@ -249,7 +249,7 @@ export default function RouePage() {
                 <a
                   href={`/api/wheel/${w.id}/qr?dl=1`}
                   download={`roue-${w.slug}-qr.png`}
-                  style={{ fontSize: 13, color: "#1A73E8" }}
+                  style={{ fontSize: 13, color: "#2457C5" }}
                 >
                   Télécharger (PNG) ↓
                 </a>

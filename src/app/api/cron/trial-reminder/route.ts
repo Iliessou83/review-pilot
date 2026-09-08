@@ -67,7 +67,7 @@ async function handler(request: Request) {
               Vous souhaitez continuer ? Aucune action nécessaire.<br/>
               Vous ne souhaitez pas continuer ? Résiliez en 2 clics, sans frais, avant cette date :
             </p>
-            <a href="${appUrl}/dashboard/billing" style="display:inline-block;padding:12px 24px;background:#1A73E8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;">
+            <a href="${appUrl}/dashboard/billing" style="display:inline-block;padding:12px 24px;background:#2457C5;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;">
               Gérer / résilier mon abonnement
             </a>
             <p style="color:#80868B;font-size:12px;line-height:1.6;margin:24px 0 0;">

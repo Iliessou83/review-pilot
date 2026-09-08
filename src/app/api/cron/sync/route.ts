@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
-import { businesses, reviews, loginAttempts } from "@/db/schema";
+import { businesses, reviews, reviewActivityEvents, loginAttempts } from "@/db/schema";
 import { eq, and, lt } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 import { ADMIN_EMAILS } from "@/lib/auth";
@@ -52,6 +52,12 @@ async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
         publishedAt: new Date(gr.createTime),
         responded: false, platform: "google",
       }).returning();
+      await db.insert(reviewActivityEvents).values({
+        businessId: business.id,
+        platform: "google",
+        eventType: "review_detected",
+        handlingMode: "manual",
+      });
       created.push(saved);
     }
   }
@@ -78,6 +84,12 @@ async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
         publishedAt: new Date(tr.createdAt),
         responded: false, platform: "trustpilot",
       }).returning();
+      await db.insert(reviewActivityEvents).values({
+        businessId: business.id,
+        platform: "trustpilot",
+        eventType: "review_detected",
+        handlingMode: "manual",
+      });
       created.push(saved);
     }
   }

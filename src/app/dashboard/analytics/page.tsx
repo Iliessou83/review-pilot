@@ -1,17 +1,17 @@
 export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
-import { reviews, businesses, pendingResponses } from "@/db/schema";
+import { reviews, businesses, pendingResponses, reviewActivityEvents } from "@/db/schema";
 import { eq, gte, lt, and, count, avg, sql, inArray, type SQL } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getScope, ownedBusinessIds } from "@/lib/scope";
 import { platformMeta } from "@/lib/platforms";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
-async function getAnalytics(biz: SQL | undefined) {
+async function getAnalytics(biz: SQL | undefined, activityFilter: SQL | undefined) {
   const now = new Date();
   const months: { label: string; start: Date; end: Date }[] = [];
   const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -22,7 +22,7 @@ async function getAnalytics(biz: SQL | undefined) {
     months.push({ label: monthNames[start.getMonth()], start, end });
   }
 
-  const [ratingDist, perBusiness, totalReviews, totalResponded, pendingCount] = await Promise.all([
+  const [ratingDist, perBusiness, totalReviews, totalResponded, pendingCount, activity] = await Promise.all([
     db.select({ rating: reviews.rating, count: count() }).from(reviews).where(biz).groupBy(reviews.rating),
     db.select({
       businessId: reviews.businessId,
@@ -37,6 +37,13 @@ async function getAnalytics(biz: SQL | undefined) {
     db.select({ count: count() }).from(pendingResponses)
       .innerJoin(reviews, eq(pendingResponses.reviewId, reviews.id))
       .where(and(eq(pendingResponses.status, "pending"), biz)),
+    db.select({
+      replies: count(),
+      avgLatency: avg(reviewActivityEvents.latencySeconds),
+    }).from(reviewActivityEvents).where(and(
+      eq(reviewActivityEvents.eventType, "reply_published"),
+      activityFilter,
+    )),
   ]);
 
   const monthlyData = await Promise.all(
@@ -78,6 +85,8 @@ async function getAnalytics(biz: SQL | undefined) {
     totalReviews: totalReviews[0]?.count || 0,
     totalResponded: totalResponded[0]?.count || 0,
     pendingCount: pendingCount[0]?.count || 0,
+    managedReplies: activity[0]?.replies || 0,
+    avgLatencySeconds: Math.round(parseFloat(String(activity[0]?.avgLatency || "0"))),
   };
 }
 
@@ -132,7 +141,7 @@ function BarChart({ data, maxVal, color }: { data: { label: string; value: numbe
 
 function RatingBar({ rating, count, total }: { rating: number; count: number; total: number }) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-  const starColors = ["#EA4335", "#F9AB00", "#FBBC04", "#34A853", "#1A73E8"];
+  const starColors = ["#D6455D", "#F9AB00", "#E0A11A", "#16856B", "#2457C5"];
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <span style={{ fontSize: "12px", color: "#5F6368", width: "24px", textAlign: "right" }}>{rating}★</span>
@@ -158,6 +167,8 @@ export default async function AnalyticsPage() {
     totalReviews: 0,
     totalResponded: 0,
     pendingCount: 0,
+    managedReplies: 0,
+    avgLatencySeconds: 0,
   };
   const biz =
     owned === "all"
@@ -165,7 +176,12 @@ export default async function AnalyticsPage() {
       : owned.length
         ? inArray(reviews.businessId, owned)
         : null;
-  const data = biz === null ? empty : await getAnalytics(biz).catch(() => empty);
+  const activityFilter = owned === "all"
+    ? undefined
+    : owned.length
+      ? inArray(reviewActivityEvents.businessId, owned)
+      : null;
+  const data = biz === null || activityFilter === null ? empty : await getAnalytics(biz, activityFilter).catch(() => empty);
 
   const maxMonthly = Math.max(...data.monthly.map(m => m.total), 1);
   const responseRate = data.totalReviews > 0 ? Math.round((data.totalResponded / data.totalReviews) * 100) : 0;
@@ -186,7 +202,7 @@ export default async function AnalyticsPage() {
           <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: 700, color: "#202124", letterSpacing: "-0.5px" }}>
             Analytics
           </h1>
-          <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>Vos chiffres bruts : notes, volume, tendance.</p>
+          <p style={{ margin: 0, color: "#5F6368", fontSize: "14px" }}>Contenu récent et preuve durable du travail réalisé par Caela.</p>
         </div>
         <Link href="/dashboard" style={{ padding: "8px 16px", background: "#fff", border: "1px solid #DADCE0", borderRadius: "8px", textDecoration: "none", fontSize: "13px", color: "#5F6368", boxShadow: SHADOW }}>
           ← Dashboard
@@ -196,9 +212,11 @@ export default async function AnalyticsPage() {
       {/* KPI row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "14px", marginBottom: "24px" }}>
         {[
-          { label: "Total avis (12 mois)", value: data.totalReviews, color: G.blue, bg: "#E8F0FE", trend: `${volumeTrend >= 0 ? "+" : ""}${volumeTrend}% vs mois préc.` },
-          { label: "Taux de réponse", value: `${responseRate}%`, color: responseRate >= 80 ? G.green : G.yellow, bg: responseRate >= 80 ? "#E6F4EA" : "#FEF7E0", trend: responseRate >= 80 ? "Excellent" : "À améliorer" },
-          { label: "Avis négatifs", value: totalNegative, color: G.red, bg: "#FCE8E6", trend: `1-3★ sur 12 mois` },
+          { label: "Avis en cache", value: data.totalReviews, color: G.blue, bg: "#E8F0FE", trend: "Google : 30 jours maximum" },
+          { label: "Réponses publiées", value: data.managedReplies, color: G.green, bg: "#E6F4EA", trend: "Historique opérationnel Caela" },
+          { label: "Délai moyen", value: data.avgLatencySeconds > 0 ? `${Math.max(1, Math.round(data.avgLatencySeconds / 60))} min` : "—", color: G.yellow, bg: "#FEF7E0", trend: "Avis détecté → réponse publiée" },
+          { label: "Taux récent", value: `${responseRate}%`, color: responseRate >= 80 ? G.green : G.yellow, bg: responseRate >= 80 ? "#E6F4EA" : "#FEF7E0", trend: "Calculé sur le cache disponible" },
+          { label: "Avis négatifs récents", value: totalNegative, color: G.red, bg: "#FCE8E6", trend: "1-3★ dans le cache disponible" },
           { label: "En attente action", value: data.pendingCount, color: data.pendingCount > 0 ? G.red : G.green, bg: data.pendingCount > 0 ? "#FCE8E6" : "#E6F4EA", trend: data.pendingCount > 0 ? "Réponse requise" : "Tout traité ✓" },
         ].map(card => (
           <div key={card.label} style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "18px 20px", boxShadow: SHADOW, position: "relative", overflow: "hidden" }}>
@@ -221,7 +239,7 @@ export default async function AnalyticsPage() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <div>
               <h2 style={{ margin: "0 0 2px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>Volume d&apos;avis</h2>
-              <p style={{ margin: 0, fontSize: "12px", color: "#80868B" }}>12 derniers mois</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#80868B" }}>Contenu local disponible — Google limité à 30 jours</p>
             </div>
             <div style={{ display: "flex", gap: "12px", fontSize: "11px", color: "#80868B" }}>
               <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -266,7 +284,7 @@ export default async function AnalyticsPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           <div>
             <h2 style={{ margin: "0 0 2px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>Évolution de la note moyenne</h2>
-            <p style={{ margin: 0, fontSize: "12px", color: "#80868B" }}>Sur 12 mois</p>
+            <p style={{ margin: 0, fontSize: "12px", color: "#80868B" }}>Cache récent ; historique via Performance API à configurer</p>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: "22px", fontWeight: 700, color: G.yellow }}>

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { and, eq, isNull, lt, or } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { reviews, pendingResponses, businesses } from "@/db/schema";
+import { reviews, pendingResponses, businesses, reviewActivityEvents } from "@/db/schema";
 import { getJwtSecret } from "@/lib/auth";
 import { publishReply } from "@/lib/platform-reply";
 
@@ -94,10 +94,19 @@ export async function POST(request: NextRequest) {
     if (!business) throw new Error("Établissement introuvable");
 
     await publishReply(reviewRow, business, responseText);
+    const respondedAt = new Date();
     await db
       .update(reviews)
-      .set({ responded: true, responseText, respondedAt: new Date() })
+      .set({ responded: true, responseText, respondedAt })
       .where(eq(reviews.id, reviewRow.id));
+    await db.insert(reviewActivityEvents).values({
+      businessId: business.id,
+      platform: reviewRow.platform,
+      eventType: "reply_published",
+      handlingMode: business.autoReplyNegative ? "caela_approved" : "merchant_approved",
+      latencySeconds: Math.max(0, Math.round((respondedAt.getTime() - reviewRow.publishedAt.getTime()) / 1000)),
+      occurredAt: respondedAt,
+    });
     await db
       .update(pendingResponses)
       .set({ status: "sent", processingAt: null, chosenSuggestionIndex: decoded.choice })

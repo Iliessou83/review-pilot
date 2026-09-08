@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 2px 8px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 
 const REASONS = [

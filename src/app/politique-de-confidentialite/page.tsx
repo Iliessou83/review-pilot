@@ -1,7 +1,7 @@
 import Link from "next/link";
 import RefusMesure from "@/components/RefusMesure";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 
 export const metadata = {
   title: "Politique de confidentialité — Caela Réputation",
@@ -48,11 +48,11 @@ function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
 
 export default function PolitiqueConfidentialitePage() {
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
       <nav style={{ borderBottom: "1px solid #DADCE0", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#fff", zIndex: 100 }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
           <div style={{ display: "flex", gap: "3px" }}>
-            {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+            {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
               <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />
             ))}
           </div>

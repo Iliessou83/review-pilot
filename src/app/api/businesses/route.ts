@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, platform, platformId, platformToken, autoReply5Star } = body as {
+  const { name, platform, platformId, platformToken } = body as {
     name?: string; platform?: string; platformId?: string;
-    platformToken?: string; ownerEmail?: string; autoReply5Star?: boolean;
+    platformToken?: string; ownerEmail?: string;
   };
 
   // Cloisonnement : un client ne peut créer un commerce QU'À SON nom
@@ -104,7 +104,10 @@ export async function POST(request: NextRequest) {
       platformId: String(platformId).slice(0, 500),
       platformToken: encryptToken(String(platformToken).slice(0, 1000)),
       ownerEmail: String(ownerEmail).toLowerCase().trim(),
-      autoReply5Star: autoReply5Star ?? true,
+      // L'automatisation s'active ensuite dans Réglages, après acceptation
+      // explicite du mandat et journalisation de cette acceptation.
+      autoReply5Star: false,
+      autoReplyNegative: false,
     }).returning();
 
     // Fédération au cerveau Caela (par email).

@@ -40,9 +40,9 @@ export default function QuickReplyClient({
   }
 
   return (
-    <main style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Google Sans', system-ui, sans-serif", padding: "32px 20px", color: "#202124" }}>
+    <main style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter', system-ui, sans-serif", padding: "32px 20px", color: "#202124" }}>
       <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        <p style={{ color: "#1A73E8", fontWeight: 700, fontSize: 15 }}>Caela Réputation</p>
+        <p style={{ color: "#2457C5", fontWeight: 700, fontSize: 15 }}>Caela Réputation</p>
         <h1 style={{ fontSize: 28, margin: "24px 0 8px" }}>Confirmer la publication</h1>
         <p style={{ color: "#5F6368", lineHeight: 1.6 }}>
           Le clic dans l&apos;email n&apos;a rien publié. Vérifiez le contenu puis confirmez explicitement.
@@ -63,7 +63,7 @@ export default function QuickReplyClient({
         {alreadySent ? (
           <p style={{ marginTop: 24, color: "#137333", fontWeight: 600 }}>Cette réponse a déjà été publiée.</p>
         ) : (
-          <button onClick={publish} disabled={loading} style={{ marginTop: 24, width: "100%", padding: "14px 18px", border: 0, borderRadius: 8, background: loading ? "#9AA0A6" : "#1A73E8", color: "#fff", fontWeight: 700, fontSize: 15, cursor: loading ? "wait" : "pointer" }}>
+          <button onClick={publish} disabled={loading} style={{ marginTop: 24, width: "100%", padding: "14px 18px", border: 0, borderRadius: 8, background: loading ? "#9AA0A6" : "#2457C5", color: "#fff", fontWeight: 700, fontSize: 15, cursor: loading ? "wait" : "pointer" }}>
             {loading ? "Publication en cours…" : "Confirmer et publier la réponse"}
           </button>
         )}

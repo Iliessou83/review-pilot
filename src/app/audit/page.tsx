@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AuditPage() {
-  return <AuditClient />;
+  return <AuditClient googleAuditEnabled={process.env.ENABLE_GOOGLE_PLACES_AUDIT === "true"} />;
 }

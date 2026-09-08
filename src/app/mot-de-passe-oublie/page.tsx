@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const BLUE = "#1A73E8";
+const BLUE = "#2457C5";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

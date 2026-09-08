@@ -31,7 +31,7 @@ export default async function DashboardLayout({
         nomApp="Caela Réputation"
         accroche="Installez le dashboard sur votre téléphone"
         detail="Répondez à vos avis Google en un geste, sans repasser par le navigateur."
-        couleur="#1A73E8"
+        couleur="#2457C5"
       />
     </div>
   );

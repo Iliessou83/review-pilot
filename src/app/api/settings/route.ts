@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { businesses, type ProductFact } from "@/db/schema";
+import { businesses, businessConsents, type ProductFact } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
 import { eq, inArray } from "drizzle-orm";
@@ -65,6 +65,7 @@ export async function PUT(request: NextRequest) {
     brandTone?: string;
     tutoiement?: boolean;
     ownerPhone?: string;
+    automationConsentAccepted?: boolean;
   };
 
   try {
@@ -73,7 +74,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const { businessId, ...fields } = body;
+  const { businessId, automationConsentAccepted = false, ...fields } = body;
   if (!businessId || isNaN(businessId)) {
     return NextResponse.json({ error: "businessId requis" }, { status: 400 });
   }
@@ -96,13 +97,36 @@ export async function PUT(request: NextRequest) {
   // manque #4 de l'audit "Avant Commercialisation" 2026-08-27. On lit l'état
   // actuel plutôt que fields.regulatedSector, pour bloquer aussi le cas où les
   // deux champs sont modifiés dans le même appel.
-  let isRegulated = false;
-  {
-    const [current] = await db.select({ regulatedSector: businesses.regulatedSector }).from(businesses).where(eq(businesses.id, businessId)).limit(1);
-    isRegulated = fields.regulatedSector ?? current?.regulatedSector ?? false;
-  }
+  const [current] = await db
+    .select({
+      regulatedSector: businesses.regulatedSector,
+      autoReply5Star: businesses.autoReply5Star,
+      autoReplyNegative: businesses.autoReplyNegative,
+    })
+    .from(businesses)
+    .where(eq(businesses.id, businessId))
+    .limit(1);
+  if (!current) return NextResponse.json({ error: "Établissement introuvable" }, { status: 404 });
+
+  const isRegulated = fields.regulatedSector ?? current.regulatedSector;
   if (fields.compensationEnabled === true && isRegulated) {
     return NextResponse.json({ error: "Le geste commercial est désactivé pour les établissements en profession réglementée." }, { status: 403 });
+  }
+
+  const previousConsentScope = current.autoReplyNegative
+    ? "all_delegated"
+    : current.autoReply5Star
+      ? "positive_auto"
+      : "manual";
+  const nextPositive = fields.autoReply5Star ?? current.autoReply5Star;
+  const nextNegative = fields.autoReplyNegative ?? current.autoReplyNegative;
+  if (nextNegative && !nextPositive) {
+    return NextResponse.json({ error: "La délégation de tous les avis inclut nécessairement les avis 4-5 étoiles." }, { status: 400 });
+  }
+  const nextConsentScope = nextNegative ? "all_delegated" : nextPositive ? "positive_auto" : "manual";
+  const consentChanged = nextConsentScope !== previousConsentScope;
+  if (consentChanged && nextConsentScope !== "manual" && !automationConsentAccepted) {
+    return NextResponse.json({ error: "Cochez la case de mandat explicite avant d'activer les réponses déléguées." }, { status: 400 });
   }
 
   const update: Partial<typeof businesses.$inferInsert> = {};
@@ -127,11 +151,28 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Aucun champ à mettre à jour" }, { status: 400 });
   }
 
-  const [updated] = await db
-    .update(businesses)
-    .set(update)
-    .where(eq(businesses.id, businessId))
-    .returning();
+  // L'activation et sa preuve sont atomiques : impossible d'activer une
+  // automatisation si l'écriture du mandat échoue.
+  const updated = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(businesses)
+      .set(update)
+      .where(eq(businesses.id, businessId))
+      .returning();
+
+    if (!row) return null;
+
+    if (consentChanged) {
+      await tx.insert(businessConsents).values({
+        businessId,
+        actorEmail: session.email.toLowerCase(),
+        scope: nextConsentScope,
+        termsVersion: "review-management-2026-09-v1",
+        granted: nextConsentScope !== "manual",
+      });
+    }
+    return row;
+  });
 
   if (!updated) return NextResponse.json({ error: "Établissement introuvable" }, { status: 404 });
 

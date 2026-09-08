@@ -52,17 +52,17 @@ async function handler(request: Request) {
           to: clientEmail,
           subject: `⏰ Rappel : avis ${rating}★ en attente de réponse`,
           html: `
-            <div style="font-family:'Google Sans',system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fff;">
+            <div style="font-family:'Inter',system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fff;">
               <h2 style="font-size:20px;font-weight:700;color:#202124;margin:0 0 8px;">Rappel : un avis attend votre réponse</h2>
               <p style="color:#5F6368;font-size:14px;margin:0 0 24px;">Cet avis n'a pas reçu de réponse depuis plus de 24h.</p>
               <div style="background:#F8F9FA;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #DADCE0;">
-                <div style="font-size:18px;margin-bottom:8px;color:#FBBC04;">${stars}</div>
+                <div style="font-size:18px;margin-bottom:8px;color:#E0A11A;">${stars}</div>
                 <p style="margin:0;font-size:14px;color:#202124;font-style:italic;">&ldquo;${safeText}&hellip;&rdquo;</p>
                 <p style="margin:8px 0 0;font-size:12px;color:#80868B;">Établissement : ${safeBusiness}</p>
               </div>
               <p style="color:#5F6368;font-size:13px;">Connectez-vous à votre dashboard pour répondre.</p>
               <div style="margin-top:24px;padding-top:16px;border-top:1px solid #DADCE0;font-size:11px;color:#80868B;">
-                Caela Réputation by Caela Agency · <a href="mailto:contact@caela.fr" style="color:#1A73E8;">contact@caela.fr</a>
+                Caela Réputation by Caela Agency · <a href="mailto:contact@caela.fr" style="color:#2457C5;">contact@caela.fr</a>
               </div>
             </div>
           `,

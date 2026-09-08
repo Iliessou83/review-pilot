@@ -127,7 +127,7 @@ async function handler(request: Request) {
           ${nouvelles.map(a => `
             <div style="border:1px solid #DADCE0;border-radius:10px;padding:14px 18px;margin-bottom:10px;">
               <div style="font-weight:700;font-size:14px;">${escapeHtml(a.businessName)}</div>
-              <div style="font-size:12px;font-weight:700;color:${a.severity === "high" ? "#EA4335" : "#B4740E"};margin:2px 0 6px;">${escapeHtml(a.type)}</div>
+              <div style="font-size:12px;font-weight:700;color:${a.severity === "high" ? "#D6455D" : "#B4740E"};margin:2px 0 6px;">${escapeHtml(a.type)}</div>
               <div style="font-size:13px;color:#5F6368;">${escapeHtml(a.detail)}</div>
             </div>
           `).join("")}

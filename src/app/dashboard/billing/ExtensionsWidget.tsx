@@ -145,8 +145,8 @@ function ExtCard({ ext, busy, onActivate, promoCode }: { ext: Extension; busy: s
         <div style={{ marginTop: "auto", paddingTop: "12px" }}>
           {ext.status === "active" ? (
             <>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, color: "#34A853", marginBottom: "8px" }}>
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#34A853" }} /> Actif
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, color: "#16856B", marginBottom: "8px" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#16856B" }} /> Actif
               </span>
               {ext.openUrl && (
                 <a
@@ -314,7 +314,7 @@ export default function ExtensionsWidget() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px", borderRadius: "14px", background: "#fff", border: "1px solid #DADCE0", padding: "12px 14px", marginBottom: "20px" }}>
-          <span style={{ flexShrink: 0, width: "32px", height: "32px", borderRadius: "8px", background: "#1A73E8", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
+          <span style={{ flexShrink: 0, width: "32px", height: "32px", borderRadius: "8px", background: "#2457C5", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
             C
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -326,7 +326,7 @@ export default function ExtensionsWidget() {
           <button
             onClick={openHub}
             disabled={hubBusy}
-            style={{ flexShrink: 0, borderRadius: "8px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, border: "none", background: "#1A73E8", color: "#fff", cursor: hubBusy ? "not-allowed" : "pointer", opacity: hubBusy ? 0.7 : 1, fontFamily: "inherit" }}
+            style={{ flexShrink: 0, borderRadius: "8px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, border: "none", background: "#2457C5", color: "#fff", cursor: hubBusy ? "not-allowed" : "pointer", opacity: hubBusy ? 0.7 : 1, fontFamily: "inherit" }}
           >
             {hubBusy ? "..." : "Ouvrir mon compte"}
           </button>
@@ -334,7 +334,7 @@ export default function ExtensionsWidget() {
 
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "20px" }}>
           <div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1A73E8", marginBottom: "6px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#2457C5", marginBottom: "6px" }}>
               🧩 Écosystème Caela
             </span>
             <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#202124", margin: 0 }}>Un compte, tous tes outils</h2>
@@ -349,7 +349,7 @@ export default function ExtensionsWidget() {
           )}
         </div>
 
-        {error && <p style={{ textAlign: "center", fontSize: "13px", color: "#EA4335", marginBottom: "16px" }}>{error}</p>}
+        {error && <p style={{ textAlign: "center", fontSize: "13px", color: "#D6455D", marginBottom: "16px" }}>{error}</p>}
 
         {extensions === null ? (
           <div style={{ display: "flex", gap: "16px", overflow: "hidden" }}>

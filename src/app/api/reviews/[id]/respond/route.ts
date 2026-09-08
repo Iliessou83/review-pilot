@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { reviews, businesses } from "@/db/schema";
+import { reviews, businesses, reviewActivityEvents } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
@@ -97,11 +97,21 @@ export async function POST(
     );
   }
 
+  const respondedAt = new Date();
   const [updated] = await db
     .update(reviews)
-    .set({ responded: true, responseText, respondedAt: new Date() })
+    .set({ responded: true, responseText, respondedAt })
     .where(eq(reviews.id, numId))
     .returning();
+
+  await db.insert(reviewActivityEvents).values({
+    businessId: business.id,
+    platform: reviewRow.platform,
+    eventType: "reply_published",
+    handlingMode: "merchant_approved",
+    latencySeconds: Math.max(0, Math.round((respondedAt.getTime() - reviewRow.publishedAt.getTime()) / 1000)),
+    occurredAt: respondedAt,
+  });
 
   return NextResponse.json(updated);
 }

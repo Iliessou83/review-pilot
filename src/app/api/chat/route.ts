@@ -47,22 +47,23 @@ PLAQUES NFC:
 - Pack Établissement: 79€ (5 plaques)
 - Pack Réseau: 299€ (25 plaques)
 
-AVANTAGES CLÉ vs concurrents:
-- Seul outil 100% français spécialisé Google Business avec IA auto-réponse
-- 6x moins cher que Birdeye ($290/mois) ou Partoo (~150€/mois sans IA)
+POSITIONNEMENT (comparatif vérifié le 8 septembre 2026):
+- Service français combinant logiciel et délégation humaine des avis sensibles
+- Ne jamais affirmer que Caela est le seul acteur : Partoo, Birdeye et Uberall proposent aussi des fonctions de réponse automatisée ou assistée par IA
+- Les tarifs publics de plusieurs concurrents sont sur devis : ne jamais inventer de prix ni de ratio d'économie
 - Email 1-clic pour répondre aux avis négatifs sans se connecter
-- RGPD conforme, données en Europe
+- Conception orientée RGPD ; ne jamais promettre une conformité absolue
 - Support en français
 
 QUESTIONS FRÉQUENTES:
 Q: "Est-ce que ça abîme ma fiche Google?"
-R: Non. On utilise l'API officielle Google My Business.
+R: Caela utilise les API officielles et applique des contrôles, mais aucun prestataire ne peut garantir un risque nul. Le commerçant choisit et peut révoquer son mandat.
 
 Q: "Sous quel nom les réponses sont publiées?"
 R: Sous le nom de votre établissement, pas Caela Réputation.
 
 Q: "C'est légal d'utiliser un outil IA pour répondre aux avis?"
-R: Oui, totalement. Google autorise les outils tiers via son API officielle.
+R: L'IA n'est pas interdite en soi. La plateforme doit être autorisée par Google, le commerçant doit donner un consentement explicite et les réponses doivent respecter les règles de contenu. Les avis sensibles sont soumis à une validation humaine.
 
 Q: "Combien de temps pour être opérationnel?"
 R: 10-15 minutes avec notre onboarding guidé.

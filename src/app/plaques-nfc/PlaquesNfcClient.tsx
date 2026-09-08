@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ChatBot from "@/components/ChatBot";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW_SM = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 const SHADOW_MD = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 const SHADOW_LG = "0 4px 12px rgba(60,64,67,0.18), 0 2px 6px rgba(60,64,67,0.1)";
@@ -11,7 +11,7 @@ const SHADOW_LG = "0 4px 12px rgba(60,64,67,0.18), 0 2px 6px rgba(60,64,67,0.1)"
 function GDots({ size = 8 }: { size?: number }) {
   return (
     <div style={{ display: "flex", gap: `${Math.round(size * 0.4)}px`, alignItems: "center" }}>
-      {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+      {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
         <div key={i} style={{ width: size, height: size, borderRadius: "50%", background: c }} />
       ))}
     </div>
@@ -42,7 +42,7 @@ function PlaqueMockup({ type }: { type: "acrylic" | "epoxy" | "pvc" }) {
       {/* Grid lines on acrylic */}
       {type === "acrylic" && (
         <>
-          <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 50% 50%, rgba(26,115,232,0.15) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 50% 50%, rgba(36,87,197,0.15) 0%, transparent 70%)" }} />
           <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         </>
       )}
@@ -182,14 +182,14 @@ export default function PlaquesNfcClient() {
   }
 
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
 
       {/* NAV */}
       <nav style={{ borderBottom: "1px solid #DADCE0", background: "#fff", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
             <div style={{ display: "flex", gap: "3px" }}>
-              {[G.blue, G.red, G.yellow, G.green].map((c, i) => <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />)}
+              {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />)}
             </div>
             <span style={{ fontWeight: 700, fontSize: "15px", color: "#202124" }}>Caela Réputation</span>
           </a>
@@ -516,7 +516,7 @@ export default function PlaquesNfcClient() {
           </div>
 
           {sent ? (
-            <div style={{ background: "#fff", borderRadius: "20px", padding: "48px 32px", textAlign: "center", border: "1px solid #34A853", boxShadow: `0 4px 24px ${G.green}20` }}>
+            <div style={{ background: "#fff", borderRadius: "20px", padding: "48px 32px", textAlign: "center", border: "1px solid #16856B", boxShadow: `0 4px 24px ${G.green}20` }}>
               <div style={{ fontSize: "48px", marginBottom: "16px" }}>✅</div>
               <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 12px", color: "#202124" }}>Commande reçue !</h3>
               <p style={{ fontSize: "15px", color: "#5F6368", margin: "0 0 24px", lineHeight: 1.6 }}>

@@ -54,8 +54,8 @@
     var border = dark ? "#2c2f36" : "#e6e8eb";
     var text = dark ? "#f1f3f5" : "#202124";
     var muted = dark ? "#9aa0a6" : "#5f6368";
-    var gold = "#FBBC04";
-    var blue = "#1A73E8";
+    var gold = "#E0A11A";
+    var blue = "#2457C5";
 
     var reviews = (data.reviews || []).slice(0, max);
     var cardsCss = layout === "row"
@@ -92,30 +92,6 @@
     el.innerHTML = html;
   }
 
-  // Injecte le JSON-LD AggregateRating dans la page hôte (étoiles dans Google).
-  function injectJsonLd(data, id) {
-    if (!data.totalCount || !data.avgRating) return;
-    var tagId = "caela-jsonld-" + id;
-    if (document.getElementById(tagId)) return;
-    var ld = {
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      name: data.businessName,
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: data.avgRating,
-        reviewCount: data.totalCount,
-        bestRating: 5,
-        worstRating: 1,
-      },
-    };
-    var s = document.createElement("script");
-    s.type = "application/ld+json";
-    s.id = tagId;
-    s.text = JSON.stringify(ld);
-    document.head.appendChild(s);
-  }
-
   function init() {
     var nodes = document.querySelectorAll("[data-caela-widget]");
     for (var i = 0; i < nodes.length; i++) {
@@ -129,7 +105,6 @@
           .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
           .then(function (data) {
             render(el, data);
-            injectJsonLd(data, id);
           })
           .catch(function () {
             el.innerHTML = "";

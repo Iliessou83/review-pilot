@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853", tp: "#00B67A" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B", tp: "#00B67A" };
 const SHADOW = "0 2px 8px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 
 type Platform = "google" | "trustpilot";
@@ -35,8 +35,8 @@ function Stars({ n, color }: { n: number; color?: string }) {
   return <span>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(n) ? (color || G.yellow) : "#DADCE0", fontSize: "13px" }}>★</span>)}</span>;
 }
 
-export default function AuditClient() {
-  const [platform, setPlatform] = useState<Platform>("google");
+export default function AuditClient({ googleAuditEnabled }: { googleAuditEnabled: boolean }) {
+  const [platform, setPlatform] = useState<Platform>(googleAuditEnabled ? "google" : "trustpilot");
   const [step, setStep] = useState<Step>("form");
 
   // Google fields
@@ -156,13 +156,13 @@ export default function AuditClient() {
     .split("/")[0];
 
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
 
       {/* Nav */}
       <nav style={{ borderBottom: "1px solid #DADCE0", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#fff", zIndex: 100 }}>
         <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
           <div style={{ display: "flex", gap: "3px" }}>
-            {[G.blue, G.red, G.yellow, G.green].map((c, i) => <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />)}
+            {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />)}
           </div>
           <span style={{ fontWeight: 700, fontSize: "15px", color: "#202124" }}>Caela Réputation</span>
         </a>
@@ -193,14 +193,15 @@ export default function AuditClient() {
                 { key: "google" as Platform, icon: "📍", label: "Fiche Google" },
                 { key: "trustpilot" as Platform, icon: "⭐", label: "Trustpilot" },
               ]).map(p => (
-                <button key={p.key} onClick={() => switchPlatform(p.key)} style={{
+                <button key={p.key} disabled={p.key === "google" && !googleAuditEnabled} onClick={() => switchPlatform(p.key)} style={{
                   flex: 1, padding: "10px 16px", border: "none", borderRadius: "9px", cursor: "pointer",
                   fontFamily: "inherit", fontSize: "14px", fontWeight: 600, transition: "all 0.15s",
                   background: platform === p.key ? "#fff" : "transparent",
                   color: platform === p.key ? (p.key === "trustpilot" ? G.tp : G.blue) : "#80868B",
                   boxShadow: platform === p.key ? SHADOW : "none",
+                  opacity: p.key === "google" && !googleAuditEnabled ? 0.5 : 1,
                 }}>
-                  {p.icon} {p.label}
+                  {p.icon} {p.label}{p.key === "google" && !googleAuditEnabled ? " · validation en cours" : ""}
                 </button>
               ))}
             </div>
@@ -427,7 +428,7 @@ export default function AuditClient() {
               </div>
 
               {result.simulated && (
-                <div style={{ background: "#FEF7E0", border: "1px solid #FBBC04", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontSize: "12px", color: "#7A5900", lineHeight: 1.5 }}>
+                <div style={{ background: "#FEF7E0", border: "1px solid #E0A11A", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontSize: "12px", color: "#7A5900", lineHeight: 1.5 }}>
                   <strong>⚠️ Estimation simulée.</strong> Aucun profil n&apos;a été trouvé pour ce domaine. Les chiffres ci-dessous sont une projection indicative pour un commerce typique du secteur, pas vos données réelles.
                 </div>
               )}

@@ -3,8 +3,8 @@
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-const BLUE = "#1A73E8";
-const RED = "#EA4335";
+const BLUE = "#2457C5";
+const RED = "#D6455D";
 
 function ResetPasswordForm() {
   const params = useSearchParams();

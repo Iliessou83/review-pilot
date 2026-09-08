@@ -4,7 +4,7 @@
 // adresses email et liens y étaient jusqu'ici du texte mort.
 const PATTERN = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})|(https?:\/\/[^\s)]+)/g;
 
-export default function Linkify({ text, linkColor = "#1A73E8" }: { text: string; linkColor?: string }) {
+export default function Linkify({ text, linkColor = "#2457C5" }: { text: string; linkColor?: string }) {
   const parts = text.split(PATTERN);
   return (
     <>

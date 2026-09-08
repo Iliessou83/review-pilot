@@ -23,7 +23,9 @@ export const businesses = pgTable("businesses", {
   platform: text("platform", { enum: ["google", "trustpilot", "facebook", "tripadvisor", "pagesjaunes", "other"] }).notNull(),
   platformId: text("platform_id").notNull(),
   platformToken: text("platform_token").notNull(),
-  autoReply5Star: boolean("auto_reply_5_star").default(true).notNull(),
+  // Toujours désactivé à la création : Google exige une autorisation préalable,
+  // spécifique et expresse avant de déclencher une réponse automatique.
+  autoReply5Star: boolean("auto_reply_5_star").default(false).notNull(),
   autoReplyNegative: boolean("auto_reply_negative").default(false).notNull(),
   businessType: text("business_type").default("restaurant"),
   compensationEnabled: boolean("compensation_enabled").default(false).notNull(),
@@ -67,6 +69,21 @@ export const businesses = pgTable("businesses", {
   // Numéro du commerçant pour l'alerte SMS immédiate sur avis négatif
   // (manque #5 de l'audit) — dégrade proprement si vide ou si smsConfigured() est faux.
   ownerPhone: text("owner_phone"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Preuve append-only du mandat donné à Caela pour répondre aux avis.
+// On conserve les acceptations ET les révocations afin de pouvoir démontrer
+// qui a choisi quel périmètre, quand, et pour quelle version d'information.
+export const businessConsents = pgTable("business_consents", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  actorEmail: text("actor_email").notNull(),
+  scope: text("scope", { enum: ["manual", "positive_auto", "all_delegated"] }).notNull(),
+  termsVersion: text("terms_version").notNull(),
+  granted: boolean("granted").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -123,6 +140,21 @@ export const reviews = pgTable("reviews", {
   responseText: text("response_text"),
   respondedAt: timestamp("responded_at"),
   platform: text("platform", { enum: ["google", "trustpilot", "facebook", "tripadvisor", "pagesjaunes", "other"] }).notNull(),
+});
+
+// Mesures produites par Caela, sans recopier le contenu de l'avis. Elles
+// permettent de conserver la preuve du travail (volume traité, délai de
+// réponse, mode de validation) après l'expiration du cache Google à 30 jours.
+export const reviewActivityEvents = pgTable("review_activity_events", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  platform: text("platform", { enum: ["google", "trustpilot", "facebook", "tripadvisor", "pagesjaunes", "other"] }).notNull(),
+  eventType: text("event_type", { enum: ["review_detected", "reply_published"] }).notNull(),
+  handlingMode: text("handling_mode", { enum: ["manual", "automated", "merchant_approved", "caela_approved"] }),
+  latencySeconds: integer("latency_seconds"),
+  occurredAt: timestamp("occurred_at").defaultNow().notNull(),
 });
 
 // Demande de signalement d'avis faux/diffamatoire (19,90€/avis retiré,
@@ -368,11 +400,13 @@ export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
+export type BusinessConsent = typeof businessConsents.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type QnaStrategy = typeof qnaStrategies.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+export type ReviewActivityEvent = typeof reviewActivityEvents.$inferSelect;
 export type PendingResponse = typeof pendingResponses.$inferSelect;
 export type NewPendingResponse = typeof pendingResponses.$inferInsert;
 export type WheelConfig = typeof wheelConfigs.$inferSelect;

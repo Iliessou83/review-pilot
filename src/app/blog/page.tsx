@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BLOG_POSTS, CATEGORY_STYLE } from "@/data/blogPosts";
 import RichText from "@/components/RichText";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 
 export const metadata: Metadata = {
   title: "Blog — Avis Google, e-réputation & SEO local | Caela Réputation",
@@ -19,11 +19,11 @@ export default function BlogIndexPage() {
   const posts = [...BLOG_POSTS].sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
       <nav style={{ borderBottom: "1px solid #DADCE0", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#fff", zIndex: 100 }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
           <div style={{ display: "flex", gap: "3px" }}>
-            {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+            {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
               <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />
             ))}
           </div>
@@ -41,7 +41,7 @@ export default function BlogIndexPage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
           {posts.map((post) => {
-            const catStyle = CATEGORY_STYLE[post.category] ?? { icon: "📝", color: G.blue, bg: `linear-gradient(135deg, ${G.blue}, #174EA6)` };
+            const catStyle = CATEGORY_STYLE[post.category] ?? { icon: "📝", color: G.blue, bg: `linear-gradient(135deg, ${G.blue}, #183F93)` };
             return (
               <Link
                 key={post.slug}

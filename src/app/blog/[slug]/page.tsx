@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { BLOG_POSTS, getBlogPost, CATEGORY_STYLE, type BlogBlock } from "@/data/blogPosts";
 import RichText from "@/components/RichText";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 
 export function generateStaticParams() {
   return BLOG_POSTS.map(p => ({ slug: p.slug }));
@@ -75,14 +75,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   if (!post) notFound();
 
   const others = BLOG_POSTS.filter(p => p.slug !== post.slug).slice(0, 3);
-  const catStyle = CATEGORY_STYLE[post.category] ?? { icon: "📝", color: G.blue, bg: `linear-gradient(135deg, ${G.blue}, #174EA6)` };
+  const catStyle = CATEGORY_STYLE[post.category] ?? { icon: "📝", color: G.blue, bg: `linear-gradient(135deg, ${G.blue}, #183F93)` };
 
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#fff", color: "#202124", minHeight: "100vh" }}>
       <nav style={{ borderBottom: "1px solid #DADCE0", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "#fff", zIndex: 100 }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
           <div style={{ display: "flex", gap: "3px" }}>
-            {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+            {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
               <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />
             ))}
           </div>
@@ -138,7 +138,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </article>
 
         <aside style={{ flex: "1 1 260px", minWidth: "260px", maxWidth: "320px", position: "sticky", top: "88px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ background: "linear-gradient(135deg, #1A73E8, #1557b0)", borderRadius: "14px", padding: "22px", color: "#fff" }}>
+          <div style={{ background: "linear-gradient(135deg, #2457C5, #183F93)", borderRadius: "14px", padding: "22px", color: "#fff" }}>
             <p style={{ fontSize: "14px", fontWeight: 700, margin: "0 0 6px" }}>Essai gratuit 14 jours</p>
             <p style={{ fontSize: "12.5px", opacity: 0.85, margin: "0 0 14px", lineHeight: 1.5 }}>Carte requise, résiliable en 2 clics avant le 1er prélèvement.</p>
             <Link href="/signup" style={{ display: "inline-block", padding: "9px 16px", fontSize: "13px", fontWeight: 700, background: "#fff", color: G.blue, textDecoration: "none", borderRadius: "6px" }}>
@@ -153,7 +153,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                 {others.map((o) => (
-                  <Link key={o.slug} href={`/blog/${o.slug}`} style={{ padding: "10px 0", borderTop: "1px solid #F1F3F4", textDecoration: "none", color: "#1A73E8", fontSize: "13.5px", fontWeight: 600, lineHeight: 1.4 }}>
+                  <Link key={o.slug} href={`/blog/${o.slug}`} style={{ padding: "10px 0", borderTop: "1px solid #F1F3F4", textDecoration: "none", color: "#2457C5", fontSize: "13.5px", fontWeight: 600, lineHeight: 1.4 }}>
                     {o.title}
                   </Link>
                 ))}

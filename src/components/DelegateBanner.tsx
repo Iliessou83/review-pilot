@@ -6,7 +6,7 @@ const DISMISS_DAYS = 14;
 // Bandeau discret qui rappelle qu'une tâche peut être déléguée à Caela Agency
 // (payant, transparent). Se ferme et reste fermé pendant DISMISS_DAYS pour ne
 // jamais devenir intrusif. Palette calquée sur le thème Material du dashboard
-// (bleu Google #1A73E8, cartes blanches, bordures #DADCE0).
+// (bleu Google #2457C5, cartes blanches, bordures #DADCE0).
 //
 // Le CTA ouvre un petit formulaire qui poste la demande directement dans la
 // file Nexus (/api/delegate-request). En cas d'échec réseau, on garde le
@@ -59,8 +59,8 @@ export default function DelegateBanner({
         borderRadius: 12,
         padding: "14px 18px",
         marginBottom: 16,
-        background: "linear-gradient(135deg, rgba(26,115,232,0.08), #fff)",
-        border: "1px solid rgba(26,115,232,0.25)",
+        background: "linear-gradient(135deg, rgba(36,87,197,0.08), #fff)",
+        border: "1px solid rgba(36,87,197,0.25)",
         boxShadow: "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)",
         display: "flex",
         alignItems: "center",
@@ -71,7 +71,7 @@ export default function DelegateBanner({
     >
       <style>{`
         @keyframes rpDelegateSlideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes rpDelegatePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(26,115,232,0.3); } 50% { box-shadow: 0 0 0 6px rgba(26,115,232,0); } }
+        @keyframes rpDelegatePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(36,87,197,0.3); } 50% { box-shadow: 0 0 0 6px rgba(36,87,197,0); } }
       `}</style>
       <div
         style={{
@@ -79,7 +79,7 @@ export default function DelegateBanner({
           height: 36,
           borderRadius: 10,
           flexShrink: 0,
-          background: "rgba(26,115,232,0.12)",
+          background: "rgba(36,87,197,0.12)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -100,7 +100,7 @@ export default function DelegateBanner({
           padding: "9px 16px",
           borderRadius: 8,
           whiteSpace: "nowrap",
-          background: "#1A73E8",
+          background: "#2457C5",
           color: "#fff",
           fontWeight: 700,
           fontSize: 12.5,
@@ -269,7 +269,7 @@ function DelegateForm({
                 }}
               >
                 Envoi impossible pour le moment.{" "}
-                <a href={mailtoHref} style={{ color: "#1A73E8", fontWeight: 700 }}>
+                <a href={mailtoHref} style={{ color: "#2457C5", fontWeight: 700 }}>
                   Envoyer par email à la place →
                 </a>
               </div>
@@ -314,7 +314,7 @@ const btnPrimary: React.CSSProperties = {
   flex: 1,
   padding: "10px 14px",
   borderRadius: 8,
-  background: "#1A73E8",
+  background: "#2457C5",
   color: "#fff",
   fontWeight: 700,
   fontSize: 13,

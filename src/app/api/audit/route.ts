@@ -78,7 +78,7 @@ function computeGoogleScore(place: Record<string, unknown> | null): {
 
   const photos = (place.photos as unknown[]) || [];
   if (photos.length >= 10) { score += 15; insights.push({ label: "Photos", status: "good", detail: `${photos.length} photos. Fiche bien illustrée.` }); }
-  else if (photos.length >= 3) { score += 8; insights.push({ label: "Photos", status: "warn", detail: `Seulement ${photos.length} photos. Google favorise les fiches avec 10+ photos.` }); }
+  else if (photos.length >= 3) { score += 8; insights.push({ label: "Photos", status: "warn", detail: `${photos.length} photos visibles. Ajoutez des images récentes et représentatives pour mieux informer les clients.` }); }
   else { score += 0; insights.push({ label: "Photos manquantes", status: "bad", detail: "Aucune ou très peu de photos. Perte de confiance immédiate." }); }
 
   if (place.website) { score += 10; insights.push({ label: "Site web renseigné", status: "good", detail: "Lien vers votre site présent." }); }
@@ -282,10 +282,10 @@ function buildEmailHtml(p: {
   insights: { label: string; status: string; detail: string }[];
   priorities: string[]; recommendation: string; simulated?: boolean;
 }): string {
-  const accentColor = p.platform === "trustpilot" ? "#00B67A" : "#1A73E8";
+  const accentColor = p.platform === "trustpilot" ? "#00B67A" : "#2457C5";
   const platformLabel = p.platform === "trustpilot" ? "Trustpilot" : "Google Business Profile";
   return `
-    <div style="font-family:'Google Sans',system-ui,sans-serif;max-width:560px;margin:0 auto;background:#fff;">
+    <div style="font-family:'Inter',system-ui,sans-serif;max-width:560px;margin:0 auto;background:#fff;">
       <div style="background:${accentColor};padding:28px 32px;border-radius:16px 16px 0 0;">
         <p style="margin:0 0 8px;font-size:12px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${platformLabel}</p>
         <h1 style="margin:0;font-size:22px;font-weight:800;color:#fff;">Audit de votre réputation en ligne</h1>
@@ -293,7 +293,7 @@ function buildEmailHtml(p: {
       </div>
       <div style="padding:28px 32px;">
         ${p.simulated ? `
-        <div style="background:#FEF7E0;border:1px solid #FBBC04;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#7A5900;line-height:1.5;">
+        <div style="background:#FEF7E0;border:1px solid #E0A11A;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#7A5900;line-height:1.5;">
           <strong>⚠️ Estimation simulée.</strong> Aucun profil ${platformLabel} n'a été trouvé pour ce domaine. Les chiffres ci-dessous sont une projection indicative pour un commerce typique de votre secteur, pas vos données réelles.
         </div>` : ""}
         <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;padding:20px;background:#F8F9FA;border-radius:12px;">
@@ -383,7 +383,7 @@ export async function POST(request: NextRequest) {
         const sim = await simulateTrustpilotAudit(domain);
         score = sim.score; found = sim.found; businessName = sim.businessName;
         rating = sim.rating; reviewCount = sim.reviewCount; insights = sim.insights;
-        const scoreColorSim = score >= 75 ? "#34A853" : score >= 50 ? "#FBBC04" : "#EA4335";
+        const scoreColorSim = score >= 75 ? "#16856B" : score >= 50 ? "#E0A11A" : "#D6455D";
         try {
           await envoyer({
             from: EXPEDITEUR,
@@ -398,6 +398,12 @@ export async function POST(request: NextRequest) {
       }
 
     } else {
+      if (process.env.ENABLE_GOOGLE_PLACES_AUDIT !== "true") {
+        return NextResponse.json(
+          { error: "L’audit Google est temporairement indisponible pendant sa validation de conformité." },
+          { status: 503 }
+        );
+      }
       const name = typeof body.name === "string" ? body.name.trim().slice(0, 200) : "";
       const city = typeof body.city === "string" ? body.city.trim().slice(0, 100) : "";
       const placeId = typeof body.placeId === "string" ? body.placeId : null;
@@ -419,7 +425,7 @@ export async function POST(request: NextRequest) {
     const location = platform === "google" ? (typeof body.city === "string" ? body.city : "") : "";
     const { priorities, recommendation } = await generateAIPriorities(platform, businessName, location, found, score, insights);
 
-    const scoreColor = score >= 75 ? "#34A853" : score >= 50 ? "#FBBC04" : "#EA4335";
+    const scoreColor = score >= 75 ? "#16856B" : score >= 50 ? "#E0A11A" : "#D6455D";
     const platformLabel = platform === "trustpilot" ? "Trustpilot" : "Google Business Profile";
 
     try {

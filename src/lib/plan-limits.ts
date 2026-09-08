@@ -149,8 +149,8 @@ export async function maybeSendQuotaAlert(ownerEmail: string, businessName: stri
           ? `Quota d'avis dépassé — ${businessName}`
           : `Vous approchez de votre quota d'avis (90%) — ${businessName}`,
       html: `
-<div style="font-family:'Google Sans',system-ui,sans-serif;max-width:560px;margin:0 auto;background:#fff;border:1px solid #DADCE0;border-radius:12px;overflow:hidden;">
-  <div style="background:${statusInfo.status === "exceeded" ? "#EA4335" : "#F9AB00"};padding:18px 24px;">
+<div style="font-family:'Inter',system-ui,sans-serif;max-width:560px;margin:0 auto;background:#fff;border:1px solid #DADCE0;border-radius:12px;overflow:hidden;">
+  <div style="background:${statusInfo.status === "exceeded" ? "#D6455D" : "#F9AB00"};padding:18px 24px;">
     <span style="color:#fff;font-size:16px;font-weight:700;">
       ${statusInfo.status === "exceeded" ? "Quota d'avis dépassé" : "90% de votre quota atteint"}
     </span>
@@ -161,7 +161,7 @@ export async function maybeSendQuotaAlert(ownerEmail: string, businessName: stri
       sur les <strong>${statusInfo.max}</strong> inclus dans votre plan <strong>${plan.name}</strong>.
     </p>
     ${overageNote ? `<p style="font-size:13px;color:#5F6368;line-height:1.6;">${overageNote}</p>` : ""}
-    <a href="${appUrl}/dashboard/billing" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#1A73E8;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">
+    <a href="${appUrl}/dashboard/billing" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#2457C5;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">
       Passer à un plan supérieur
     </a>
   </div>

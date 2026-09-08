@@ -3,7 +3,7 @@
  * instead of HTTP self-calls (eliminates SSRF + CRON_SECRET exfiltration risk).
  */
 import { db } from "@/lib/db";
-import { reviews, businesses, pendingResponses } from "@/db/schema";
+import { reviews, businesses, pendingResponses, reviewActivityEvents } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateAutoResponse, generateResponseSuggestions, type FactContext, type BrandVoice } from "@/lib/claude";
 import { assessReviewRisk } from "@/lib/risk-detection";
@@ -13,6 +13,7 @@ import { SignJWT } from "jose";
 import { googleAccessToken } from "@/lib/google-oauth";
 import { decryptToken } from "@/lib/token-crypto";
 import { smsConfigured, sendSms, normalizePhoneFR } from "@/lib/sms";
+import { ADMIN_EMAILS } from "@/lib/auth";
 
 type Review = typeof reviews.$inferSelect;
 type Business = typeof businesses.$inferSelect;
@@ -69,7 +70,8 @@ export function buildNotificationEmail(
   suggestions: string[],
   tokens: string[],
   appUrl: string,
-  riskReasons: string[] = []
+  riskReasons: string[] = [],
+  managedByCaela = false
 ) {
   const safe = {
     businessName: escapeHtml(businessName),
@@ -81,7 +83,7 @@ export function buildNotificationEmail(
   };
 
   const riskBanner = riskReasons.length > 0 ? `
-    <div style="background:#FEF7E0;border:1px solid rgba(251,188,4,0.4);border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+    <div style="background:#FEF7E0;border:1px solid rgba(224,161,26,0.4);border-radius:8px;padding:12px 16px;margin-bottom:16px;">
       <div style="font-size:13px;font-weight:700;color:#B06000;">🚩 Point à vérifier avant de valider</div>
       <div style="font-size:12px;color:#5F6368;margin-top:4px;">
         Sujet sensible détecté (${escapeHtml(riskReasons.join(", "))}). Relisez la réponse proposée : ne validez pas une excuse sur un fait que vous n'avez pas vous-même confirmé.
@@ -91,15 +93,15 @@ export function buildNotificationEmail(
   return {
     from: EXPEDITEUR_NOTIF,
     to: ownerEmail,
-    subject: `Avis ${rating}★ pour ${safe.businessName} — action requise`,
+    subject: `${managedByCaela ? "[Équipe Caela] " : ""}Avis ${rating}★ pour ${safe.businessName} — action requise`,
     html: `
-<div style="font-family:'Google Sans',system-ui,sans-serif;max-width:600px;margin:0 auto;background:#fff;border:1px solid #DADCE0;border-radius:12px;overflow:hidden;">
-  <div style="background:#1A73E8;padding:20px 28px;display:flex;align-items:center;gap:10px;">
+<div style="font-family:'Inter',system-ui,sans-serif;max-width:600px;margin:0 auto;background:#fff;border:1px solid #DADCE0;border-radius:12px;overflow:hidden;">
+  <div style="background:#2457C5;padding:20px 28px;display:flex;align-items:center;gap:10px;">
     <span style="color:#fff;font-size:18px;font-weight:700;">Caela Réputation</span>
   </div>
   <div style="padding:24px 28px 0;">
     <div style="background:#FCE8E6;border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-      <div style="font-size:14px;font-weight:700;color:#EA4335;">Avis ${rating}★ — action requise</div>
+      <div style="font-size:14px;font-weight:700;color:#D6455D;">Avis ${rating}★ — action requise</div>
       <div style="font-size:12px;color:#5F6368;">${safe.businessName} · ${safe.authorName}</div>
     </div>
     ${riskBanner}
@@ -107,24 +109,24 @@ export function buildNotificationEmail(
       <div style="font-size:12px;color:#5F6368;margin-bottom:4px;">${safe.authorName} écrit :</div>
       <div style="font-size:14px;color:#202124;font-style:italic;">&ldquo;${safe.reviewText}&rdquo;</div>
     </div>
-    <div style="font-size:14px;font-weight:600;color:#202124;margin-bottom:14px;">Ouvrez une proposition, vérifiez-la, puis confirmez sa publication :</div>
+    <div style="font-size:14px;font-weight:600;color:#202124;margin-bottom:14px;">${managedByCaela ? "Cet avis a été délégué à l’équipe Caela. Relisez une proposition avant de confirmer sa publication :" : "Ouvrez une proposition, vérifiez-la, puis confirmez sa publication :"}</div>
   </div>
   <div style="padding:0 28px;">
-    <a href="${appUrl}/quick-reply?t=${tokens[0]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#FCE8E6;border:1px solid rgba(234,67,53,0.3);border-radius:10px;text-decoration:none;">
-      <div style="font-size:12px;font-weight:700;color:#EA4335;margin-bottom:5px;">💛 EMPATHIQUE</div>
+    <a href="${appUrl}/quick-reply?t=${tokens[0]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#FCE8E6;border:1px solid rgba(214,69,93,0.3);border-radius:10px;text-decoration:none;">
+      <div style="font-size:12px;font-weight:700;color:#D6455D;margin-bottom:5px;">💛 EMPATHIQUE</div>
       <div style="font-size:13px;color:#202124;">${safe.s0}</div>
     </a>
-    <a href="${appUrl}/quick-reply?t=${tokens[1]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E6F4EA;border:1px solid rgba(52,168,83,0.3);border-radius:10px;text-decoration:none;">
-      <div style="font-size:12px;font-weight:700;color:#34A853;margin-bottom:5px;">🎯 SOLUTION</div>
+    <a href="${appUrl}/quick-reply?t=${tokens[1]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E6F4EA;border:1px solid rgba(22,133,107,0.3);border-radius:10px;text-decoration:none;">
+      <div style="font-size:12px;font-weight:700;color:#16856B;margin-bottom:5px;">🎯 SOLUTION</div>
       <div style="font-size:13px;color:#202124;">${safe.s1}</div>
     </a>
-    <a href="${appUrl}/quick-reply?t=${tokens[2]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E8F0FE;border:1px solid rgba(26,115,232,0.3);border-radius:10px;text-decoration:none;">
-      <div style="font-size:12px;font-weight:700;color:#1A73E8;margin-bottom:5px;">🏆 PROFESSIONNEL</div>
+    <a href="${appUrl}/quick-reply?t=${tokens[2]}" style="display:block;margin-bottom:10px;padding:14px 18px;background:#E8F0FE;border:1px solid rgba(36,87,197,0.3);border-radius:10px;text-decoration:none;">
+      <div style="font-size:12px;font-weight:700;color:#2457C5;margin-bottom:5px;">🏆 PROFESSIONNEL</div>
       <div style="font-size:13px;color:#202124;">${safe.s2}</div>
     </a>
   </div>
   <div style="padding:20px 28px;border-top:1px solid #DADCE0;margin-top:20px;text-align:center;">
-    <a href="${appUrl}/pending" style="color:#1A73E8;font-size:13px;font-weight:500;">Gérer depuis le dashboard →</a>
+    <a href="${appUrl}/pending" style="color:#2457C5;font-size:13px;font-weight:500;">Gérer depuis le dashboard →</a>
     <p style="margin:12px 0 0;font-size:10px;color:#80868B;">Caela Réputation est un outil indépendant, non affilié à Google LLC.</p>
   </div>
 </div>`,
@@ -171,9 +173,18 @@ export async function processHighRatedReview(review: Review, business: Business)
     } else {
       await postTrustpilotReply(business.platformId, review.platformReviewId, responseText, decryptToken(business.platformToken));
     }
+    const respondedAt = new Date();
     await db.update(reviews)
       .set({ responded: true, responseText, respondedAt: new Date() })
       .where(eq(reviews.id, review.id));
+    await db.insert(reviewActivityEvents).values({
+      businessId: business.id,
+      platform: review.platform,
+      eventType: "reply_published",
+      handlingMode: "automated",
+      latencySeconds: Math.max(0, Math.round((respondedAt.getTime() - review.publishedAt.getTime()) / 1000)),
+      occurredAt: respondedAt,
+    });
   } catch (err) {
     console.error(`Platform post failed for review ${review.id}:`, err);
   }
@@ -223,10 +234,18 @@ export async function processLowRatedReview(
   ]);
 
   const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  // En délégation totale, l'équipe Caela reprend les avis négatifs mais aussi
+  // tout avis signalé comme sensible, même si sa note est élevée.
+  const managedByCaela = business.autoReplyNegative && (
+    review.rating <= 3 || risk.escalate || business.regulatedSector
+  );
+  const notificationEmail = managedByCaela
+    ? process.env.REVIEW_TEAM_EMAIL || ADMIN_EMAILS[0] || business.ownerEmail
+    : business.ownerEmail;
 
   try {
     await envoyer(
-      buildNotificationEmail(business.ownerEmail, business.name, review.authorName, review.rating, review.text, suggestions, tokens, appUrl, risk.reasons)
+      buildNotificationEmail(notificationEmail, business.name, review.authorName, review.rating, review.text, suggestions, tokens, appUrl, risk.reasons, managedByCaela)
     );
   } catch (err) {
     console.error(`Notification email failed for review ${review.id}:`, err);
