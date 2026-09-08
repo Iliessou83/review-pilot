@@ -362,6 +362,12 @@ export async function POST(request: NextRequest) {
     let insights: { label: string; status: "good" | "warn" | "bad"; detail: string }[] = [];
 
     if (platform === "trustpilot") {
+      if (process.env.ENABLE_TRUSTPILOT_AUDIT !== "true") {
+        return NextResponse.json(
+          { error: "L’audit Trustpilot est temporairement indisponible pendant la validation de la licence d’intégration." },
+          { status: 503 }
+        );
+      }
       const rawDomain = typeof body.domain === "string" ? body.domain : "";
       const domain = rawDomain
         .replace(/^https?:\/\//i, "")
@@ -380,21 +386,10 @@ export async function POST(request: NextRequest) {
         score = result.score; found = result.found; businessName = result.businessName || domain;
         rating = result.rating; reviewCount = result.reviewCount; insights = result.insights;
       } else {
-        const sim = await simulateTrustpilotAudit(domain);
-        score = sim.score; found = sim.found; businessName = sim.businessName;
-        rating = sim.rating; reviewCount = sim.reviewCount; insights = sim.insights;
-        const scoreColorSim = score >= 75 ? "#16856B" : score >= 50 ? "#E0A11A" : "#D6455D";
-        try {
-          await envoyer({
-            from: EXPEDITEUR,
-            to: email,
-            subject: `📊 Audit Trustpilot — ${businessName} : ${score}/100`,
-            html: buildEmailHtml({ platform: "trustpilot", businessName, location: "", score, scoreColor: scoreColorSim, found, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation, simulated: true }),
-          });
-        } catch (emailErr) {
-          console.error("Email send error:", emailErr);
-        }
-        return NextResponse.json({ score, found, businessName, rating, reviewCount, insights, priorities: sim.priorities, recommendation: sim.recommendation, simulated: true });
+        return NextResponse.json(
+          { error: "Profil Trustpilot introuvable ou données indisponibles. Aucun score n’a été simulé." },
+          { status: 404 }
+        );
       }
 
     } else {

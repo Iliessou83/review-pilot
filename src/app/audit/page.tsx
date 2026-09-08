@@ -7,5 +7,10 @@ export const metadata: Metadata = {
 };
 
 export default function AuditPage() {
-  return <AuditClient googleAuditEnabled={process.env.ENABLE_GOOGLE_PLACES_AUDIT === "true"} />;
+  return (
+    <AuditClient
+      googleAuditEnabled={process.env.ENABLE_GOOGLE_PLACES_AUDIT === "true"}
+      trustpilotAuditEnabled={process.env.ENABLE_TRUSTPILOT_AUDIT === "true"}
+    />
+  );
 }

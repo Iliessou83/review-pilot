@@ -35,7 +35,7 @@ function Stars({ n, color }: { n: number; color?: string }) {
   return <span>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(n) ? (color || G.yellow) : "#DADCE0", fontSize: "13px" }}>★</span>)}</span>;
 }
 
-export default function AuditClient({ googleAuditEnabled }: { googleAuditEnabled: boolean }) {
+export default function AuditClient({ googleAuditEnabled, trustpilotAuditEnabled }: { googleAuditEnabled: boolean; trustpilotAuditEnabled: boolean }) {
   const [platform, setPlatform] = useState<Platform>(googleAuditEnabled ? "google" : "trustpilot");
   const [step, setStep] = useState<Step>("form");
 
@@ -192,18 +192,29 @@ export default function AuditClient({ googleAuditEnabled }: { googleAuditEnabled
               {([
                 { key: "google" as Platform, icon: "📍", label: "Fiche Google" },
                 { key: "trustpilot" as Platform, icon: "⭐", label: "Trustpilot" },
-              ]).map(p => (
-                <button key={p.key} disabled={p.key === "google" && !googleAuditEnabled} onClick={() => switchPlatform(p.key)} style={{
+              ]).map(p => {
+                const enabled = p.key === "google" ? googleAuditEnabled : trustpilotAuditEnabled;
+                return (
+                <button key={p.key} disabled={!enabled} onClick={() => switchPlatform(p.key)} style={{
                   flex: 1, padding: "10px 16px", border: "none", borderRadius: "9px", cursor: "pointer",
                   fontFamily: "inherit", fontSize: "14px", fontWeight: 600, transition: "all 0.15s",
                   background: platform === p.key ? "#fff" : "transparent",
                   color: platform === p.key ? (p.key === "trustpilot" ? G.tp : G.blue) : "#80868B",
                   boxShadow: platform === p.key ? SHADOW : "none",
-                  opacity: p.key === "google" && !googleAuditEnabled ? 0.5 : 1,
+                  opacity: !enabled ? 0.5 : 1,
                 }}>
-                  {p.icon} {p.label}{p.key === "google" && !googleAuditEnabled ? " · validation en cours" : ""}
+                  {p.icon} {p.label}{!enabled ? " · validation en cours" : ""}
                 </button>
-              ))}
+              )})}
+            </div>
+          )}
+
+          {step === "form" && !googleAuditEnabled && !trustpilotAuditEnabled && (
+            <div style={{ background: "#fff", borderRadius: "20px", padding: "32px 36px", boxShadow: SHADOW, border: "1px solid #DADCE0", textAlign: "center" }}>
+              <h2 style={{ margin: "0 0 10px", fontSize: "18px", color: "#202124" }}>Audit temporairement en validation</h2>
+              <p style={{ margin: 0, fontSize: "14px", lineHeight: 1.6, color: "#5F6368" }}>
+                Nous vérifions actuellement les autorisations Google et Trustpilot. Aucun score simulé ne vous sera présenté comme une donnée réelle.
+              </p>
             </div>
           )}
 
@@ -235,7 +246,7 @@ export default function AuditClient({ googleAuditEnabled }: { googleAuditEnabled
           )}
 
           {/* STEP 1 — Google search form */}
-          {step === "form" && platform === "google" && (
+          {step === "form" && platform === "google" && googleAuditEnabled && (
             <form onSubmit={handleGoogleSearch} style={{ background: "#fff", borderRadius: "20px", padding: "32px 36px", boxShadow: SHADOW, border: "1px solid #DADCE0" }}>
               <h2 style={{ margin: "0 0 22px", fontSize: "18px", fontWeight: 700, color: "#202124" }}>Trouvez votre établissement</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -280,7 +291,7 @@ export default function AuditClient({ googleAuditEnabled }: { googleAuditEnabled
           )}
 
           {/* STEP 1 — Trustpilot form */}
-          {step === "form" && platform === "trustpilot" && (
+          {step === "form" && platform === "trustpilot" && trustpilotAuditEnabled && (
             <form onSubmit={handleTrustpilotSearch} style={{ background: "#fff", borderRadius: "20px", padding: "32px 36px", boxShadow: SHADOW, border: "1px solid #DADCE0" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "22px" }}>
                 <div style={{ width: "40px", height: "40px", background: "#00B67A15", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>
