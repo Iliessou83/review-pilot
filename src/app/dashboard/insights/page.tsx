@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { PLATFORMS, PLATFORM_KEYS, platformMeta, type PlatformKey } from "@/lib/platforms";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
 type Business = { id: number; name: string };
@@ -179,7 +179,7 @@ export default function InsightsPage() {
                   )}
 
                   {!data.aiAvailable && (
-                    <Card style={{ padding: "14px 18px", marginBottom: 20, background: "#FEF7E0", border: "1px solid #FBBC04", color: "#7A5900", fontSize: 13 }}>
+                    <Card style={{ padding: "14px 18px", marginBottom: 20, background: "#FEF7E0", border: "1px solid #E0A11A", color: "#7A5900", fontSize: 13 }}>
                       L&apos;analyse par thèmes n&apos;est pas disponible (clé IA manquante ou avis sans texte). Les statistiques ci-dessus restent valides.
                     </Card>
                   )}

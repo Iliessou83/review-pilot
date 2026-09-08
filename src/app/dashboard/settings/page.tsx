@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
 const BUSINESS_TYPES = [
@@ -54,6 +54,10 @@ type BusinessSettings = {
   ownerPhone: string;
 };
 
+type SettingsPayload = Partial<BusinessSettings> & {
+  automationConsentAccepted?: boolean;
+};
+
 const STATUS_LABELS: Record<ProductFact["status"], string> = {
   frais: "Frais",
   surgele: "Surgelé",
@@ -82,12 +86,13 @@ function Toggle({ value, onChange, color }: { value: boolean; onChange: (v: bool
   );
 }
 
-function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; onSave: (id: number, data: Partial<BusinessSettings>) => Promise<void>; onDisconnect: (id: number) => Promise<void> }) {
+function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; onSave: (id: number, data: SettingsPayload) => Promise<void>; onDisconnect: (id: number) => Promise<void> }) {
   const [local, setLocal] = useState({ ...biz });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [disconnecting, setDisconnecting] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   async function handleDisconnect() {
     const ok = window.confirm(
@@ -110,6 +115,12 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
   }
 
   async function handleSave() {
+    const currentMode = local.autoReplyNegative ? "all_delegated" : local.autoReply5Star ? "positive_auto" : "manual";
+    const savedMode = biz.autoReplyNegative ? "all_delegated" : biz.autoReply5Star ? "positive_auto" : "manual";
+    if (currentMode !== "manual" && currentMode !== savedMode && !consentAccepted) {
+      setError("Cochez la case de mandat explicite avant d'activer cette délégation.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -117,7 +128,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
       // un email de notification malgré le libellé du champ. Réservé à l'admin côté
       // API (/api/settings) : on ne l'envoie que s'il a vraiment changé, pour ne pas
       // faire échouer l'enregistrement des autres réglages pour un client normal.
-      const payload: Partial<BusinessSettings> = {
+      const payload: SettingsPayload = {
         businessType: local.businessType,
         autoReply5Star: local.autoReply5Star,
         autoReplyNegative: local.autoReplyNegative,
@@ -131,10 +142,12 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
         brandTone: local.brandTone,
         tutoiement: local.tutoiement,
         ownerPhone: local.ownerPhone,
+        automationConsentAccepted: consentAccepted,
       };
       if (local.ownerEmail !== biz.ownerEmail) payload.ownerEmail = local.ownerEmail;
 
       await onSave(biz.id, payload);
+      setConsentAccepted(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
@@ -145,6 +158,18 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
   }
 
   const examples = COMPENSATION_EXAMPLES[local.businessType] || COMPENSATION_EXAMPLES.other;
+  const automationMode = local.autoReplyNegative ? "all_delegated" : local.autoReply5Star ? "positive_auto" : "manual";
+  const initialMode = biz.autoReplyNegative ? "all_delegated" : biz.autoReply5Star ? "positive_auto" : "manual";
+
+  function chooseAutomationMode(mode: "manual" | "positive_auto" | "all_delegated") {
+    setLocal(s => ({
+      ...s,
+      autoReply5Star: mode !== "manual",
+      autoReplyNegative: mode === "all_delegated",
+    }));
+    setConsentAccepted(false);
+    setSaved(false);
+  }
 
   return (
     <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "16px", overflow: "hidden", boxShadow: SHADOW }}>
@@ -204,24 +229,38 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
           </div>
         </div>
 
-        {/* Auto-reply 4-5★ */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", background: "#F8F9FA", borderRadius: "10px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Réponse automatique 4-5 ★</div>
-            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>L&apos;IA répond dès la détection. Personnalisée avec le prénom.</div>
+        {/* Mandat explicite de gestion des avis */}
+        <div style={{ padding: "16px", background: "#F6F8FC", border: "1px solid #D8E0EC", borderRadius: "12px" }}>
+          <div style={{ fontSize: "14px", fontWeight: 700, color: "#172B4D", marginBottom: "4px" }}>Qui répond aux avis ?</div>
+          <div style={{ fontSize: "12px", color: "#5B6575", marginBottom: "12px" }}>Aucune option n&apos;est activée automatiquement. Vous pouvez retirer ce mandat à tout moment.</div>
+          <div style={{ display: "grid", gap: "8px" }}>
+            {[
+              { value: "manual", title: "Je garde la main", desc: "Caela prépare des suggestions, je confirme les publications." },
+              { value: "positive_auto", title: "Déléguer les avis 4–5 ★", desc: "Caela répond automatiquement aux avis positifs. Je valide les avis 1–3 ★." },
+              { value: "all_delegated", title: "Déléguer tous les avis à Caela", desc: "Réponse automatique aux avis 4–5 ★ ; les avis 1–3 ★ sont pris en charge par l’équipe Caela avec contrôle humain." },
+            ].map(option => {
+              const selected = automationMode === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => chooseAutomationMode(option.value as "manual" | "positive_auto" | "all_delegated")}
+                  style={{ padding: "12px 14px", textAlign: "left", borderRadius: "10px", border: `2px solid ${selected ? G.blue : "#D8E0EC"}`, background: selected ? "#EEF3FF" : "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: selected ? G.blue : "#172B4D" }}>{selected ? "● " : "○ "}{option.title}</div>
+                  <div style={{ fontSize: "12px", color: "#5B6575", marginTop: "3px", lineHeight: 1.45 }}>{option.desc}</div>
+                </button>
+              );
+            })}
           </div>
-          <Toggle value={local.autoReply5Star} onChange={v => update("autoReply5Star", v)} color={G.green} />
-        </div>
-
-        {/* Auto-reply négatif */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", background: "#F8F9FA", borderRadius: "10px" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Réponse automatique avis négatifs 1-3 ★</div>
-            <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
-              {local.autoReplyNegative ? "L'IA répond automatiquement sans vous demander." : "Désactivé: vous recevez 3 suggestions par email (recommandé)."}
-            </div>
-          </div>
-          <Toggle value={local.autoReplyNegative} onChange={v => update("autoReplyNegative", v)} color={G.yellow} />
+          {automationMode !== "manual" && automationMode !== initialMode && (
+            <label style={{ display: "flex", gap: "9px", alignItems: "flex-start", marginTop: "13px", padding: "12px", background: "#fff", border: `1px solid ${consentAccepted ? G.green : "#D8E0EC"}`, borderRadius: "9px", cursor: "pointer" }}>
+              <input type="checkbox" checked={consentAccepted} onChange={e => setConsentAccepted(e.target.checked)} style={{ marginTop: "2px", accentColor: G.green }} />
+              <span style={{ fontSize: "12px", color: "#26364D", lineHeight: 1.5 }}>
+                <strong>Je mandate expressément Caela</strong> pour publier des réponses publiques au nom de cet établissement selon le périmètre choisi. Je comprends que les réponses seront visibles sur Google et que je peux révoquer ce mandat à tout moment.
+              </span>
+            </label>
+          )}
         </div>
 
         {/* Exemple concret de réponse auto (avant activation) */}
@@ -397,7 +436,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
               <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
                 {local.regulatedSector
                   ? "Désactivé : établissement en profession réglementée."
-                  : "Inclut une offre dans les réponses aux avis négatifs. +45% de reconversion."}
+                  : "Peut inclure un geste de service après une réclamation, jamais en échange d'une modification ou suppression d'avis."}
               </div>
             </div>
             <Toggle
@@ -512,7 +551,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
               onClick={() => update("productFacts", [...local.productFacts, { category: "", status: "frais", disclosed: true }])}
               style={{
                 alignSelf: "flex-start", padding: "8px 14px", background: "#E8F0FE",
-                border: "1px solid rgba(26,115,232,0.3)", borderRadius: "8px",
+                border: "1px solid rgba(36,87,197,0.3)", borderRadius: "8px",
                 color: G.blue, fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "inherit",
               }}
             >
@@ -559,7 +598,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
               {local.escalationKeywords.map((kw, i) => (
                 <span key={i} style={{
                   display: "flex", alignItems: "center", gap: "6px",
-                  padding: "5px 10px", background: "#FEF7E0", border: "1px solid rgba(251,188,4,0.4)",
+                  padding: "5px 10px", background: "#FEF7E0", border: "1px solid rgba(224,161,26,0.4)",
                   borderRadius: "16px", fontSize: "12px", color: "#B06000",
                 }}>
                   {kw}
@@ -615,7 +654,7 @@ export default function SettingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleSave(id: number, fields: Partial<BusinessSettings>) {
+  async function handleSave(id: number, fields: SettingsPayload) {
     const res = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -695,7 +734,7 @@ export default function SettingsPage() {
       {businesses.length > 0 && (
         <div style={{ marginTop: "20px", padding: "14px 18px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px" }}>
           <span style={{ fontSize: "16px" }}>💡</span>
-          <div style={{ fontSize: "13px", color: "#1A73E8", lineHeight: 1.5 }}>
+          <div style={{ fontSize: "13px", color: "#2457C5", lineHeight: 1.5 }}>
             <strong>ANTHROPIC_API_KEY requis</strong> pour générer les réponses IA. Sans cette clé, le bot ne peut pas répondre aux avis.
             Configurez-la dans les variables d&apos;environnement Vercel et dans <code style={{ background: "#D2E3FC", padding: "1px 4px", borderRadius: "4px", fontSize: "12px" }}>.env.local</code>.
           </div>

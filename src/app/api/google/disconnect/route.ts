@@ -2,10 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { businesses } from "@/db/schema";
+import { businesses, businessConsents } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
+import { decryptToken } from "@/lib/token-crypto";
 
 // Déconnecte le compte Google Business d'un commerce : efface les jetons
 // stockés (platform_token = refresh_token). Le commerce et son historique
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   const [existing] = await db
-    .select({ id: businesses.id, platform: businesses.platform })
+    .select({ id: businesses.id, platform: businesses.platform, platformToken: businesses.platformToken })
     .from(businesses)
     .where(eq(businesses.id, businessId))
     .limit(1);
@@ -45,10 +46,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ce commerce n'est pas connecté via Google" }, { status: 400 });
   }
 
-  await db
-    .update(businesses)
-    .set({ platformToken: "" })
-    .where(eq(businesses.id, businessId));
+  let remoteRevoked = false;
+  if (existing.platformToken) {
+    try {
+      const revokeResponse = await fetch("https://oauth2.googleapis.com/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ token: decryptToken(existing.platformToken) }),
+      });
+      remoteRevoked = revokeResponse.ok;
+    } catch (error) {
+      console.error("Google token revocation failed:", error);
+    }
+  }
 
-  return NextResponse.json({ ok: true });
+  await db.transaction(async (tx) => {
+    await tx
+      .update(businesses)
+      .set({ platformToken: "", autoReply5Star: false, autoReplyNegative: false })
+      .where(eq(businesses.id, businessId));
+
+    await tx.insert(businessConsents).values({
+      businessId,
+      actorEmail: session.email.toLowerCase(),
+      scope: "manual",
+      termsVersion: "review-management-2026-09-v1",
+      granted: false,
+    });
+  });
+
+  return NextResponse.json({ ok: true, remoteRevoked });
 }

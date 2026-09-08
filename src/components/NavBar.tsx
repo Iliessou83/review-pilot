@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 
 // Palette de sections — couleurs statiques (jamais générées dynamiquement),
 // une par groupe fonctionnel du menu. Réutilise l'identité Google déjà en
 // place (bleu/vert/jaune) + un gris neutre pour le compte.
 const SECTION_COLOR = {
-  blue: "#1A73E8",
+  blue: "#2457C5",
   green: "#0F9D58",
   amber: "#B06000",
   slate: "#5F6368",
@@ -133,7 +133,7 @@ export default function NavBar() {
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, flexShrink: 1 }}>
           <div style={{ display: "flex", gap: "3px", flexShrink: 0 }}>
-            {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+            {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
               <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", background: c }} />
             ))}
           </div>

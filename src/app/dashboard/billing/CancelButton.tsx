@@ -29,7 +29,7 @@ export default function CancelButton({ alreadyCancelled }: { alreadyCancelled: b
 
   if (done) {
     return (
-      <p style={{ fontSize: "14px", color: "#34A853", fontWeight: 600, margin: 0 }}>
+      <p style={{ fontSize: "14px", color: "#16856B", fontWeight: 600, margin: 0 }}>
         ✓ Résiliation enregistrée. Aucun nouveau prélèvement. Vous gardez l&apos;accès jusqu&apos;à la date d&apos;échéance.
       </p>
     );
@@ -59,7 +59,7 @@ export default function CancelButton({ alreadyCancelled }: { alreadyCancelled: b
           onClick={cancel}
           disabled={loading}
           style={{
-            padding: "10px 18px", background: "#EA4335", border: "none",
+            padding: "10px 18px", background: "#D6455D", border: "none",
             color: "#fff", borderRadius: "6px", fontSize: "14px", fontWeight: 600,
             cursor: loading ? "default" : "pointer", opacity: loading ? 0.6 : 1,
           }}
@@ -76,7 +76,7 @@ export default function CancelButton({ alreadyCancelled }: { alreadyCancelled: b
           Garder mon abonnement
         </button>
       </div>
-      {error && <p style={{ fontSize: "13px", color: "#EA4335", margin: 0 }}>{error}</p>}
+      {error && <p style={{ fontSize: "13px", color: "#D6455D", margin: 0 }}>{error}</p>}
     </div>
   );
 }

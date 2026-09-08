@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DelegateBanner from "@/components/DelegateBanner";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
 type Business = { id: number; name: string };
@@ -222,7 +222,7 @@ export default function CollectePage() {
 
           {/* Alertes config */}
           {!hasLink && (
-            <Card style={{ padding: "12px 16px", marginBottom: 12, background: "#FEF7E0", border: "1px solid #FBBC04", color: "#7A5900", fontSize: 13 }}>
+            <Card style={{ padding: "12px 16px", marginBottom: 12, background: "#FEF7E0", border: "1px solid #E0A11A", color: "#7A5900", fontSize: 13 }}>
               ⚠ Ajoutez votre <strong>lien d&apos;avis Google</strong> dans les <Link href="/dashboard/settings" style={{ color: "#7A5900", fontWeight: 700 }}>Paramètres</Link> pour pouvoir envoyer les demandes.
             </Card>
           )}
@@ -275,7 +275,7 @@ export default function CollectePage() {
             <span style={{ fontSize: 13, color: "#5F6368" }}>{checked.size} sélectionné(s)</span>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {!smsOk && (
-                <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#FEF7E0", color: "#7A5900", border: "1px solid #FBBC04" }}>
+                <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#FEF7E0", color: "#7A5900", border: "1px solid #E0A11A" }}>
                   Bientôt
                 </span>
               )}

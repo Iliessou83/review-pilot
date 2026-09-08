@@ -211,8 +211,8 @@ canvas {
    tourne réellement) : anneau qui respire, pour appuyer visuellement le "30
    secondes" sans texte supplémentaire. */
 @keyframes rp-pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52,168,83,0.5); }
-  50% { box-shadow: 0 0 0 5px rgba(52,168,83,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22,133,107,0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(22,133,107,0); }
 }
 .rp-live-dot {
   animation: rp-pulse-dot 1.8s ease-in-out infinite;
@@ -309,8 +309,8 @@ canvas {
 /* Halo discret sur le bouton du chatbot fermé — signale une présence
    active plutôt qu'un bouton statique, sans être criard/gimmick. */
 @keyframes rp-chat-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(26,115,232,0.35); }
-  50% { box-shadow: 0 0 0 8px rgba(26,115,232,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(36,87,197,0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(36,87,197,0); }
 }
 .rp-chat-pulse {
   animation: rp-chat-pulse 2.6s ease-in-out infinite;

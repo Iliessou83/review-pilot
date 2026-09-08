@@ -4,7 +4,7 @@ import { useState } from "react";
 import { track } from "@/lib/analytics/client";
 import { EV } from "@/lib/analytics/events";
 
-const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", purple: "#7C3AED" };
+const G = { blue: "#2457C5", green: "#16856B", grey: "#5F6368", red: "#D6455D", purple: "#7C3AED" };
 
 /**
  * Mêmes 3 formules, mêmes chiffres que la page publique (src/app/HomeClient.tsx

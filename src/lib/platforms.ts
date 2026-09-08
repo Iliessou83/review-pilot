@@ -3,7 +3,7 @@
 // ajouter des sources sans migration. google + trustpilot sont branchés en API ;
 // les autres arrivent aujourd'hui par import (CSV/coller), connecteurs natifs à venir.
 export const PLATFORMS = {
-  google: { label: "Google", color: "#1A73E8", bg: "#E8F0FE", live: true },
+  google: { label: "Google", color: "#2457C5", bg: "#E8F0FE", live: true },
   trustpilot: { label: "Trustpilot", color: "#00B67A", bg: "#E6F7F1", live: true },
   facebook: { label: "Facebook", color: "#1877F2", bg: "#E7F0FE", live: false },
   tripadvisor: { label: "Tripadvisor", color: "#00AA6C", bg: "#E6F6EF", live: false },

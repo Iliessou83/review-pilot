@@ -11,7 +11,7 @@ import { trackClic } from "@/lib/analytics/client";
 // chargement de la page pour tous les visiteurs qui ne l'ouvrent jamais.
 const ChatBot = dynamic(() => import("@/components/ChatBot"), { ssr: false });
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW_SM = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 const SHADOW_MD = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 const SHADOW_LG = "0 4px 12px rgba(60,64,67,0.18), 0 2px 6px rgba(60,64,67,0.1)";
@@ -20,7 +20,7 @@ const SHADOW_XL = "0 14px 32px rgba(60,64,67,0.22), 0 4px 10px rgba(60,64,67,0.1
 function GDots({ size = 8 }: { size?: number }) {
   return (
     <div style={{ display: "flex", gap: `${Math.round(size * 0.4)}px`, alignItems: "center" }}>
-      {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+      {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
         <div key={i} style={{ width: size, height: size, borderRadius: "50%", background: c }} />
       ))}
     </div>
@@ -29,11 +29,7 @@ function GDots({ size = 8 }: { size?: number }) {
 
 function GL({ size = 22 }: { size?: number }) {
   return (
-    <span style={{ fontSize: size, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1 }}>
-      <span style={{ color: G.blue }}>G</span><span style={{ color: G.red }}>o</span>
-      <span style={{ color: G.yellow }}>o</span><span style={{ color: G.blue }}>g</span>
-      <span style={{ color: G.green }}>l</span><span style={{ color: G.red }}>e</span>
-    </span>
+    <span style={{ fontSize: size, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: "#172B4D" }}>Google</span>
   );
 }
 
@@ -165,17 +161,16 @@ function GMBCard() {
       }}>
         Auditer ma fiche →
       </div>
-      <div style={{ height: "130px", background: "linear-gradient(135deg, #E8F0FE, #D2E3FC 50%, #E6F4EA)", position: "relative", overflow: "hidden" }}>
-        {[0,1,2,3,4].map(i => <div key={i} style={{ position: "absolute", left: 0, right: 0, top: `${i*28}px`, height: "1px", background: "rgba(26,115,232,0.08)" }} />)}
-        {[0,1,2,3,4,5,6,7].map(i => <div key={i} style={{ position: "absolute", top: 0, bottom: 0, left: `${i*42}px`, width: "1px", background: "rgba(26,115,232,0.08)" }} />)}
+      <div style={{ height: "130px", background: "linear-gradient(135deg, #EEF3FF, #DCE5FA 50%, #EAF7F3)", position: "relative", overflow: "hidden" }}>
+        {[0,1,2,3,4].map(i => <div key={i} style={{ position: "absolute", left: 0, right: 0, top: `${i*28}px`, height: "1px", background: "rgba(36,87,197,0.08)" }} />)}
+        {[0,1,2,3,4,5,6,7].map(i => <div key={i} style={{ position: "absolute", top: 0, bottom: 0, left: `${i*42}px`, width: "1px", background: "rgba(36,87,197,0.08)" }} />)}
         <div style={{ position: "absolute", top: "40px", left: 0, right: 0, height: "7px", background: "rgba(255,255,255,0.6)", borderRadius: "2px" }} />
         <div style={{ position: "absolute", top: "80px", left: 0, right: 0, height: "5px", background: "rgba(255,255,255,0.4)", borderRadius: "2px" }} />
         <div style={{ position: "absolute", top: 0, bottom: 0, left: "120px", width: "7px", background: "rgba(255,255,255,0.5)", borderRadius: "2px" }} />
-        <div style={{ position: "absolute", top: "28px", left: "100px" }}>
-          <div style={{ width: "26px", height: "26px", background: G.red, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)", boxShadow: "0 2px 8px rgba(234,67,53,0.4)" }} />
-          <div style={{ width: "8px", height: "8px", background: "#fff", borderRadius: "50%", position: "absolute", top: "9px", left: "9px" }} />
+        <div style={{ position: "absolute", inset: "28px 24px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
+          {[38, 62, 48, 82, 72, 96].map((height, i) => <div key={i} style={{ flex: 1, height: `${height}%`, background: i === 5 ? G.green : G.blue, opacity: i === 5 ? 1 : 0.2 + i * 0.1, borderRadius: "6px 6px 2px 2px" }} />)}
         </div>
-        <div style={{ position: "absolute", bottom: "7px", right: "10px", fontSize: "9px", color: "rgba(32,33,36,0.4)" }}>Google Maps</div>
+        <div style={{ position: "absolute", top: "9px", left: "12px", fontSize: "10px", fontWeight: 700, color: "#31507A" }}>TABLEAU DE SUIVI CAELA</div>
       </div>
       <div style={{ padding: "14px" }}>
         <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>Restaurant Le Cèdre</h3>
@@ -186,7 +181,7 @@ function GMBCard() {
         </div>
         <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#5F6368" }}>Restaurant · Cuisine libanaise · Ouvert</p>
         <div style={{ display: "flex", gap: "6px", marginBottom: "12px" }}>
-          {[{ icon: "📍", label: "Itinéraire" }, { icon: "🌐", label: "Site web" }, { icon: "📞", label: "Appeler" }].map(b => (
+          {[{ icon: "✓", label: "Suivis" }, { icon: "↗", label: "Tendance" }, { icon: "⏱", label: "Délai" }].map(b => (
             <div key={b.label} style={{ flex: 1, padding: "6px 4px", background: "#E8F0FE", borderRadius: "7px", textAlign: "center", cursor: "pointer" }}>
               <div style={{ fontSize: "13px" }}>{b.icon}</div>
               <div style={{ fontSize: "10px", fontWeight: 500, color: G.blue }}>{b.label}</div>
@@ -443,8 +438,8 @@ const DIY_COMPARISON_ROWS = [
   { bad: "Tu réalises à J+3 qu'un avis 1⭐ attend une réponse", good: "Alerte et 3 suggestions après la prochaine synchronisation" },
   { bad: "Tu écris la même réponse générique pour la 12ème fois", good: "Chaque réponse cite le prénom et un détail. Jamais générique." },
   { bad: "Tu réponds énervé. Ça se voit et ça coûte des clients", good: "Pour les avis négatifs : 3 tons calibrés. Tu choisis en 1 clic." },
-  { bad: "3h/semaine perdues sur les avis au lieu de gérer", good: "Taux de réponse >95%. Google t'en récompense sur Maps." },
-  { bad: "Ta note stagne. Les concurrents qui répondent vite te dépassent", good: "Ta note monte. L'IA travaille. Tu dors." },
+  { bad: "Le suivi des avis prend du temps chaque semaine", good: "Chaque réponse traitée par Caela est suivie et horodatée." },
+  { bad: "Ta fiche manque de suivi et les avis restent sans réponse", good: "Les réponses montrent publiquement que tu prends les retours au sérieux." },
 ];
 
 // Refonte complète (2026-08-29) : l'ancienne version pilotait tout via des
@@ -636,10 +631,10 @@ const PLANS = [
 ];
 
 const DIY_ARGS = [
-  { color: G.red, bg: "#FCE8E6", icon: "⏱", stat: "3h perdues/semaine", title: "Ton temps vaut plus que ça", desc: "50 avis/mois = 3h de rédaction. Le Solo coûte 69€ : ton temps vaut plus." },
-  { color: G.blue, bg: "#E8F0FE", icon: "📍", stat: "+12% de vues Maps", title: "La vitesse impacte ton SEO Google", desc: "Google Maps favorise les fiches qui répondent vite. Un signal fort pour l'algorithme." },
-  { color: G.yellow, bg: "#FEF7E0", icon: "🧠", stat: "45% reconvertis", title: "Les avis négatifs mal gérés coûtent cher", desc: "Une réponse pro à un avis 1⭐ reconvertit 45% des clients qui hésitaient." },
-  { color: G.green, bg: "#E6F4EA", icon: "👀", stat: "89% lisent tes réponses", title: "Tes réponses convertissent avant l'appel", desc: "89% lisent tes réponses avant de contacter. Une bonne réponse = client gagné." },
+  { color: G.red, bg: "#FFF0F2", icon: "⏱", stat: "Temps mesurable", title: "Ton temps vaut plus que ça", desc: "Caela suit le nombre de réponses prises en charge et estime le temps opérationnel économisé." },
+  { color: G.blue, bg: "#EEF3FF", icon: "📍", stat: "Suivi officiel", title: "Mesure ce que Google fournit", desc: "Impressions, appels, clics site et itinéraires peuvent être suivis via l'API Performance, sans promettre un rang." },
+  { color: G.yellow, bg: "#FFF7E8", icon: "🧠", stat: "Contrôle humain", title: "Les avis sensibles méritent une vraie attention", desc: "Les avis 1–3★ délégués sont relus par l'équipe Caela avant publication." },
+  { color: G.green, bg: "#EDF8F4", icon: "👀", stat: "Réponses utiles", title: "Montre que chaque retour compte", desc: "Google indique qu'une réponse utile montre que l'entreprise accorde de l'importance à ses clients." },
   { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Rush, vacances, périodes chargées : les avis s'accumulent. L'IA n'en rate jamais un." },
   { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. On gère 30 fiches comme une." },
 ];
@@ -829,11 +824,9 @@ function DIYCardsCarousel() {
 
 const COMPETITORS = [
   { name: "Caela Réputation 🇫🇷", solo: "49-69€", business: "149€", agency: "449€", aiAuto: true, fr: true, gmb: true, trial: true, highlight: true },
-  { name: "getreviewpilot.ai 🇺🇸", solo: "$29-49", business: "$49", agency: "—", aiAuto: true, fr: false, gmb: true, trial: true, highlight: false },
-  { name: "Partoo 🇫🇷", solo: "~150€", business: "~250€", agency: "Custom", aiAuto: false, fr: true, gmb: true, trial: false, highlight: false },
-  { name: "Birdeye 🇺🇸", solo: "~290€", business: "~450€", agency: "Custom", aiAuto: true, fr: false, gmb: true, trial: false, highlight: false },
-  { name: "Avis Vérifiés 🇫🇷", solo: "~79€", business: "~149€", agency: "Custom", aiAuto: false, fr: true, gmb: false, trial: false, highlight: false },
-  { name: "Uberall 🇩🇪", solo: "~200€", business: "~400€", agency: "Custom", aiAuto: false, fr: false, gmb: true, trial: false, highlight: false },
+  { name: "Partoo 🇫🇷", solo: "Sur devis", business: "Sur devis", agency: "Sur devis", aiAuto: true, fr: true, gmb: true, trial: false, highlight: false },
+  { name: "Birdeye 🇺🇸", solo: "Sur devis", business: "Sur devis", agency: "Sur devis", aiAuto: true, fr: false, gmb: true, trial: false, highlight: false },
+  { name: "Uberall 🇩🇪", solo: "Sur devis", business: "Sur devis", agency: "Sur devis", aiAuto: true, fr: false, gmb: true, trial: false, highlight: false },
 ];
 
 // Bundle vidéos explicatif décidé le 2026-08-07, pour se différencier des
@@ -959,7 +952,7 @@ function ReplyExampleCard({ ex, index }: { ex: ReplyExample; index: number }) {
 const GMB_SERVICES = [
   {
     color: G.blue, bg: "#E8F0FE", icon: "✨", title: "Pack Lancement GMB", tag: "Création + Optimisation", price: "199€",
-    desc: "Fiche créée de zéro (catégories, horaires, SEO local) puis optimisée à fond : audit, rewriting, photos, posts, Q&A. Boost de visibilité sur Google Maps dès les 30 premiers jours.",
+    desc: "Fiche créée de zéro puis travaillée sur les éléments maîtrisables : catégories, horaires, description, photos, posts et Q&A. Suivi des indicateurs disponibles, sans garantie de classement.",
     features: ["Audit + création complète de la fiche", "Catégories, horaires, SEO local", "Rédaction posts, photos, Q&A", "Paiement unique, aucun abonnement"],
     highlight: false,
   },
@@ -1345,17 +1338,17 @@ export default function HomeClient() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px", flexWrap: "wrap" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 14px", background: "#E8F0FE", borderRadius: "24px" }}>
               <GDots size={7} />
-              <span style={{ fontSize: "13px", fontWeight: 600, color: G.blue }}>Spécialiste Google Business Profile</span>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: G.blue }}>Gestion indépendante de Business Profile</span>
             </div>
             <GuidedTourButton />
           </div>
           <h1 style={{ margin: "0 0 20px", fontSize: "clamp(34px, 4.8vw, 66px)", fontWeight: 700, letterSpacing: "-1.6px", lineHeight: 1.12, color: "#202124" }}>
-            Vos avis <GL size={48} /> répondus.<br />
-            <span style={{ color: G.green }}>Automatiquement.</span>
+            Vos avis <GL size={48} /> pris en charge.<br />
+            <span style={{ color: G.green }}>Selon votre choix.</span>
           </h1>
           <p style={{ margin: "0 0 36px", fontSize: "20px", lineHeight: 1.6, color: "#5F6368", maxWidth: "660px" }}>
-            Vos nouveaux avis sont vérifiés <strong>chaque heure</strong>. Après détection, Caela Réputation répond aux <span style={{ color: G.yellow, fontWeight: 700 }}>4-5★</span> et vous envoie par email 3 suggestions pour les avis de 1 à 3★.<br />
-            <strong style={{ whiteSpace: "nowrap" }}>Un clic pour publier.</strong>
+            Vos nouveaux avis sont vérifiés <strong>chaque heure</strong>. Vous choisissez : garder la main, déléguer les <span style={{ color: G.yellow, fontWeight: 700 }}>4–5★</span>, ou confier tous les avis à Caela avec contrôle humain sur les avis sensibles.<br />
+            <strong>Le mandat est désactivé par défaut et révocable à tout moment.</strong>
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
             <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_hero")} className="rp-cta-hover" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
@@ -1372,7 +1365,7 @@ export default function HomeClient() {
             {[
               { icon: "🇫🇷", label: "100% français", color: G.blue },
               { icon: "⚡", label: "Synchronisation horaire", color: G.green },
-              { icon: "🔒", label: "RGPD · API officielle", color: G.red },
+              { icon: "🔒", label: "OAuth · API officielle", color: G.red },
             ].map(item => (
               <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ fontSize: "14px" }}>{item.icon}</span>
@@ -1444,7 +1437,7 @@ export default function HomeClient() {
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3vw, 34px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
               Pourquoi Caela Réputation ?
             </h2>
-            <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>Comparaison honnête. Aucun concurrent français ne propose l&apos;IA auto-réponse à ce prix.</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#5F6368" }}>Panel fonctionnel vérifié le 8 septembre 2026. Les concurrents sans tarif public sont indiqués « sur devis ».</p>
           </div>
 
           {/* Accordéon fermé par défaut : le comparatif détaillé (5 concurrents,
@@ -1458,7 +1451,7 @@ export default function HomeClient() {
               fontSize: "14px", fontWeight: 700, color: G.blue, boxShadow: SHADOW_SM,
               maxWidth: "440px", margin: "0 auto",
             }}>
-              📊 Voir le comparatif détaillé face à 5 concurrents
+              📊 Voir le comparatif détaillé
               <span className="rp-chevron" style={{ fontSize: "12px" }}>▾</span>
             </summary>
 
@@ -1494,7 +1487,7 @@ export default function HomeClient() {
             </table>
           </div>
           <p style={{ textAlign: "center", fontSize: "11px", color: "#80868B", marginTop: "10px" }}>
-            * Prix indicatifs publics 2025-2026.
+            Sources consultées le 8 septembre 2026 : pages produit et tarifs officielles de Partoo, Birdeye et Uberall. Les fonctionnalités et tarifs peuvent évoluer.
           </p>
 
           {/* Why not the US tool — largeurs bornées des deux côtés (au lieu
@@ -1853,8 +1846,8 @@ export default function HomeClient() {
             <div style={{ padding: "18px 22px", background: "#E8F0FE", borderRadius: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
               <span style={{ fontSize: "17px" }}>🔒</span>
               <div>
-                <div style={{ fontSize: "13.5px", fontWeight: 600, color: G.blue, marginBottom: "4px" }}>Zéro risque pour votre fiche Google</div>
-                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}>API officielle Google My Business exclusivement. Réponses publiées sous le nom de votre établissement, jamais sous le nôtre. 100% conforme aux CGU Google.</div>
+                <div style={{ fontSize: "13.5px", fontWeight: 600, color: G.blue, marginBottom: "4px" }}>Vous gardez le contrôle de votre fiche</div>
+                <div style={{ fontSize: "13px", color: "#5F6368", lineHeight: 1.55 }}>Connexion OAuth et API Business Profile officielles. Vous choisissez le périmètre délégué et pouvez retirer l&apos;accès à tout moment.</div>
               </div>
             </div>
           </div>
@@ -1879,7 +1872,7 @@ export default function HomeClient() {
                 Produit physique
               </div>
               <h2 style={{ margin: "0 0 12px", fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124", lineHeight: 1.2 }}>
-                Collectez 3× plus d&apos;avis avec nos plaques NFC
+                Facilitez la collecte d&apos;avis avec nos plaques NFC
               </h2>
               <p style={{ margin: "0 0 28px", fontSize: "15px", color: "#5F6368", lineHeight: 1.65 }}>
                 Posez la plaque sur votre comptoir. Votre client tape avec son téléphone. Il est directement sur votre fiche Google. Il laisse un avis en 30 secondes.
@@ -1929,7 +1922,7 @@ export default function HomeClient() {
                 {[
                   "Envoie le client sur votre fiche Google. C'est tout.",
                   "Le client scanne, part, et disparaît. Aucun contact récupéré.",
-                  "Un avis négatif part directement en public. Aucun filtre.",
+                  "Tous les clients peuvent publier librement un avis positif ou négatif.",
                   "Aucune réponse aux avis. Vous rédigez tout, à la main.",
                   "Zéro donnée : ni suivi des scans, ni note, ni tendance.",
                   "Rien à afficher sur votre site. Les avis restent sur Google.",
@@ -1945,10 +1938,10 @@ export default function HomeClient() {
                 {[
                   "Collecte les avis ET les exploite : l'IA répond dès la détection.",
                   "Roue de la fortune (propulsée par Gagnify) : le client laisse son email/SMS avant de jouer. Vous gardez le contact.",
-                  "Les mécontents sont invités à vous écrire en privé d'abord.",
-                  "Chaque avis négatif : 3 réponses prêtes, 1 clic pour publier.",
+                  "Tous les clients accèdent au même lien d'avis, sans filtrage selon leur satisfaction.",
+                  "Chaque avis négatif : suggestions au commerçant ou prise en charge humaine par Caela, selon son choix.",
                   "Dashboard : note, volume, tendance, rapport hebdo par email.",
-                  "Widget d'avis + étoiles dans Google (rich snippets) sur votre site.",
+                  "Widget d'avis sur votre site, sous réserve des droits d'affichage de la plateforme source.",
                 ].map(item => (
                   <div key={item} style={{ display: "flex", gap: "8px", marginBottom: "9px" }}>
                     <span style={{ color: G.green, fontWeight: 700, flexShrink: 0 }}>✓</span>
@@ -2021,7 +2014,7 @@ export default function HomeClient() {
             <span style={{ fontSize: "20px" }}>💡</span>
             <div>
               <p style={{ margin: "0 0 6px", fontSize: "13px", color: "#5F6368", lineHeight: 1.5 }}>
-                <strong style={{ color: "#202124" }}>Combo gagnant:</strong> Plaque NFC (collecte les avis) + Caela Réputation (répond automatiquement). Plus d&apos;avis = meilleur référencement Google Maps = plus de clients.
+                <strong style={{ color: "#202124" }}>Le parcours complet :</strong> la plaque facilite une demande neutre d&apos;avis et Caela prend en charge le suivi. Google indique que le volume et la note peuvent contribuer à la notoriété locale, sans garantir une position.
               </p>
               <p style={{ margin: 0, fontSize: "13px", color: G.green, fontWeight: 700, lineHeight: 1.5 }}>
                 -20% sur ce pack si vous êtes déjà client Pack Lancement ou Pack Croissance (voir ci-dessus).
@@ -2098,7 +2091,7 @@ export default function HomeClient() {
           zIndex: 92,
         }}
       >
-        <div className={loginWidgetOpen ? "" : "rp-widget-nudge"} style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "18px", borderTopRightRadius: "18px", boxShadow: "0 -10px 32px rgba(26,115,232,0.22)", overflow: "hidden" }}>
+        <div className={loginWidgetOpen ? "" : "rp-widget-nudge"} style={{ background: "#fff", border: "1px solid #DADCE0", borderTopLeftRadius: "18px", borderTopRightRadius: "18px", boxShadow: "0 -10px 32px rgba(36,87,197,0.22)", overflow: "hidden" }}>
           {/* Poignée toujours visible, même repliée — dégradé bleu de marque
               + halo pulsé (au lieu d'un gris plat) pour être visible sans
               avoir à la chercher, et plus grande pour se lire de loin. */}
@@ -2106,7 +2099,7 @@ export default function HomeClient() {
             onClick={() => setLoginWidgetOpen(o => !o)}
             className={loginWidgetOpen ? "" : "rp-chat-pulse"}
             style={{
-              width: "100%", padding: "16px 18px", background: "linear-gradient(135deg, #1A73E8, #1557b0)", border: "none", cursor: "pointer",
+              width: "100%", padding: "16px 18px", background: "linear-gradient(135deg, #2457C5, #183F93)", border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontFamily: "inherit",
             }}
           >

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { businesses, reviews } from "@/db/schema";
+import { businesses, reviews, reviewActivityEvents } from "@/db/schema";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { requireAuth, ADMIN_EMAILS } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
@@ -68,6 +68,12 @@ async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
         responded: false,
         platform: "google",
       }).returning();
+      await db.insert(reviewActivityEvents).values({
+        businessId: business.id,
+        platform: "google",
+        eventType: "review_detected",
+        handlingMode: "manual",
+      });
       newReviews.push(saved);
     }
   }
@@ -103,6 +109,12 @@ async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
         responded: false,
         platform: "trustpilot",
       }).returning();
+      await db.insert(reviewActivityEvents).values({
+        businessId: business.id,
+        platform: "trustpilot",
+        eventType: "review_detected",
+        handlingMode: "manual",
+      });
       newReviews.push(saved);
     }
   }

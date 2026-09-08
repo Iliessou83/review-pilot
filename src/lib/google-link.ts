@@ -57,7 +57,9 @@ export async function linkGoogleBusiness(params: {
       platformId: params.locationPath.slice(0, 500),
       platformToken: encryptToken(params.refreshToken.slice(0, 1000)),
       ownerEmail: email,
-      autoReply5Star: true,
+      // Le commerçant choisira ensuite son niveau de délégation dans les
+      // paramètres. Aucun automatisme n'est pré-coché à la connexion OAuth.
+      autoReply5Star: false,
     })
     .returning({ id: businesses.id });
 

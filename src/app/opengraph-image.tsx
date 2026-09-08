@@ -8,7 +8,7 @@ export const alt = "Caela Réputation — Gestion d'avis Google automatisée";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 
 export default async function Image() {
   return new ImageResponse(
@@ -26,7 +26,7 @@ export default async function Image() {
         }}
       >
         <div style={{ display: "flex", gap: 14, marginBottom: 40 }}>
-          {[G.blue, G.red, G.yellow, G.green].map((c) => (
+          {["#2457C5", "#5478CF", "#7F9BDD"].map((c) => (
             <div key={c} style={{ width: 28, height: 28, borderRadius: "50%", background: c }} />
           ))}
         </div>

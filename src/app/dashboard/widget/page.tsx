@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const G = { blue: "#1A73E8", green: "#34A853", red: "#EA4335" };
+const G = { blue: "#2457C5", green: "#16856B", red: "#D6455D" };
 
 type Business = { id: number; name: string };
 type WidgetStats = { avgRating: number; totalCount: number };
@@ -108,7 +108,7 @@ export default function WidgetPage() {
       {loading && <p style={{ color: "#80868B" }}>Chargement…</p>}
 
       {!loading && businesses.length === 0 && (
-        <div style={{ background: "#FFF3E0", border: "1px solid #FBBC04", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#7A5900" }}>
+        <div style={{ background: "#FFF3E0", border: "1px solid #E0A11A", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#7A5900" }}>
           Ajoutez d&apos;abord un établissement pour générer son widget.
         </div>
       )}

@@ -12,7 +12,7 @@ import CancelButton from "./CancelButton";
 import ExtensionsWidget from "./ExtensionsWidget";
 import PlanTiers from "./PlanTiers";
 
-const G = { blue: "#1A73E8", green: "#34A853", grey: "#5F6368", red: "#EA4335", yellow: "#F9AB00" };
+const G = { blue: "#2457C5", green: "#16856B", grey: "#5F6368", red: "#D6455D", yellow: "#F9AB00" };
 
 function fmt(d: Date | null) {
   if (!d) return "—";

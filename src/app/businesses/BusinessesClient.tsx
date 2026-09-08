@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Business } from "@/db/schema";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.06)";
 
 type BusinessWithStats = Business & { reviewCount: number };
@@ -56,7 +56,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "", platform: "google" as "google" | "trustpilot",
-    platformId: "", platformToken: "", ownerEmail: "", autoReply5Star: true,
+    platformId: "", platformToken: "", ownerEmail: "",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,7 +71,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
       });
       if (res.ok) {
         setShowForm(false);
-        setForm({ name: "", platform: "google", platformId: "", platformToken: "", ownerEmail: "", autoReply5Star: true });
+        setForm({ name: "", platform: "google", platformId: "", platformToken: "", ownerEmail: "" });
         router.refresh();
       } else {
         const data = await res.json() as { error: string };
@@ -180,13 +180,8 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
             fontSize: 14, fontWeight: 600, color: "#3c4043", fontFamily: "inherit",
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          Se connecter avec Google
+          <span aria-hidden style={{ width: 20, height: 20, borderRadius: "50%", background: "#EEF3FF", color: G.blue, display: "grid", placeItems: "center", fontWeight: 800 }}>↗</span>
+          Connecter Google Business Profile
         </a>
       </div>
 
@@ -272,30 +267,8 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
                 required
               />
 
-              <div style={{ display: "flex", alignItems: "flex-end" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", paddingBottom: "10px" }}>
-                  <div
-                    onClick={() => setForm({ ...form, autoReply5Star: !form.autoReply5Star })}
-                    style={{
-                      width: "42px", height: "24px",
-                      background: form.autoReply5Star ? G.blue : "#DADCE0",
-                      borderRadius: "12px", position: "relative",
-                      transition: "background 0.2s", cursor: "pointer", flexShrink: 0,
-                    }}
-                  >
-                    <div style={{
-                      position: "absolute", top: "3px",
-                      left: form.autoReply5Star ? "21px" : "3px",
-                      width: "18px", height: "18px",
-                      background: "#fff", borderRadius: "50%",
-                      transition: "left 0.2s",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                    }} />
-                  </div>
-                  <span style={{ fontSize: "13px", color: "#202124" }}>
-                    Auto-réponse 4-5 étoiles activée
-                  </span>
-                </label>
+              <div style={{ display: "flex", alignItems: "center", paddingBottom: "8px", color: "#5F6368", fontSize: "13px", lineHeight: 1.45 }}>
+                Les réponses restent manuelles à la connexion. Le commerçant choisira ensuite son niveau de délégation dans Réglages et acceptera le mandat explicite.
               </div>
             </div>
 

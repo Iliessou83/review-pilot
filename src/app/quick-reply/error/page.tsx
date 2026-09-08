@@ -7,7 +7,7 @@ export default function QuickReplyErrorPage() {
         alignItems: "center",
         justifyContent: "center",
         background: "#fff",
-        fontFamily: "'Google Sans', system-ui, sans-serif",
+        fontFamily: "'Inter', system-ui, sans-serif",
         padding: "24px",
       }}
     >
@@ -34,7 +34,7 @@ export default function QuickReplyErrorPage() {
             margin: "0 auto 24px",
           }}
         >
-          <span style={{ fontSize: "36px", color: "#EA4335", fontWeight: 700 }}>
+          <span style={{ fontSize: "36px", color: "#D6455D", fontWeight: 700 }}>
             ✕
           </span>
         </div>
@@ -67,7 +67,7 @@ export default function QuickReplyErrorPage() {
           style={{
             display: "inline-block",
             padding: "12px 28px",
-            background: "#1A73E8",
+            background: "#2457C5",
             color: "#fff",
             textDecoration: "none",
             borderRadius: "8px",

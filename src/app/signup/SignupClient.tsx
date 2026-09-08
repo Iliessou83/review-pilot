@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 2px 6px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 const KNOWN_PLANS = ["starter", "solo", "pro", "studio"];
 const PLAN_LABELS: Record<string, string> = { starter: "Starter", solo: "Solo", pro: "Pro", studio: "Studio" };
@@ -12,7 +12,7 @@ const ADDON_AVIS_NEGATIFS_PRICE = 19;
 function GDots({ size = 10 }: { size?: number }) {
   return (
     <div style={{ display: "flex", gap: size * 0.35 }}>
-      {[G.blue, G.red, G.yellow, G.green].map((c, i) => (
+      {["#2457C5", "#5478CF", "#7F9BDD"].map((c, i) => (
         <div key={i} style={{ width: size, height: size, borderRadius: "50%", background: c }} />
       ))}
     </div>
@@ -157,7 +157,7 @@ export default function SignupClient() {
             Formule <strong style={{ color: "#202124" }}>{PLAN_LABELS[planId] || planId}</strong> — 14 jours d&apos;essai gratuit, carte bancaire requise à l&apos;étape suivante. Aucun débit avant la fin de l&apos;essai.
           </p>
 
-          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, padding: "12px 14px", background: "#FEF7E0", border: "1px solid #FBBC0450", borderRadius: 10, cursor: "pointer" }}>
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, padding: "12px 14px", background: "#FEF7E0", border: "1px solid #E0A11A50", borderRadius: 10, cursor: "pointer" }}>
             <input
               type="checkbox" checked={addonAvisNegatifs}
               onChange={(e) => setAddonAvisNegatifs(e.target.checked)}

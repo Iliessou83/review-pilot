@@ -7,7 +7,7 @@ import Linkify from "@/components/Linkify";
 // chiffres et affirmations clés de chaque article.
 const MARK_PATTERN = /(\*\*.+?\*\*|__.+?__)/g;
 
-export default function RichText({ text, accent = "#1A73E8" }: { text: string; accent?: string }) {
+export default function RichText({ text, accent = "#2457C5" }: { text: string; accent?: string }) {
   const parts = text.split(MARK_PATTERN);
   return (
     <>

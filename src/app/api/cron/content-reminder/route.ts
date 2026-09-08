@@ -60,17 +60,17 @@ async function handler(request: Request) {
           to: clientEmail,
           subject: `📸 Il manque ${manquants} publication${manquants > 1 ? "s" : ""} ce mois-ci pour ${escapeHtml(b.name)}`,
           html: `
-            <div style="font-family:'Google Sans',system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fff;">
+            <div style="font-family:'Inter',system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fff;">
               <h2 style="font-size:20px;font-weight:700;color:#202124;margin:0 0 8px;">On a besoin d'un peu de contenu</h2>
               <p style="color:#5F6368;font-size:14px;margin:0 0 20px;">
                 ${escapeHtml(b.name)} a publié <strong>${publies}</strong> post${publies > 1 ? "s" : ""} ce mois-ci sur Google,
                 l'objectif est ${b.postsTargetPerMonth}. Une photo ou une courte vidéo suffit, on s'occupe du reste.
               </p>
-              <a href="${lien}" style="display:inline-block;background:#1A73E8;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
+              <a href="${lien}" style="display:inline-block;background:#2457C5;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
                 Envoyer une photo ou vidéo
               </a>
               <div style="margin-top:24px;padding-top:16px;border-top:1px solid #DADCE0;font-size:11px;color:#80868B;">
-                Caela Réputation by Caela Agency · <a href="mailto:contact@caela.fr" style="color:#1A73E8;">contact@caela.fr</a>
+                Caela Réputation by Caela Agency · <a href="mailto:contact@caela.fr" style="color:#2457C5;">contact@caela.fr</a>
               </div>
             </div>
           `,

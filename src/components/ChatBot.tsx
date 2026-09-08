@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -19,9 +19,9 @@ function AriaAvatar({ size = 26 }: { size?: number }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: "linear-gradient(135deg, #1A73E8, #1557b0)",
+      background: "linear-gradient(135deg, #2457C5, #183F93)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      boxShadow: "0 2px 6px rgba(26,115,232,0.35)",
+      boxShadow: "0 2px 6px rgba(36,87,197,0.35)",
     }}>
       <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="none">
         <path d="M12 2.5L14.2 9.3L21 11.5L14.2 13.7L12 20.5L9.8 13.7L3 11.5L9.8 9.3L12 2.5Z" fill="#fff" />
@@ -85,11 +85,11 @@ export default function ChatBot() {
           boxShadow: "0 24px 60px -12px rgba(26,32,44,0.28), 0 8px 24px -8px rgba(26,32,44,0.16)",
           display: "flex", flexDirection: "column",
           zIndex: 1000, overflow: "hidden",
-          fontFamily: "'Google Sans', system-ui, sans-serif",
+          fontFamily: "'Inter', system-ui, sans-serif",
         }}>
           {/* Header */}
           <div style={{
-            background: "linear-gradient(135deg, #1A73E8, #1557b0)",
+            background: "linear-gradient(135deg, #2457C5, #183F93)",
             padding: "20px 20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between",
             position: "relative", overflow: "hidden",
           }}>
@@ -139,11 +139,11 @@ export default function ChatBot() {
                   maxWidth: "78%",
                   padding: "11px 15px",
                   borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                  background: msg.role === "user" ? "linear-gradient(135deg, #1A73E8, #1557b0)" : "#fff",
+                  background: msg.role === "user" ? "linear-gradient(135deg, #2457C5, #183F93)" : "#fff",
                   color: msg.role === "user" ? "#fff" : "#202124",
                   fontSize: "13.5px",
                   lineHeight: 1.55,
-                  boxShadow: msg.role === "user" ? "0 3px 10px rgba(26,115,232,0.28)" : "0 1px 3px rgba(32,33,36,0.08), 0 1px 2px rgba(32,33,36,0.05)",
+                  boxShadow: msg.role === "user" ? "0 3px 10px rgba(36,87,197,0.28)" : "0 1px 3px rgba(32,33,36,0.08), 0 1px 2px rgba(32,33,36,0.05)",
                 }}>
                   {msg.content}
                 </div>
@@ -221,7 +221,7 @@ export default function ChatBot() {
                 aria-label="Envoyer"
                 style={{
                   width: "38px", height: "38px", borderRadius: "50%", flexShrink: 0,
-                  background: input.trim() && !loading ? "linear-gradient(135deg, #1A73E8, #1557b0)" : "#E1E3E6",
+                  background: input.trim() && !loading ? "linear-gradient(135deg, #2457C5, #183F93)" : "#E1E3E6",
                   border: "none", cursor: input.trim() && !loading ? "pointer" : "not-allowed",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   transition: "background 0.15s",
@@ -250,9 +250,9 @@ export default function ChatBot() {
         style={{
           position: "fixed", bottom: "24px", right: "24px",
           width: "60px", height: "60px", borderRadius: "50%",
-          background: open ? "#5F6368" : "linear-gradient(135deg, #1A73E8, #1557b0)",
+          background: open ? "#5F6368" : "linear-gradient(135deg, #2457C5, #183F93)",
           border: "none", cursor: "pointer",
-          boxShadow: "0 6px 20px rgba(26,115,232,0.38), 0 2px 8px rgba(0,0,0,0.14)",
+          boxShadow: "0 6px 20px rgba(36,87,197,0.38), 0 2px 8px rgba(0,0,0,0.14)",
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "background 0.2s, transform 0.2s",
           zIndex: 1001,

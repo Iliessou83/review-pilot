@@ -80,9 +80,9 @@ GESTE COMMERCIAL (uniquement si une faute réelle est confirmée par la fiche ou
 }
 
 export const TONE_LABELS = [
-  { key: "EMPATHIQUE", color: "#EA4335", bg: "#FCE8E6", border: "rgba(234,67,53,0.3)", icon: "💛", desc: "Chaleur & validation émotionnelle" },
-  { key: "SOLUTION",   color: "#34A853", bg: "#E6F4EA", border: "rgba(52,168,83,0.3)",  icon: "🎯", desc: "Résolution concrète, tourné vers l'avenir" },
-  { key: "PRO",        color: "#1A73E8", bg: "#E8F0FE", border: "rgba(26,115,232,0.3)", icon: "🏆", desc: "Mesuré, image de marque impeccable" },
+  { key: "EMPATHIQUE", color: "#D6455D", bg: "#FCE8E6", border: "rgba(214,69,93,0.3)", icon: "💛", desc: "Chaleur & validation émotionnelle" },
+  { key: "SOLUTION",   color: "#16856B", bg: "#E6F4EA", border: "rgba(22,133,107,0.3)",  icon: "🎯", desc: "Résolution concrète, tourné vers l'avenir" },
+  { key: "PRO",        color: "#2457C5", bg: "#E8F0FE", border: "rgba(36,87,197,0.3)", icon: "🏆", desc: "Mesuré, image de marque impeccable" },
 ];
 
 const CORE_RULES = `

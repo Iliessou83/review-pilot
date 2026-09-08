@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { entity } from "@/config/legal.config";
 
-const G = { blue: "#1A73E8", red: "#EA4335", yellow: "#FBBC04", green: "#34A853" };
+const G = { blue: "#2457C5", red: "#D6455D", yellow: "#E0A11A", green: "#16856B" };
 const SHADOW = "0 2px 8px rgba(60,64,67,0.15), 0 1px 4px rgba(60,64,67,0.1)";
 
 type ReferralState =
@@ -41,7 +41,7 @@ export default function ParrainageClient() {
   }
 
   return (
-    <div style={{ fontFamily: "'Google Sans', system-ui, sans-serif", background: "#fff", color: "#202124", borderRadius: "16px", border: "1px solid #DADCE0" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#fff", color: "#202124", borderRadius: "16px", border: "1px solid #DADCE0" }}>
       <div style={{ maxWidth: "680px", margin: "0 auto", padding: "48px 24px" }}>
 
         {/* Header */}
@@ -75,12 +75,12 @@ export default function ParrainageClient() {
 
         {/* Advantage boxes */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "40px" }}>
-          <div style={{ background: "#E8F0FE", borderRadius: "14px", padding: "22px", border: "1px solid rgba(26,115,232,0.2)" }}>
+          <div style={{ background: "#E8F0FE", borderRadius: "14px", padding: "22px", border: "1px solid rgba(36,87,197,0.2)" }}>
             <div style={{ fontSize: "13px", fontWeight: 700, color: G.blue, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Vous (le parrain)</div>
             <div style={{ fontSize: "28px", fontWeight: 800, color: "#202124", marginBottom: "4px" }}>1 mois offert</div>
             <div style={{ fontSize: "13px", color: "#5F6368" }}>Jusqu&apos;à 149€ de valeur selon votre plan. Crédité automatiquement.</div>
           </div>
-          <div style={{ background: "#E6F4EA", borderRadius: "14px", padding: "22px", border: "1px solid rgba(52,168,83,0.2)" }}>
+          <div style={{ background: "#E6F4EA", borderRadius: "14px", padding: "22px", border: "1px solid rgba(22,133,107,0.2)" }}>
             <div style={{ fontSize: "13px", fontWeight: 700, color: G.green, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Votre filleul</div>
             <div style={{ fontSize: "28px", fontWeight: 800, color: "#202124", marginBottom: "4px" }}>-15% mois 1</div>
             <div style={{ fontSize: "13px", color: "#5F6368" }}>Sur n&apos;importe quel plan. S&apos;applique après la période d&apos;essai gratuit.</div>
@@ -140,7 +140,7 @@ export default function ParrainageClient() {
         </div>
 
         {/* Rules */}
-        <div style={{ background: "#FEF7E0", border: "1px solid rgba(251,188,4,0.3)", borderRadius: "12px", padding: "18px 20px", marginBottom: "32px" }}>
+        <div style={{ background: "#FEF7E0", border: "1px solid rgba(224,161,26,0.3)", borderRadius: "12px", padding: "18px 20px", marginBottom: "32px" }}>
           <div style={{ fontSize: "14px", fontWeight: 700, color: "#202124", marginBottom: "10px" }}>⚠️ Conditions importantes</div>
           <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "13px", color: "#5F6368", lineHeight: 1.8 }}>
             <li>Le mois offert est crédité <strong>21 jours après le premier paiement</strong> du filleul (14j essai + 7j délai remboursement).</li>
