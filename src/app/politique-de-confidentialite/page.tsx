@@ -90,14 +90,15 @@ export default function PolitiqueConfidentialitePage() {
               ["Adresse email professionnelle", "Identification, notifications, envoi des suggestions de réponse", "Exécution du contrat (6.1.b)"],
               ["Nom de l'établissement", "Personnalisation des réponses IA", "Exécution du contrat (6.1.b)"],
               ["Email du responsable / propriétaire", "Destinataire des alertes et rapports", "Exécution du contrat (6.1.b)"],
-              ["Token OAuth Google My Business", "Accès à l'API Google pour récupérer les avis et publier les réponses", "Exécution du contrat (6.1.b)"],
+              ["Jeton OAuth Google Business Profile", "Accès autorisé aux API Google pour récupérer les avis et publier les réponses prévues par le mandat", "Exécution du contrat (6.1.b)"],
               ["Identifiant de fiche Google (Place ID)", "Liaison entre l'établissement et sa fiche Google", "Exécution du contrat (6.1.b)"],
               ["Code de parrainage", "Gestion du programme de parrainage", "Intérêt légitime (6.1.f)"],
+              ["Coordonnées et informations de commande NFC", "Traiter la demande, confirmer le délai et préparer la commande", "Mesures précontractuelles (6.1.b)"],
             ]}
           />
 
           <p style={{ fontWeight: 600, color: "#202124", margin: "20px 0 8px" }}>2.2 Données collectées automatiquement via l&apos;API Google</p>
-          <p style={{ marginBottom: "8px" }}>Ces données sont publiquement accessibles sur Google Maps. Nous les collectons via l&apos;API Google My Business à votre demande, pour vous en permettre la gestion.</p>
+          <p style={{ marginBottom: "8px" }}>Ces données sont publiquement accessibles sur Google Maps. Nous les traitons via les API Google Business Profile à la demande du commerçant autorisé, pour lui en permettre la gestion.</p>
           <Table
             headers={["Donnée", "Origine", "Base légale"]}
             rows={[
@@ -113,7 +114,8 @@ export default function PolitiqueConfidentialitePage() {
           <Table
             headers={["Donnée", "Pourquoi", "Base légale"]}
             rows={[
-              ["Cookie de session (JWT)", "Maintien de votre connexion au dashboard", "Nécessité technique / Consentement implicite"],
+              ["Cookie de session (JWT)", "Maintien de votre connexion au dashboard", "Strictement nécessaire à l'exécution du service (6.1.b)"],
+              ["Empreinte pseudonymisée de l'adresse IP", "Limitation des tentatives de connexion et prévention des abus", "Intérêt légitime de sécurité (6.1.f)"],
               ["Logs d'erreurs techniques", "Diagnostic et maintenance du service", "Intérêt légitime (6.1.f)"],
             ]}
           />
@@ -122,7 +124,7 @@ export default function PolitiqueConfidentialitePage() {
           <ul style={{ margin: "8px 0", paddingLeft: "20px" }}>
             <li>Données bancaires (traitées exclusivement par Stripe, nous n&apos;y avons pas accès)</li>
             <li>Numéro de téléphone (sauf si vous nous le communiquez volontairement)</li>
-            <li>Adresse IP (nous ne loggons pas les IPs des utilisateurs)</li>
+            <li>Adresse IP brute dans la base métier (seule une empreinte pseudonymisée et temporaire sert aux limites de sécurité)</li>
             <li>Données de navigation ou comportementales à des fins marketing</li>
             <li>Données sensibles (origine ethnique, santé, convictions, etc.)</li>
           </ul>
@@ -136,16 +138,15 @@ export default function PolitiqueConfidentialitePage() {
             rows={[
               ["Vercel Inc.", "Hébergement de l'application web", "États-Unis", "Toutes les données transitant par l'application", "CCT Commission Européenne"],
               ["Supabase Inc.", "Base de données PostgreSQL", "Singapour / UE", "Toutes les données stockées (avis, établissements, réponses)", "CCT — Serveurs EU disponibles"],
-              ["Oracle Cloud (OCI)", "Serveur d'automatisation (worker cron)", "États-Unis", "Requêtes API, logs d'exécution", "CCT Commission Européenne"],
-              ["Anthropic PBC", "Génération IA des réponses (Claude API)", "États-Unis", "Texte des avis Google (prénom auteur + contenu)", "CCT — Zero data retention option"],
+              ["Anthropic PBC", "Génération IA des réponses (Claude API)", "États-Unis", "Texte des avis Google (nom public de l'auteur + contenu)", "Garanties et durée applicables au contrat API souscrit par Caela"],
               ["Resend Inc.", "Envoi d'emails transactionnels", "États-Unis", "Adresse email, contenu des suggestions de réponse", "CCT Commission Européenne"],
               ["Stripe Inc.", "Paiement en ligne", "États-Unis", "Données de paiement (traitement direct, hors notre accès)", "CCT + EU-US Data Privacy Framework (DPF)"],
-              ["Google LLC", "API Google My Business (récupération avis)", "États-Unis", "Tokens OAuth, identifiants de fiche", "CCT + Google's own DPA"],
+              ["Google LLC", "API Google Business Profile (récupération et gestion autorisée)", "États-Unis", "Jetons OAuth, identifiants de fiche et contenus nécessaires", "Garanties contractuelles Google applicables"],
             ]}
           />
 
           <div style={{ marginTop: "16px", padding: "14px 18px", background: "#FEF7E0", borderRadius: "8px", border: "1px solid #F9E097", fontSize: "13px" }}>
-            <strong>Note importante — Anthropic :</strong> Lorsque l&apos;IA génère une réponse à un avis, le texte de l&apos;avis (incluant le prénom de l&apos;auteur et le contenu public) est transmis à l&apos;API Anthropic Claude aux États-Unis. Anthropic traite ces données en mode &quot;zero data retention&quot; (aucune conservation après traitement) selon nos accords contractuels. Ces données sont des données publiques accessibles sur Google Maps.
+            <strong>Note importante — Anthropic :</strong> Lorsque l&apos;IA génère une réponse, le nom public de l&apos;auteur et le contenu de l&apos;avis sont transmis à l&apos;API Anthropic. Caela limite les champs envoyés au strict nécessaire et vérifie avant commercialisation les garanties contractuelles et la durée de conservation applicables à son compte API.
           </div>
         </Section>
 
@@ -153,14 +154,20 @@ export default function PolitiqueConfidentialitePage() {
           <Table
             headers={["Catégorie de données", "Durée de conservation"]}
             rows={[
-              ["Données de compte (email, établissement)", "Compte conservé jusqu'à suppression demandée ; établissement et données opérationnelles jusqu'à 12 mois après résiliation"],
-              ["Avis Google et réponses publiées", "Durée de l'abonnement, puis jusqu'à 12 mois après résiliation"],
-              ["Suggestions de réponse en attente", "Jusqu'à 12 mois après résiliation, avec suppression anticipée sur demande"],
-              ["Logs d'erreurs techniques", "30 jours glissants"],
+              ["Données de compte (email)", "Jusqu'à la suppression du compte demandée, sous réserve des obligations légales"],
+              ["Copie locale d'un avis Google (auteur, note, texte, identifiant, date et réponse)", "30 jours calendaires maximum à compter de la publication de l'avis ; la suppression locale ne supprime ni l'avis ni la réponse sur Google"],
+              ["Suggestions de réponse liées à un avis Google", "Supprimées avec la copie locale de l'avis, au plus tard au même délai de 30 jours"],
+              ["Indicateurs Caela sans contenu d'avis (avis détecté, réponse publiée, délai et mode de validation)", "Pendant le contrat puis jusqu'à 12 mois après résiliation, afin de fournir le suivi du service ; suppression anticipée sur demande lorsqu'aucune obligation ne s'y oppose"],
+              ["Établissement et réglages Caela", "Pendant le contrat puis jusqu'à 12 mois après résiliation, sauf suppression anticipée demandée"],
+              ["Empreintes IP des compteurs anti-abus et logs d'erreurs techniques", "Jusqu'à expiration de la fenêtre de sécurité ou 30 jours glissants selon le journal"],
               ["Données de facturation", "10 ans (obligation légale comptable, L.123-22 Code de commerce)"],
+              ["Demande de plaque NFC non finalisée", "Jusqu'à 12 mois après le dernier échange, sauf suppression anticipée ou obligation légale"],
               ["Cookie de session JWT (rp_session)", "24 heures (expiration automatique)"],
             ]}
           />
+          <div style={{ marginTop: "14px", padding: "14px 16px", background: "#EEF3FF", border: "1px solid #CBD8F5", borderRadius: "9px", fontSize: "13px" }}>
+            <strong>Exemple concret :</strong> un avis publié le 1er septembre peut être copié temporairement dans Caela pour préparer et publier une réponse. Au plus tard le 1er octobre, son nom d&apos;auteur, sa note, son texte, son identifiant Google et la copie de la réponse disparaissent de la base Caela. L&apos;avis et la réponse restent visibles sur la fiche Google. Caela conserve seulement des compteurs propres au service, par exemple « 1 avis détecté, 1 réponse publiée en 42 minutes, validée par l&apos;équipe ».
+          </div>
         </Section>
 
         <Section title="5. Vos droits RGPD">
@@ -197,13 +204,13 @@ export default function PolitiqueConfidentialitePage() {
             <li style={{ marginBottom: "6px" }}><strong>Variables d&apos;environnement :</strong> les clés API tierces (Anthropic, Resend, Google) sont stockées dans des variables d&apos;environnement Vercel chiffrées, jamais dans le code source.</li>
             <li style={{ marginBottom: "6px" }}><strong>Accès restreint :</strong> seul le responsable (Iliès Bourbouane) a accès à l&apos;infrastructure de production.</li>
           </ul>
-          <p style={{ marginTop: "12px" }}>En cas de violation de données susceptible d&apos;engendrer un risque pour vos droits et libertés, vous en serez notifié dans les <strong>72 heures</strong> suivant sa détection, conformément à l&apos;article 33 du RGPD.</p>
+          <p style={{ marginTop: "12px" }}>En cas de violation de données, Caela notifiera la CNIL sous <strong>72 heures après en avoir pris connaissance</strong> lorsque l&apos;article 33 du RGPD l&apos;exige. Les personnes concernées seront informées sans délai indu lorsque l&apos;article 34 l&apos;exige.</p>
         </Section>
 
         <Section title="7. Cookies">
           <p>Caela Réputation utilise un cookie de session technique (JWT) strictement nécessaire au fonctionnement du dashboard. Ce cookie :</p>
           <ul style={{ paddingLeft: "20px", margin: "8px 0 12px" }}>
-            <li>Ne contient pas de données personnelles en clair (token opaque signé)</li>
+            <li>Contient un jeton signé pouvant inclure l&apos;identifiant nécessaire à la session ; sa signature empêche sa modification</li>
             <li>Expire automatiquement après 24 heures</li>
             <li>N&apos;est pas accessible côté JavaScript (httpOnly)</li>
             <li>Est transmis uniquement en HTTPS (secure)</li>
@@ -226,6 +233,7 @@ export default function PolitiqueConfidentialitePage() {
         <Section title="9. Pages publiques et formulaires">
           <p>Le <strong>formulaire d&apos;audit gratuit</strong> (/audit) collecte l&apos;adresse email fournie volontairement pour envoyer le rapport d&apos;audit. Cette adresse est utilisée uniquement pour l&apos;envoi de ce rapport et n&apos;est pas ajoutée à une liste marketing sans consentement explicite.</p>
           <p style={{ marginTop: "12px" }}>Le <strong>formulaire de parrainage</strong> collecte les adresses email des contacts que vous souhaitez inviter. Ces personnes reçoivent un unique email d&apos;invitation. En utilisant cette fonctionnalité, vous certifiez avoir l&apos;accord de ces personnes pour leur transmettre cette invitation.</p>
+          <p style={{ marginTop: "12px" }}>Le <strong>formulaire de commande NFC</strong> collecte les coordonnées et informations fournies afin de traiter la demande et de confirmer la commande. Elles ne sont pas ajoutées à une liste marketing sans consentement distinct.</p>
         </Section>
 
         <Section title="10. Modifications de cette politique">

@@ -20,9 +20,10 @@ TON RÔLE:
 PRODUIT — Caela Réputation by Caela Agency:
 
 FONCTIONNEMENT:
-- Caela Réputation se connecte à la fiche Google Business du client via l'API officielle Google
+- Caela Réputation se connecte à la fiche Google Business Profile du client via OAuth et les API Google autorisées
+- Le commerçant reste propriétaire ou copropriétaire de sa fiche ; aucune automatisation ne s'active sans son mandat explicite et révocable
 - Les nouveaux avis sont synchronisés automatiquement chaque heure (délai maximal théorique de détection: 1 heure, auquel peut s'ajouter le délai de publication de Google)
-- Les avis 4-5★ reçoivent une réponse automatique dès leur détection (IA Claude)
+- Une fois l'accès API validé et le mandat activé, les avis 4-5★ peuvent recevoir une réponse automatique dès leur détection (IA Claude)
 - Les avis 1-3★ génèrent 3 suggestions de réponse (ton Empathique, Solution, Professionnel)
 - Le client reçoit un email, peut choisir une suggestion, la modifier ou rédiger sa propre réponse, puis confirme explicitement la publication sur Google
 - Pas besoin de se connecter au dashboard pour répondre aux avis négatifs
@@ -31,21 +32,21 @@ TARIFS (affichage annuel par défaut, -20%):
 - Starter: 49€/mois (39€ annuel) — 1 établissement, 30 avis/mois inclus, suggestions IA, PAS d'auto-réponse
 - Solo: 69€/mois (55€ annuel) — 1 établissement, 100 avis/mois inclus, auto-réponse 4-5★ + tout Starter
 - Pro: 149€/mois (119€ annuel) — 5 établissements, 300 avis/mois inclus + personnalisation du ton + support prioritaire
-- Agence: 449€/mois (359€ annuel) — établissements illimités + API + support 7j/7
-- Il n'y a pas de coupure brutale en cas de dépassement: alerte à 90%, puis 1€/avis Starter, 0,80€/avis Solo ou 0,60€/avis Pro jusqu'au renouvellement
+- Studio: 299€/mois (239€ annuel) — 5 établissements, 1 000 avis/mois inclus
+- Agence: 449€/mois (359€ annuel) — établissements illimités, 3 000 avis/mois inclus + accompagnement sur devis
+- Il n'y a ni coupure brutale ni supplément automatique en cas de dépassement: alerte à 90%, puis contact pour adapter l'offre si le volume se répète
 
 ESSAI GRATUIT: 14 jours. Carte bancaire requise, avec un rappel par email 3 jours avant le premier prélèvement. Résiliation en 2 clics à tout moment.
 
 SERVICES CAELA AGENCY (prestations humaines):
-- Création de fiche GMB: 199€ (unique)
-- Optimisation de fiche: 299€ (unique)
-- Suivi mensuel: 149€/mois
-- Gestion des avis: sur devis
+- Pack Lancement GMB (création + optimisation): 199€ (unique)
+- Pack Croissance (optimisation mensuelle + gestion manuelle des avis): 149€/mois
+- Prise en charge humaine spécifique des avis sensibles: sur contrat, ne jamais annoncer un volume illimité
 
 PLAQUES NFC:
 - Plaque Solo: 19€ (1 plaque NFC + QR code)
-- Pack Établissement: 79€ (5 plaques)
-- Pack Réseau: 299€ (25 plaques)
+- Pack Trio: 47€ (3 plaques)
+- Pack Établissement: 69€ (5 plaques)
 
 POSITIONNEMENT (comparatif vérifié le 8 septembre 2026):
 - Service français combinant logiciel et délégation humaine des avis sensibles

@@ -7,8 +7,8 @@ import { EV } from "@/lib/analytics/events";
 const G = { blue: "#2457C5", green: "#16856B", grey: "#5F6368", red: "#D6455D", purple: "#7C3AED" };
 
 /**
- * Mêmes 3 formules, mêmes chiffres que la page publique (src/app/HomeClient.tsx
- * `PLANS`) : Starter 49€, Solo 69€ (mise en avant), Pro 149€. On ne veut jamais
+ * Mêmes 4 formules, mêmes chiffres que la page publique (src/app/HomeClient.tsx
+ * `PLANS`) : Starter 49€, Solo 69€, Pro 149€, Studio 299€. On ne veut jamais
  * afficher un prix différent entre la landing et le dashboard.
  */
 const PLANS = [
@@ -22,9 +22,9 @@ const PLANS = [
     best: "Moins de 30 avis/mois — débutez sans risque",
     features: [
       "1 établissement connecté",
-      "Surveillance des avis 24/7",
+      "Synchronisation planifiée chaque heure",
       "3 suggestions IA par avis négatif",
-      "Notifications email instantanées",
+      "Notification email après détection",
       "Dashboard centralisé",
     ],
     highlight: false,
@@ -63,12 +63,29 @@ const PLANS = [
     ],
     highlight: false,
   },
+  {
+    id: "studio",
+    name: "Studio",
+    price: 299,
+    annual: 239,
+    desc: "5 établissements",
+    color: "#9A4D12",
+    best: "Fort volume — jusqu'à 1 000 avis/mois",
+    features: [
+      "5 établissements connectés",
+      "Jusqu'à 1 000 avis traités/mois",
+      "Tout Pro inclus",
+      "Priorité de traitement",
+      "Accompagnement volume",
+    ],
+    highlight: false,
+  },
 ];
 
 const REASSURANCES = [
   { icon: "🔒", text: "Paiement sécurisé" },
   { icon: "🚪", text: "Sans engagement, résiliable en 2 clics" },
-  { icon: "⚡", text: "Activation immédiate" },
+  { icon: "⚙️", text: "Activation après OAuth et consentement" },
 ];
 
 export default function PlanTiers({ currentPlanId, email }: { currentPlanId?: string; email: string }) {
@@ -216,7 +233,7 @@ export default function PlanTiers({ currentPlanId, email }: { currentPlanId?: st
 
       <div style={{ marginTop: "16px", textAlign: "center" }}>
         <span style={{ fontSize: "13px", color: "#80868B" }}>
-          Vous gérez 5+ établissements ?{" "}
+          Plus de 5 établissements ou plus de 1 000 avis/mois ?{" "}
           <a href="mailto:contact@caela.fr?subject=Plan%20Agence" style={{ color: G.blue, textDecoration: "none", fontWeight: 600 }}>
             Plan Agence à partir de 449€/mois →
           </a>

@@ -52,6 +52,19 @@ type BusinessSettings = {
   brandTone: string;
   tutoiement: boolean;
   ownerPhone: string;
+  googleAccessConsent: {
+    actorEmail: string;
+    termsVersion: string;
+    confirmedAt: string;
+    granted: boolean;
+  } | null;
+  automationMandate: {
+    actorEmail: string;
+    scope: string;
+    granted: boolean;
+    termsVersion: string;
+    changedAt: string;
+  } | null;
 };
 
 type SettingsPayload = Partial<BusinessSettings> & {
@@ -86,7 +99,7 @@ function Toggle({ value, onChange, color }: { value: boolean; onChange: (v: bool
   );
 }
 
-function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; onSave: (id: number, data: SettingsPayload) => Promise<void>; onDisconnect: (id: number) => Promise<void> }) {
+function BusinessCard({ biz, googleAutomationAvailable, caelaHumanDelegationAvailable, onSave, onDisconnect }: { biz: BusinessSettings; googleAutomationAvailable: boolean; caelaHumanDelegationAvailable: boolean; onSave: (id: number, data: SettingsPayload) => Promise<void>; onDisconnect: (id: number) => Promise<void> }) {
   const [local, setLocal] = useState({ ...biz });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -96,7 +109,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
 
   async function handleDisconnect() {
     const ok = window.confirm(
-      "Déconnecter ce compte Google ?\n\nTant que vous ne reconnectez pas votre fiche, plus aucun nouvel avis ne sera récupéré et l'auto-réponse s'arrêtera. Vos avis déjà récupérés restent visibles."
+      "Déconnecter ce compte Google ?\n\nLa synchronisation et toute automatisation s’arrêtent immédiatement. Les réponses déjà publiées restent sur Google. Les copies locales d’avis encore présentes expirent au plus tard 30 jours après leur publication."
     );
     if (!ok) return;
     setDisconnecting(true);
@@ -160,6 +173,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
   const examples = COMPENSATION_EXAMPLES[local.businessType] || COMPENSATION_EXAMPLES.other;
   const automationMode = local.autoReplyNegative ? "all_delegated" : local.autoReply5Star ? "positive_auto" : "manual";
   const initialMode = biz.autoReplyNegative ? "all_delegated" : biz.autoReply5Star ? "positive_auto" : "manual";
+  const hasGoogleAccess = biz.googleAccessConsent?.granted === true;
 
   function chooseAutomationMode(mode: "manual" | "positive_auto" | "all_delegated") {
     setLocal(s => ({
@@ -231,21 +245,49 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
 
         {/* Mandat explicite de gestion des avis */}
         <div style={{ padding: "16px", background: "#F6F8FC", border: "1px solid #D8E0EC", borderRadius: "12px" }}>
+          {biz.platform === "google" && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap", padding: "11px 12px", marginBottom: "13px", background: hasGoogleAccess ? "#E8F5EE" : "#FFF7E6", borderRadius: "9px" }}>
+              <div>
+                <div style={{ fontSize: "12px", fontWeight: 750, color: hasGoogleAccess ? "#126B55" : "#7A5900" }}>
+                  {hasGoogleAccess ? "✓ Propriété ou mandat de gestion confirmé" : "⚠ Autorisation de gestion à reconfirmer"}
+                </div>
+                <div style={{ marginTop: 2, fontSize: "11px", color: "#5B6575" }}>
+                  {hasGoogleAccess && biz.googleAccessConsent
+                    ? `${biz.googleAccessConsent.actorEmail} · ${new Date(biz.googleAccessConsent.confirmedAt).toLocaleDateString("fr-FR")}`
+                    : biz.googleAccessConsent
+                      ? "L’accès Google a été révoqué. Une nouvelle connexion et une nouvelle confirmation sont requises."
+                      : "La connexion historique ne contient pas encore la nouvelle preuve horodatée."}
+                </div>
+              </div>
+              {!hasGoogleAccess && (
+                <a href="/businesses/google-consent" style={{ padding: "8px 11px", borderRadius: 7, background: G.blue, color: "#fff", textDecoration: "none", fontSize: 11, fontWeight: 750 }}>
+                  Reconnecter Google
+                </a>
+              )}
+            </div>
+          )}
+          {biz.platform === "google" && !googleAutomationAvailable && (
+            <div style={{ padding: "11px 12px", marginBottom: 13, background: "#FFF7E6", border: "1px solid #F0D48A", borderRadius: 9, color: "#6F5200", fontSize: 12, lineHeight: 1.5 }}>
+              <strong>Automatisation verrouillée avant lancement.</strong> Les modes délégués seront activables uniquement après validation de l’accès API Google Business Profile et contrôle du projet en production.
+            </div>
+          )}
           <div style={{ fontSize: "14px", fontWeight: 700, color: "#172B4D", marginBottom: "4px" }}>Qui répond aux avis ?</div>
           <div style={{ fontSize: "12px", color: "#5B6575", marginBottom: "12px" }}>Aucune option n&apos;est activée automatiquement. Vous pouvez retirer ce mandat à tout moment.</div>
           <div style={{ display: "grid", gap: "8px" }}>
             {[
               { value: "manual", title: "Je garde la main", desc: "Caela prépare des suggestions, je confirme les publications." },
               { value: "positive_auto", title: "Déléguer les avis 4–5 ★", desc: "Caela répond automatiquement aux avis positifs. Je valide les avis 1–3 ★." },
-              { value: "all_delegated", title: "Déléguer tous les avis à Caela", desc: "Réponse automatique aux avis 4–5 ★ ; les avis 1–3 ★ sont pris en charge par l’équipe Caela avec contrôle humain." },
+              { value: "all_delegated", title: "Déléguer tous les avis à Caela · sur contrat", desc: "Réponse automatique aux avis 4–5 ★ ; les avis 1–3 ★ sont pris en charge par l’équipe Caela avec contrôle humain et délai convenu." },
             ].map(option => {
               const selected = automationMode === option.value;
+              const blocked = (biz.platform === "google" && option.value !== "manual" && (!googleAutomationAvailable || !hasGoogleAccess)) || (option.value === "all_delegated" && !caelaHumanDelegationAvailable);
               return (
                 <button
                   key={option.value}
                   type="button"
+                  disabled={blocked}
                   onClick={() => chooseAutomationMode(option.value as "manual" | "positive_auto" | "all_delegated")}
-                  style={{ padding: "12px 14px", textAlign: "left", borderRadius: "10px", border: `2px solid ${selected ? G.blue : "#D8E0EC"}`, background: selected ? "#EEF3FF" : "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                  style={{ padding: "12px 14px", textAlign: "left", borderRadius: "10px", border: `2px solid ${selected ? G.blue : "#D8E0EC"}`, background: selected ? "#EEF3FF" : "#fff", cursor: blocked ? "not-allowed" : "pointer", opacity: blocked ? .55 : 1, fontFamily: "inherit" }}
                 >
                   <div style={{ fontSize: "13px", fontWeight: 700, color: selected ? G.blue : "#172B4D" }}>{selected ? "● " : "○ "}{option.title}</div>
                   <div style={{ fontSize: "12px", color: "#5B6575", marginTop: "3px", lineHeight: 1.45 }}>{option.desc}</div>
@@ -253,13 +295,24 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
               );
             })}
           </div>
+          {!caelaHumanDelegationAvailable && (
+            <div style={{ marginTop: 10, fontSize: 12, color: "#5B6575" }}>
+              Besoin que Caela traite aussi les avis 1–3 ★ ? <a href={`mailto:contact@caela.fr?subject=${encodeURIComponent(`Délégation humaine des avis — ${biz.name}`)}`} style={{ color: G.blue, fontWeight: 700 }}>Demander l&apos;activation et le tarif</a>.
+            </div>
+          )}
           {automationMode !== "manual" && automationMode !== initialMode && (
             <label style={{ display: "flex", gap: "9px", alignItems: "flex-start", marginTop: "13px", padding: "12px", background: "#fff", border: `1px solid ${consentAccepted ? G.green : "#D8E0EC"}`, borderRadius: "9px", cursor: "pointer" }}>
-              <input type="checkbox" checked={consentAccepted} onChange={e => setConsentAccepted(e.target.checked)} style={{ marginTop: "2px", accentColor: G.green }} />
+              <input type="checkbox" required checked={consentAccepted} onChange={e => setConsentAccepted(e.target.checked)} style={{ marginTop: "2px", accentColor: G.green }} />
               <span style={{ fontSize: "12px", color: "#26364D", lineHeight: 1.5 }}>
                 <strong>Je mandate expressément Caela</strong> pour publier des réponses publiques au nom de cet établissement selon le périmètre choisi. Je comprends que les réponses seront visibles sur Google et que je peux révoquer ce mandat à tout moment.
+                <br /><em>Cette case n’est jamais précochée et doit être cochée pour chaque nouveau périmètre.</em>
               </span>
             </label>
+          )}
+          {biz.automationMandate && (
+            <div style={{ marginTop: "10px", fontSize: "11px", color: "#5B6575" }}>
+              Dernière preuve de mandat : {biz.automationMandate.actorEmail} · {new Date(biz.automationMandate.changedAt).toLocaleString("fr-FR")} · {biz.automationMandate.granted ? "accordé" : "révoqué"}.
+            </div>
           )}
         </div>
 
@@ -588,7 +641,7 @@ function BusinessCard({ biz, onSave, onDisconnect }: { biz: BusinessSettings; on
         {/* Mots-clés d'escalade — forcent la validation humaine, jamais d'auto-publication */}
         <div style={{ border: "1px solid #DADCE0", borderRadius: "10px", overflow: "hidden" }}>
           <div style={{ padding: "14px 16px", background: "#F8F9FA" }}>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Sujets toujours à valider vous-même</div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#202124" }}>Sujets toujours soumis à un contrôle humain</div>
             <div style={{ fontSize: "12px", color: "#5F6368", marginTop: "2px" }}>
               Santé, hygiène, allergène, litige sont déjà bloqués par défaut. Ajoutez vos propres mots-clés spécifiques à votre activité.
             </div>
@@ -642,11 +695,15 @@ export default function SettingsPage() {
   const [businesses, setBusinesses] = useState<BusinessSettings[]>([]);
   const [loading, setLoading] = useState(true);
   const [globalError, setGlobalError] = useState("");
+  const [googleAutomationAvailable, setGoogleAutomationAvailable] = useState(false);
+  const [caelaHumanDelegationAvailable, setCaelaHumanDelegationAvailable] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
       .then(r => r.json())
-      .then((data: { businesses?: BusinessSettings[]; error?: string }) => {
+      .then((data: { businesses?: BusinessSettings[]; googleAutomationAvailable?: boolean; caelaHumanDelegationAvailable?: boolean; error?: string }) => {
+        setGoogleAutomationAvailable(Boolean(data.googleAutomationAvailable));
+        setCaelaHumanDelegationAvailable(Boolean(data.caelaHumanDelegationAvailable));
         if (data.businesses) setBusinesses(data.businesses);
         else setGlobalError(data.error || "Erreur chargement");
       })
@@ -726,7 +783,7 @@ export default function SettingsPage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {businesses.map(biz => (
-          <BusinessCard key={biz.id} biz={biz} onSave={handleSave} onDisconnect={handleDisconnect} />
+          <BusinessCard key={biz.id} biz={biz} googleAutomationAvailable={googleAutomationAvailable} caelaHumanDelegationAvailable={caelaHumanDelegationAvailable} onSave={handleSave} onDisconnect={handleDisconnect} />
         ))}
       </div>
 

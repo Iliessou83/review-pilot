@@ -1,7 +1,7 @@
 import "server-only";
 import { envoyer, EXPEDITEUR_NOTIF } from "@/lib/email";
 import { db } from "@/lib/db";
-import { subscriptions, businesses, reviews } from "@/db/schema";
+import { subscriptions, businesses, reviewActivityEvents } from "@/db/schema";
 import { eq, and, inArray, gte, count } from "drizzle-orm";
 import { planById, type Plan } from "@/config/legal.config";
 
@@ -78,8 +78,12 @@ export async function monthlyReviewCountForOwner(ownerEmail: string): Promise<nu
   const ids = owned.map((b) => b.id);
   const [row] = await db
     .select({ value: count() })
-    .from(reviews)
-    .where(and(inArray(reviews.businessId, ids), gte(reviews.publishedAt, startOfCurrentMonth())));
+    .from(reviewActivityEvents)
+    .where(and(
+      inArray(reviewActivityEvents.businessId, ids),
+      eq(reviewActivityEvents.eventType, "review_detected"),
+      gte(reviewActivityEvents.occurredAt, startOfCurrentMonth()),
+    ));
   return row?.value ?? 0;
 }
 
@@ -97,9 +101,9 @@ export type ReviewQuotaStatus = {
  * cohérent avec le fallback de checkBusinessQuota (mode essai/démo).
  *
  * Décision produit (2026-07-19) : ceci ne bloque JAMAIS le traitement IA.
- * Le service continue même en dépassement — seule une alerte est déclenchée
- * (voir maybeSendQuotaAlert), avec un petit supplément prévu jusqu'au
- * renouvellement plutôt qu'une coupure ou un système de crédits.
+ * Le service continue même en dépassement — une alerte est déclenchée et le
+ * client est invité à adapter son offre. Aucun supplément automatique n'est
+ * annoncé ni facturé tant que le comptage Stripe n'est pas implémenté.
  */
 export async function getReviewQuotaStatus(ownerEmail: string): Promise<ReviewQuotaStatus> {
   const plan = await getPlanForEmail(ownerEmail);
@@ -120,7 +124,7 @@ function isSameMonth(a: Date, b: Date): boolean {
 /**
  * Envoie l'alerte "quota bientôt/déjà atteint" par email, une seule fois par
  * mois (anti-doublon via subscriptions.quotaAlertSentAt). Ne fait rien si :
- * pas d'abonnement actif, plan illimité, ou déjà alerté ce mois-ci.
+ * pas d'abonnement actif, quota non applicable, ou déjà alerté ce mois-ci.
  * N'échoue jamais silencieusement de façon bloquante (log seulement).
  */
 export async function maybeSendQuotaAlert(ownerEmail: string, businessName: string): Promise<void> {
@@ -136,9 +140,7 @@ export async function maybeSendQuotaAlert(ownerEmail: string, businessName: stri
 
   const plan = statusInfo.plan;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
-  const overageNote = plan.overagePricePerReview
-    ? `Au-delà de votre quota, chaque avis supplémentaire est facturé ${plan.overagePricePerReview}€ jusqu'à votre prochain renouvellement — le service continue sans interruption, rien n'est coupé.`
-    : "";
+  const overageNote = "Aucun supplément automatique n'est appliqué. Si ce volume se répète, contactez-nous pour choisir une formule adaptée avant toute modification tarifaire.";
 
   try {
     await envoyer({
@@ -160,7 +162,7 @@ export async function maybeSendQuotaAlert(ownerEmail: string, businessName: stri
       <strong>${businessName}</strong> a traité <strong>${statusInfo.current}</strong> avis ce mois-ci,
       sur les <strong>${statusInfo.max}</strong> inclus dans votre plan <strong>${plan.name}</strong>.
     </p>
-    ${overageNote ? `<p style="font-size:13px;color:#5F6368;line-height:1.6;">${overageNote}</p>` : ""}
+    <p style="font-size:13px;color:#5F6368;line-height:1.6;">${overageNote}</p>
     <a href="${appUrl}/dashboard/billing" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#2457C5;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">
       Passer à un plan supérieur
     </a>

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { businesses, businessConsents } from "@/db/schema";
+import { businesses, businessConsents, googleAccessConsents } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownsBusiness } from "@/lib/scope";
 import { eq } from "drizzle-orm";
@@ -11,7 +11,8 @@ import { decryptToken } from "@/lib/token-crypto";
 // Déconnecte le compte Google Business d'un commerce : efface les jetons
 // stockés (platform_token = refresh_token). Le commerce et son historique
 // d'avis restent, mais la synchro et l'auto-réponse s'arrêtent tant que le
-// commerçant ne reconnecte pas sa fiche (voir /onboarding).
+// commerçant ne reconnecte pas sa fiche. Les copies locales d'avis expirent
+// selon la règle de 30 jours ; les réponses déjà publiées restent sur Google.
 export async function POST(request: NextRequest) {
   const session = await requireAuth(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -72,6 +73,13 @@ export async function POST(request: NextRequest) {
       scope: "manual",
       termsVersion: "review-management-2026-09-v1",
       granted: false,
+    });
+    await tx.insert(googleAccessConsents).values({
+      businessId,
+      actorEmail: session.email.toLowerCase(),
+      termsVersion: "google-access-2026-09-v1",
+      ownerOrManagerConfirmed: false,
+      oauthAccessGranted: false,
     });
   });
 

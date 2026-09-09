@@ -117,74 +117,6 @@ async function fetchTrustpilotBusiness(domain: string): Promise<TrustpilotBusine
   }
 }
 
-// Fallback used when TRUSTPILOT_API_KEY is not yet configured.
-// Claude infers a plausible audit from the domain name alone.
-async function simulateTrustpilotAudit(domain: string): Promise<{
-  score: number; found: boolean; rating: number; reviewCount: number; businessName: string;
-  insights: { label: string; status: "good" | "warn" | "bad"; detail: string }[];
-  priorities: string[]; recommendation: string;
-}> {
-  const prompt = `Tu es un expert e-réputation. À partir du nom de domaine "${domain}", génère un audit Trustpilot simulé réaliste pour une PME française typique de ce secteur.
-
-Génère exactement ce JSON (sans markdown):
-{
-  "businessName": "Nom commercial déduit du domaine",
-  "rating": 3.7,
-  "reviewCount": 47,
-  "claimed": false,
-  "responseRate": 22,
-  "score": 42,
-  "insights": [
-    { "label": "...", "status": "good|warn|bad", "detail": "..." },
-    { "label": "...", "status": "good|warn|bad", "detail": "..." },
-    { "label": "...", "status": "good|warn|bad", "detail": "..." },
-    { "label": "...", "status": "good|warn|bad", "detail": "..." }
-  ],
-  "priorities": ["action 1", "action 2", "action 3"],
-  "recommendation": "2 phrases max poussant à utiliser Caela Réputation"
-}
-
-Règles : note entre 2.8 et 4.6, volume entre 8 et 340, score cohérent avec la note et le volume. Sois spécifique au secteur d'activité suggéré par le domaine.`;
-
-  try {
-    if (!claude) throw new Error("no key");
-    const aiRes = await claude.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 700,
-      messages: [{ role: "user", content: prompt }],
-    });
-    const text = aiRes.content[0]?.type === "text" ? aiRes.content[0].text : "";
-    const data = JSON.parse(text.trim());
-    return {
-      score: data.score ?? 42,
-      found: true,
-      rating: data.rating ?? 3.7,
-      reviewCount: data.reviewCount ?? 47,
-      businessName: data.businessName ?? domain,
-      insights: data.insights ?? [],
-      priorities: data.priorities ?? [],
-      recommendation: data.recommendation ?? "",
-    };
-  } catch {
-    return {
-      score: 38, found: true, rating: 3.4, reviewCount: 29,
-      businessName: domain.replace(/\.[a-z]+$/, "").replace(/-/g, " "),
-      insights: [
-        { label: "3.4 étoiles Trustpilot", status: "warn", detail: "Note en dessous de la moyenne du secteur. Des réponses régulières aux avis améliorent rapidement ce score." },
-        { label: "29 avis", status: "bad", detail: "Volume insuffisant. Activez la collecte automatisée d'avis pour atteindre 100+ avis." },
-        { label: "Profil non revendiqué", status: "bad", detail: "Vous ne contrôlez pas votre profil. N'importe qui peut vous nuire sans que vous puissiez répondre." },
-        { label: "Taux de réponse : 18%", status: "bad", detail: "Taux très bas. Les clients voient que les plaintes sont ignorées." },
-      ],
-      priorities: [
-        "Revendiquer votre profil Trustpilot immédiatement (gratuit)",
-        "Répondre à tous les avis négatifs en attente cette semaine",
-        "Mettre en place une collecte automatique d'avis après chaque achat",
-      ],
-      recommendation: "Votre réputation Trustpilot a des axes d'amélioration urgents. Caela Réputation automatise les réponses et booste votre note sous 30 jours.",
-    };
-  }
-}
-
 function computeTrustpilotScore(biz: TrustpilotBusiness | null): {
   score: number;
   found: boolean;
@@ -207,12 +139,12 @@ function computeTrustpilotScore(biz: TrustpilotBusiness | null): {
 
   // TrustScore / stars (35 pts)
   if (stars >= 4) { score += 35; insights.push({ label: `${stars} étoiles Trustpilot`, status: "good", detail: `Note ${biz.score?.trustScore?.toFixed(1)}/5 — Excellente réputation.` }); }
-  else if (stars === 3) { score += 20; insights.push({ label: `${stars} étoiles Trustpilot`, status: "warn", detail: "Note moyenne. Des réponses aux avis négatifs amélioreraient rapidement cette note." }); }
-  else { score += 5; insights.push({ label: `${stars} étoile${stars > 1 ? "s" : ""} Trustpilot`, status: "bad", detail: "Note insuffisante. Impact direct sur votre conversion." }); }
+  else if (stars === 3) { score += 20; insights.push({ label: `${stars} étoiles Trustpilot`, status: "warn", detail: "Note moyenne. Analysez les thèmes récurrents avant de définir les actions prioritaires." }); }
+  else { score += 5; insights.push({ label: `${stars} étoile${stars > 1 ? "s" : ""} Trustpilot`, status: "bad", detail: "Note faible : vérifiez les problèmes récurrents et répondez de façon factuelle." }); }
 
   // Volume (25 pts)
-  if (total >= 200) { score += 25; insights.push({ label: `${total} avis`, status: "good", detail: "Volume excellent. Trustpilot vous met en avant dans les résultats." }); }
-  else if (total >= 50) { score += 15; insights.push({ label: `${total} avis`, status: "warn", detail: "Volume correct. Objectif 200 avis pour maximiser la visibilité." }); }
+  if (total >= 200) { score += 25; insights.push({ label: `${total} avis`, status: "good", detail: "Volume important donnant davantage de matière pour identifier les tendances clients." }); }
+  else if (total >= 50) { score += 15; insights.push({ label: `${total} avis`, status: "warn", detail: "Volume suffisant pour commencer à observer des tendances, sans seuil officiel de visibilité." }); }
   else if (total >= 10) { score += 8; insights.push({ label: `${total} avis`, status: "bad", detail: "Volume insuffisant. Activez la collecte automatisée d'avis." }); }
   else { score += 0; insights.push({ label: `${total} avis seulement`, status: "bad", detail: "Quasi aucun avis. Le profil n'inspire pas confiance." }); }
 
@@ -222,7 +154,7 @@ function computeTrustpilotScore(biz: TrustpilotBusiness | null): {
 
   // Response rate (20 pts)
   const responseRate = biz.responseRate ?? -1;
-  if (responseRate >= 80) { score += 20; insights.push({ label: `Taux de réponse : ${responseRate}%`, status: "good", detail: "Excellent engagement. Trustpilot favorise les marques réactives." }); }
+  if (responseRate >= 80) { score += 20; insights.push({ label: `Taux de réponse : ${responseRate}%`, status: "good", detail: "La majorité des auteurs reçoivent une réponse de l'entreprise." }); }
   else if (responseRate >= 40) { score += 10; insights.push({ label: `Taux de réponse : ${responseRate}%`, status: "warn", detail: "Répondez à tous vos avis négatifs en priorité." }); }
   else if (responseRate >= 0) { score += 0; insights.push({ label: `Taux de réponse : ${responseRate}%`, status: "bad", detail: "Taux très bas. Les clients voient que vous ignorez les plaintes." }); }
 
@@ -269,7 +201,7 @@ Génère exactement ce JSON (sans markdown):
         "Augmenter votre volume d'avis par une campagne de collecte",
         "Compléter et optimiser votre profil avec photos et description",
       ],
-      recommendation: "Caela Réputation automatise les réponses aux avis et vous aide à améliorer votre note sous 30 jours.",
+      recommendation: "Caela Réputation centralise le traitement des avis et mesure les réponses effectivement publiées.",
     };
   }
 }

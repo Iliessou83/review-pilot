@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
-import { SignJWT, jwtVerify } from "jose";
+import { jwtVerify } from "jose";
 import { getSession, getJwtSecret } from "@/lib/auth";
 import { exchangeCode, listAllLocations } from "@/lib/google-oauth";
 import { linkGoogleBusiness } from "@/lib/google-link";
+import { createGoogleConnectionTicket } from "@/lib/google-connection-ticket";
 
 // Retour de Google après consentement. Échange le code, lit les établissements
 // de la fiche du commerçant, et rattache automatiquement (1 seul) ou propose un
@@ -20,14 +21,17 @@ export async function GET(req: NextRequest) {
 
   // Le state signé confirme que la demande vient bien de nous et porte l'email.
   let email = "";
+  let termsVersion = "";
   try {
     const { payload } = await jwtVerify(state, getJwtSecret());
     if (payload.purpose !== "g_connect") return back("state");
+    if (payload.ownerOrManagerConfirmed !== true || payload.oauthAccessGranted !== true) return back("state");
     email = String(payload.email || "").toLowerCase();
+    termsVersion = String(payload.termsVersion || "");
   } catch {
     return back("state");
   }
-  if (!email) return back("state");
+  if (!email || termsVersion !== "google-access-2026-09-v1") return back("state");
 
   // Défense : la session en cours doit correspondre à l'email du state.
   const session = await getSession();
@@ -64,18 +68,19 @@ export async function GET(req: NextRequest) {
       locationPath: locations[0].path,
       title: locations[0].title,
       refreshToken,
+      accessTermsVersion: termsVersion,
     });
     if (!res.ok) return back("quota");
     return NextResponse.redirect(`${origin}/dashboard?google=connected`);
   }
 
-  // Plusieurs établissements : on stocke le refresh_token dans un cookie court
-  // et signé, puis on affiche l'écran de choix.
-  const ticket = await new SignJWT({ email, refreshToken, purpose: "g_link" })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("15m")
-    .sign(getJwtSecret());
+  // Plusieurs établissements : le refresh token reste chiffré côté serveur.
+  // Le cookie ne contient qu'un secret opaque, aléatoire et valable 15 min.
+  const ticket = await createGoogleConnectionTicket({
+    actorEmail: email,
+    refreshToken,
+    termsVersion,
+  });
 
   const redirect = NextResponse.redirect(`${origin}/businesses/connect`);
   redirect.cookies.set("g_link", ticket, {

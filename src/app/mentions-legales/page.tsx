@@ -44,10 +44,8 @@ Supabase Inc.
 970 Toa Payoh North, #07-04, Singapore 318992
 https://supabase.com
 
-Serveur d'automatisation :
-Oracle Cloud Infrastructure (OCI) — instance ARM A1.Flex
-Oracle Corporation, 500 Oracle Parkway, Redwood City, CA 94065 — États-Unis
-https://oracle.com/cloud
+Tâches planifiées :
+Vercel Cron Jobs, exécutés dans l'infrastructure Vercel mentionnée ci-dessus
 
 Ces hébergeurs traitent les données conformément à leurs propres politiques de sécurité et aux clauses contractuelles types (CCT) approuvées par la Commission Européenne pour les transferts hors UE.`,
   },
@@ -63,7 +61,7 @@ Toute exploitation non autorisée du site ou de l'un quelconque des éléments q
     title: "5. Marques tierces",
     content: `Les marques suivantes, citées sur ce service, sont des marques déposées de leurs propriétaires respectifs :
 
-— Google®, Google Business Profile®, Google Maps®, Google My Business® : marques déposées de Google LLC (Alphabet Inc.), 1600 Amphitheatre Parkway, Mountain View, CA 94043, États-Unis. Caela Réputation n'est en aucun cas affilié, approuvé, parrainé ou endossé par Google LLC.
+— « Google », « Google Maps » et « Google Business Profile » sont des marques de Google LLC. Caela Réputation est un service indépendant, non affilié, non approuvé et non parrainé par Google LLC.
 
 — Trustpilot® : marque déposée de Trustpilot A/S, Pilestræde 58, 1112 Copenhagen, Danemark. Caela Réputation n'est pas affilié à Trustpilot.
 

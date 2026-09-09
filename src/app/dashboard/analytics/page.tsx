@@ -48,21 +48,28 @@ async function getAnalytics(biz: SQL | undefined, activityFilter: SQL | undefine
 
   const monthlyData = await Promise.all(
     months.map(async (m) => {
-      const [res] = await db
-        .select({
-          total: count(),
+      const [contentRows, eventRows] = await Promise.all([
+        db.select({
           avgRating: avg(reviews.rating),
-          responded: sql<string>`SUM(CASE WHEN ${reviews.responded} THEN 1 ELSE 0 END)::bigint`,
           negative: sql<string>`SUM(CASE WHEN ${reviews.rating} <= 3 THEN 1 ELSE 0 END)::bigint`,
-        })
-        .from(reviews)
-        .where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end), biz));
+        }).from(reviews).where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end), biz)),
+        db.select({
+          detected: sql<string>`SUM(CASE WHEN ${reviewActivityEvents.eventType} = 'review_detected' THEN 1 ELSE 0 END)::bigint`,
+          responded: sql<string>`SUM(CASE WHEN ${reviewActivityEvents.eventType} = 'reply_published' THEN 1 ELSE 0 END)::bigint`,
+        }).from(reviewActivityEvents).where(and(
+          gte(reviewActivityEvents.occurredAt, m.start),
+          lt(reviewActivityEvents.occurredAt, m.end),
+          activityFilter,
+        )),
+      ]);
+      const content = contentRows[0];
+      const events = eventRows[0];
       return {
         label: m.label,
-        total: res?.total || 0,
-        avgRating: parseFloat(String(res?.avgRating || "0")),
-        responded: parseInt(String(res?.responded)) || 0,
-        negative: parseInt(String(res?.negative)) || 0,
+        total: parseInt(String(events?.detected)) || 0,
+        avgRating: parseFloat(String(content?.avgRating || "0")),
+        responded: parseInt(String(events?.responded)) || 0,
+        negative: parseInt(String(content?.negative)) || 0,
       };
     })
   );
@@ -238,17 +245,17 @@ export default async function AnalyticsPage() {
         <div style={{ background: "#fff", border: "1px solid #DADCE0", borderRadius: "12px", padding: "20px 24px", boxShadow: SHADOW }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <div>
-              <h2 style={{ margin: "0 0 2px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>Volume d&apos;avis</h2>
-              <p style={{ margin: 0, fontSize: "12px", color: "#80868B" }}>Contenu local disponible — Google limité à 30 jours</p>
+              <h2 style={{ margin: "0 0 2px", fontSize: "15px", fontWeight: 600, color: "#202124" }}>Avis détectés par Caela</h2>
+              <p style={{ margin: 0, fontSize: "12px", color: "#80868B" }}>Compteurs opérationnels sur 12 mois, sans texte ni identité d&apos;auteur</p>
             </div>
             <div style={{ display: "flex", gap: "12px", fontSize: "11px", color: "#80868B" }}>
               <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                 <div style={{ width: "8px", height: "8px", borderRadius: "2px", background: G.blue }} />
-                Total avis
+                Avis détectés
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                 <div style={{ width: "8px", height: "8px", borderRadius: "2px", background: G.red }} />
-                Avis négatifs
+                Avis négatifs récents
               </span>
             </div>
           </div>

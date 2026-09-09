@@ -32,6 +32,9 @@ export async function postTrustpilotReply(
   responseText: string,
   apiKey: string
 ): Promise<void> {
+  if (process.env.ENABLE_TRUSTPILOT_INTEGRATION !== "true") {
+    throw new Error("Publication Trustpilot désactivée pendant la validation de la licence d’intégration");
+  }
   const response = await fetch(
     `https://api.trustpilot.com/v1/private/business-units/${businessUnitId}/reviews/${reviewId}/reply`,
     {

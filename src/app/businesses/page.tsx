@@ -20,7 +20,7 @@ export default async function BusinessesPage({
   // Cloisonnement : un client ne voit que ses commerces, l'admin voit tout.
   const ids = await ownedBusinessIds(scope);
   if (ids !== "all" && ids.length === 0) {
-    return <BusinessesClient businesses={[]} googleStatus={googleStatus} />;
+    return <BusinessesClient businesses={[]} googleStatus={googleStatus} isAdmin={scope.isAdmin} />;
   }
 
   const base = db.select().from(businesses);
@@ -47,5 +47,5 @@ export default async function BusinessesPage({
     reviewCount: countMap[b.id] || 0,
   }));
 
-  return <BusinessesClient businesses={businessesWithStats} googleStatus={googleStatus} />;
+  return <BusinessesClient businesses={businessesWithStats} googleStatus={googleStatus} isAdmin={scope.isAdmin} />;
 }

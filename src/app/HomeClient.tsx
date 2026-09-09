@@ -27,12 +27,6 @@ function GDots({ size = 8 }: { size?: number }) {
   );
 }
 
-function GL({ size = 22 }: { size?: number }) {
-  return (
-    <span style={{ fontSize: size, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1, color: "#172B4D" }}>Google</span>
-  );
-}
-
 // Anime le texte lettre par lettre en boucle (effet machine à écrire), pour
 // attirer l'œil sur le badge "objection" avant la section qui la démonte.
 function TypewriterText({ text }: { text: string }) {
@@ -116,15 +110,7 @@ function FadeInOnView({ children, delay = 0 }: { children: React.ReactNode; dela
 }
 
 function GMBCard() {
-  // Le chrono tourne réellement (pas un texte figé "il y a 12 sec") : la
-  // preuve de vitesse se voit sans qu'on ait besoin de la lire deux fois.
-  const [secondsAgo, setSecondsAgo] = useState(12);
   const [hover, setHover] = useState(false);
-  useEffect(() => {
-    const id = setInterval(() => setSecondsAgo((s) => s + 1), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const timeLabel = secondsAgo < 60 ? `il y a ${secondsAgo} sec` : `il y a ${Math.floor(secondsAgo / 60)} min`;
 
   return (
     // Wrapper séparé pour le flottement idle (keyframes CSS) : une animation
@@ -133,8 +119,8 @@ function GMBCard() {
     // div, le lift au survol reste sur le <a> interne — aucun conflit.
     <div className={hover ? "" : "rp-float"}>
     <a
-      href="/audit"
-      onClick={() => trackClic("bouton_audit-gratuit_carte-gmb-hero")}
+      href="#calculator"
+      onClick={() => trackClic("bouton_fonctionnement_carte-hero")}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -159,7 +145,7 @@ function GMBCard() {
         transition: "opacity 0.2s ease, transform 0.2s ease",
         pointerEvents: "none", whiteSpace: "nowrap",
       }}>
-        Auditer ma fiche →
+        Voir le fonctionnement →
       </div>
       <div style={{ height: "130px", background: "linear-gradient(135deg, #EEF3FF, #DCE5FA 50%, #EAF7F3)", position: "relative", overflow: "hidden" }}>
         {[0,1,2,3,4].map(i => <div key={i} style={{ position: "absolute", left: 0, right: 0, top: `${i*28}px`, height: "1px", background: "rgba(36,87,197,0.08)" }} />)}
@@ -170,7 +156,7 @@ function GMBCard() {
         <div style={{ position: "absolute", inset: "28px 24px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
           {[38, 62, 48, 82, 72, 96].map((height, i) => <div key={i} style={{ flex: 1, height: `${height}%`, background: i === 5 ? G.green : G.blue, opacity: i === 5 ? 1 : 0.2 + i * 0.1, borderRadius: "6px 6px 2px 2px" }} />)}
         </div>
-        <div style={{ position: "absolute", top: "9px", left: "12px", fontSize: "10px", fontWeight: 700, color: "#31507A" }}>TABLEAU DE SUIVI CAELA</div>
+        <div style={{ position: "absolute", top: "9px", left: "12px", fontSize: "10px", fontWeight: 700, color: "#31507A" }}>DÉMONSTRATION DU TABLEAU CAELA</div>
       </div>
       <div style={{ padding: "14px" }}>
         <h3 style={{ margin: "0 0 3px", fontSize: "17px", fontWeight: 700, color: "#202124" }}>Restaurant Le Cèdre</h3>
@@ -201,7 +187,7 @@ function GMBCard() {
               <div className="rp-live-dot" style={{ width: "12px", height: "12px", background: G.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontSize: "7px", color: "#fff", fontWeight: 700 }}>✓</span>
               </div>
-              <span style={{ fontSize: "9px", fontWeight: 700, color: G.green }}>Réponse IA · {timeLabel}</span>
+              <span style={{ fontSize: "9px", fontWeight: 700, color: G.green }}>Exemple de réponse IA</span>
             </div>
             <p style={{ margin: 0, color: "#1E6B38", fontSize: "10px", lineHeight: 1.5 }}>
               Merci beaucoup Marie ! C&apos;est avec plaisir que nous vous accueillons...
@@ -274,10 +260,10 @@ function ROICalculator() {
       }}>
         <div>
           <div style={{ fontSize: "13px", fontWeight: 700, color: savings > 0 ? G.green : "#5F6368", marginBottom: "2px" }}>
-            {savings > 0 ? `✓ Vous économisez ${savings}€/mois` : "Investissement rentable dès le 1er mois"}
+            {savings > 0 ? `Écart de coût estimé : ${savings}€/mois` : "Comparez le service selon votre situation"}
           </div>
           <div style={{ fontSize: "12px", color: "#5F6368" }}>
-            {savings > 0 ? `ROI immédiat : ${roi}% — vous récupérez votre mise en ${Math.round(30 / (savings / plan.price))} jours` : "Caela Réputation gère vos avis. Vous gérez votre business."}
+            {savings > 0 ? `Estimation fondée sur les hypothèses affichées · ratio théorique ${roi}%` : "Le coût réel dépend de votre volume et du temps consacré à chaque avis."}
           </div>
         </div>
         <a href="#pricing" style={{ padding: "10px 20px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "13px", fontWeight: 600, whiteSpace: "nowrap" }}>
@@ -628,6 +614,24 @@ const PLANS = [
     cta: "Essai gratuit → Pro",
     highlight: false,
   },
+  {
+    name: "Studio",
+    price: "299",
+    annual: "239",
+    desc: "5 établissements",
+    color: "#9A4D12",
+    best: "Fort volume — jusqu'à 1 000 avis/mois",
+    features: [
+      "5 établissements connectés",
+      "Jusqu'à 1 000 avis traités/mois au total",
+      "Tout Pro inclus",
+      "Priorité de traitement",
+      "Accompagnement volume",
+    ],
+    missing: [],
+    cta: "Essai gratuit → Studio",
+    highlight: false,
+  },
 ];
 
 const DIY_ARGS = [
@@ -635,8 +639,8 @@ const DIY_ARGS = [
   { color: G.blue, bg: "#EEF3FF", icon: "📍", stat: "Suivi officiel", title: "Mesure ce que Google fournit", desc: "Impressions, appels, clics site et itinéraires peuvent être suivis via l'API Performance, sans promettre un rang." },
   { color: G.yellow, bg: "#FFF7E8", icon: "🧠", stat: "Contrôle humain", title: "Les avis sensibles méritent une vraie attention", desc: "Les avis 1–3★ délégués sont relus par l'équipe Caela avant publication." },
   { color: G.green, bg: "#EDF8F4", icon: "👀", stat: "Réponses utiles", title: "Montre que chaque retour compte", desc: "Google indique qu'une réponse utile montre que l'entreprise accorde de l'importance à ses clients." },
-  { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "0 avis oublié", title: "Tu vas finir par oublier", desc: "Rush, vacances, périodes chargées : les avis s'accumulent. L'IA n'en rate jamais un." },
-  { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Scalable à l'infini", title: "Impossible à scaler manuellement", desc: "À 5+ établissements, gérer les avis devient un temps plein. On gère 30 fiches comme une." },
+  { color: G.blue, bg: "#E8F0FE", icon: "🔁", stat: "Suivi continu", title: "Tu vas finir par oublier", desc: "Rush, vacances, périodes chargées : les avis s'accumulent. Caela vérifie les nouveaux avis à chaque cycle de synchronisation." },
+  { color: G.red, bg: "#FCE8E6", icon: "📈", stat: "Multi-établissements", title: "Centralise plusieurs fiches", desc: "À partir de plusieurs établissements, un tableau commun réduit les allers-retours entre les fiches." },
 ];
 
 // Carrousel horizontal (au lieu d'une grille figée + carte séparée en dessous) :
@@ -965,17 +969,17 @@ const GMB_SERVICES = [
 ];
 
 const FAKE_REVIEW_REMOVAL = {
-  title: "On fait retirer vos faux avis Google",
-  desc: "19,90€ par avis retiré. Satisfait ou remboursé : si Google refuse, vous êtes intégralement remboursé — sans rien à faire.",
+  title: "Nous préparons le signalement de vos faux avis",
+  desc: "19,90€ par dossier soumis. La décision appartient à Google ; si le retrait est refusé, la prestation est remboursée.",
 };
 
 // Paliers revus le 08/08 : 1, 3 et 5 plaques (au lieu de 1, 5, 25) — mieux
 // alignés sur le besoin réel d'un commerce local (une seule enseigne, rarement
 // plus de 5 points de contact physiques).
 const NFC_PACKS = [
-  { name: "Plaque Solo", price: "19€", unit: "19€/plaque", qty: "1 plaque", color: G.blue, features: ["NFC + QR code de secours", "Design personnalisé (votre logo)", "Cible au choix : Google, Insta, TikTok…", "Résistant eau et chaleur"] },
-  { name: "Pack Trio", price: "47€", oldPrice: "57€", unit: "15,67€/plaque", qty: "3 plaques", color: G.green, features: ["3 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"], highlight: true },
-  { name: "Pack Établissement", price: "69€", oldPrice: "95€", unit: "13,80€/plaque", qty: "5 plaques", color: G.red, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Setup inclus", "Livraison sous 7 jours"] },
+  { name: "Plaque Solo", price: "19€", unit: "19€/plaque", qty: "1 plaque", color: G.blue, features: ["NFC + QR code de secours", "Design personnalisé (votre logo)", "Cible au choix : Google, Insta, TikTok…", "Support acrylique"] },
+  { name: "Pack Trio", price: "47€", oldPrice: "57€", unit: "15,67€/plaque", qty: "3 plaques", color: G.green, features: ["3 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Configuration incluse", "Délai confirmé avant paiement"], highlight: true },
+  { name: "Pack Établissement", price: "69€", oldPrice: "95€", unit: "13,80€/plaque", qty: "5 plaques", color: G.red, features: ["5 plaques NFC + QR de secours", "Multi-réseaux : Google, Insta, TikTok, WhatsApp", "Configuration incluse", "Délai confirmé avant paiement"] },
 ];
 
 // Réalisations réelles de l'agence, vérifiées en ligne le 2026-08-07 (200 OK)
@@ -990,8 +994,8 @@ const NFC_REASSURANCE = [
   { icon: "🛡️", title: "Garantie remplacement", desc: "Plaque défectueuse ? On la remplace gratuitement." },
   { icon: "📱", title: "iOS + Android", desc: "Compatible iPhone et Android. QR de secours pour les vieux téléphones." },
   { icon: "🌐", title: "Multi-réseaux", desc: "Google, Instagram, TikTok, WhatsApp : vous choisissez la cible." },
-  { icon: "🔄", title: "Cible pilotable", desc: "Plaque reliée à votre page Caela : changez la destination depuis le dashboard, sans racheter." },
-  { icon: "🚚", title: "Livraison gratuite", desc: "Offerte dès 69€ d'achat (Pack Établissement et Pack Réseau)." },
+  { icon: "🔧", title: "Configuration vérifiée", desc: "Le lien et la destination sont confirmés avec vous avant programmation." },
+  { icon: "🚚", title: "Livraison suivie", desc: "Le mode d'expédition et le délai sont confirmés avant paiement." },
 ];
 
 // Chemin de retour après connexion (?next=/link-account?ticket=...), whitelisté
@@ -1006,7 +1010,7 @@ const NAV_LINKS: [string, string][] = [
   ["#services", "Services GMB"],
   ["#nfc", "Plaques NFC"],
   ["#pricing", "Abonnement réponses IA"],
-  ["/audit", "Audit gratuit 🔍"],
+  ["/audit", "Audit · bientôt"],
   ["/blog", "Blog"],
 ];
 
@@ -1190,8 +1194,8 @@ export default function HomeClient() {
       <div className="rp-trust-strip" style={{ background: G.blue, marginTop: "64px", padding: "9px 40px", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", flexWrap: "wrap" }}>
         {[
           { icon: "🇫🇷", label: "Made in France" },
-          { icon: "🔒", label: "RGPD conforme" },
-          { icon: "✅", label: "API Google officielle" },
+          { icon: "🔒", label: "Protection des données" },
+          { icon: "✅", label: "Connexion OAuth Google" },
           { icon: "💬", label: "Support en français" },
           { icon: "⭐", label: "14 jours d'essai gratuit" },
         ].map(item => (
@@ -1343,7 +1347,7 @@ export default function HomeClient() {
             <GuidedTourButton />
           </div>
           <h1 style={{ margin: "0 0 20px", fontSize: "clamp(34px, 4.8vw, 66px)", fontWeight: 700, letterSpacing: "-1.6px", lineHeight: 1.12, color: "#202124" }}>
-            Vos avis <GL size={48} /> pris en charge.<br />
+            Vos avis Google pris en charge.<br />
             <span style={{ color: G.green }}>Selon votre choix.</span>
           </h1>
           <p style={{ margin: "0 0 36px", fontSize: "20px", lineHeight: 1.6, color: "#5F6368", maxWidth: "660px" }}>
@@ -1354,8 +1358,8 @@ export default function HomeClient() {
             <a href="/signup?plan=solo" onClick={() => trackClic("bouton_essai-gratuit_hero")} className="rp-cta-hover" style={{ padding: "13px 28px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: `0 2px 8px ${G.blue}40` }}>
               Essai gratuit 14 jours
             </a>
-            <a href="/audit" className="rp-cta-hover" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
-              <span style={{ fontSize: "16px" }}>🔍</span> Audit gratuit de ta fiche
+            <a href="#calculator" className="rp-cta-hover" style={{ padding: "13px 28px", background: "#fff", border: "1px solid #DADCE0", color: "#202124", textDecoration: "none", borderRadius: "6px", fontSize: "15px", fontWeight: 600, boxShadow: SHADOW_SM, display: "flex", alignItems: "center", gap: "7px" }}>
+              <span style={{ fontSize: "16px" }}>▶</span> Voir comment ça fonctionne
             </a>
           </div>
           <p style={{ margin: "0 0 24px", fontSize: "12px", color: "#80868B" }}>
@@ -1391,9 +1395,9 @@ export default function HomeClient() {
         <div style={{ maxWidth: "1700px", margin: "0 auto", display: "flex", flexWrap: "wrap" }}>
           {[
             { value: "4-5★", label: "Réponse automatique", color: G.yellow },
-            { value: "≤ 1 h", label: "Délai de détection maximal", color: G.green },
+            { value: "1 h", label: "Cadence de synchronisation visée", color: G.green },
             { value: "3 tons", label: "Suggestions par avis négatif", color: G.blue },
-            { value: "24/7", label: "Surveillance active", color: G.red },
+            { value: "Chaque heure", label: "Filet de sécurité planifié", color: G.red },
           ].map((s, i) => (
             <div key={s.label} style={{ flex: 1, minWidth: "150px", padding: "26px 20px", textAlign: "center", borderRight: i < 3 ? "1px solid #DADCE0" : "none" }}>
               <div style={{ fontSize: "26px", fontWeight: 700, color: s.color, letterSpacing: "-0.5px" }}>{s.value}</div>
@@ -1591,7 +1595,7 @@ export default function HomeClient() {
           <div style={{ textAlign: "center", marginBottom: "44px" }}>
             <div style={{ display: "inline-block", padding: "4px 14px", background: "#E6F4EA", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Service humain Caela Agency — pas un abonnement IA</div>
             <h2 style={{ margin: "0 0 10px", fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 700, letterSpacing: "-0.8px", color: "#202124" }}>
-              On gère votre présence <GL size={30} />
+              On gère votre présence Google Business Profile
             </h2>
             <p style={{ margin: "0 auto", maxWidth: "500px", fontSize: "15px", color: "#5F6368", lineHeight: 1.6 }}>
               L&apos;abonnement Caela Réputation ci-dessous automatise vos réponses. Ici, c&apos;est différent : une vraie personne s&apos;occupe pour vous de créer, optimiser et faire vivre votre fiche Google.
@@ -1654,7 +1658,7 @@ export default function HomeClient() {
                 <span style={{ fontSize: "22px" }}>🏷️</span>
                 <div>
                   <h3 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 700, color: "#202124" }}>Vos avis Google, en vitrine physique</h3>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Une plaque NFC : le client approche son téléphone, laisse un avis en 3 secondes, sans app ni QR code.</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#5F6368" }}>Une plaque NFC raccourcit le parcours : le client approche son téléphone et ouvre le lien d&apos;avis, sans application Caela.</p>
                 </div>
               </div>
               <a href="#nfc" style={{ padding: "8px 14px", background: G.blue, color: "#fff", textDecoration: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
@@ -1809,13 +1813,15 @@ export default function HomeClient() {
               Essai gratuit 14 jours, <strong>carte bancaire requise</strong> — au tarif affiché à la fin de l&apos;essai <strong>sauf résiliation avant son terme</strong>.
               <br />
               Résiliable en 2 clics, rappel email 3 jours avant le 1er prélèvement. Voir les <a href="/cgv" style={{ color: G.blue, textDecoration: "none" }}>CGV</a>.
+              <br />
+              Les avis 1–3 ★ restent soumis à validation humaine. Leur prise en charge par l&apos;équipe Caela est une prestation distincte, activée sur contrat. Les fonctions Google sont ouvertes uniquement après les autorisations de plateforme requises.
             </p>
           </div>
 
           {/* Agency discreet line */}
           <div style={{ marginTop: "12px", textAlign: "center" }}>
             <span style={{ fontSize: "13px", color: "#80868B" }}>
-              Vous gérez 5+ établissements ?{" "}
+              Plus de 5 établissements ou plus de 1 000 avis/mois ?{" "}
               {/* Visait l'ancre #contact, qui n'existe sur aucune section de
                   cette page : le lien ne faisait rien, sans erreur ni 404. Un
                   prospect Plan Agence à 449 €/mois n'avait aucun moyen de nous
@@ -1875,13 +1881,13 @@ export default function HomeClient() {
                 Facilitez la collecte d&apos;avis avec nos plaques NFC
               </h2>
               <p style={{ margin: "0 0 28px", fontSize: "15px", color: "#5F6368", lineHeight: 1.65 }}>
-                Posez la plaque sur votre comptoir. Votre client tape avec son téléphone. Il est directement sur votre fiche Google. Il laisse un avis en 30 secondes.
+                Posez la plaque sur votre comptoir. Le téléphone ouvre le lien d&apos;avis configuré ; le client reste libre de publier un avis positif ou négatif.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {[
-                  { step: "1", icon: "📱", title: "Le client tape la plaque", desc: "N'importe quel téléphone (iOS + Android). Pas d'app à installer.", color: G.blue },
-                  { step: "2", icon: "⭐", title: "Il arrive sur votre fiche", desc: "Directement sur la page Google Reviews de votre établissement.", color: G.yellow },
-                  { step: "3", icon: "✅", title: "Il laisse son avis", desc: "En 30 secondes. Caela Réputation prend le relais pour y répondre.", color: G.green },
+                  { step: "1", icon: "📱", title: "Le client approche son téléphone", desc: "Aucune application Caela à installer ; un QR de secours reste disponible.", color: G.blue },
+                  { step: "2", icon: "⭐", title: "Le lien d'avis s'ouvre", desc: "La plaque utilise le lien configuré pour l'établissement.", color: G.yellow },
+                  { step: "3", icon: "✅", title: "Il partage librement son expérience", desc: "Aucun filtrage selon la satisfaction ou la note choisie.", color: G.green },
                 ].map((s) => (
                   <div key={s.title} style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
                     <div style={{ width: "38px", height: "38px", flexShrink: 0, borderRadius: "50%", background: s.color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "17px" }}>{s.icon}</div>
@@ -1896,7 +1902,7 @@ export default function HomeClient() {
             </div>
             <div className="rp-float" style={{ flex: "0 0 auto" }}>
               <Image
-                src="/nfc/plaque-produit.jpg"
+                src="/nfc/plaque-produit-caela.png"
                 alt="Plaque NFC Caela Réputation — posez votre téléphone pour laisser un avis Google"
                 width={340}
                 height={340}
@@ -1936,7 +1942,7 @@ export default function HomeClient() {
               <div style={{ padding: "24px 28px", background: "#F6FBF7" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700, color: G.green, marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.5px" }}>La plaque + le moteur Caela Réputation</div>
                 {[
-                  "Collecte les avis ET les exploite : l'IA répond dès la détection.",
+                  "Après consentement et activation, Caela applique le mode de réponse choisi dès la détection.",
                   "Roue de la fortune (propulsée par Gagnify) : le client laisse son email/SMS avant de jouer. Vous gardez le contact.",
                   "Tous les clients accèdent au même lien d'avis, sans filtrage selon leur satisfaction.",
                   "Chaque avis négatif : suggestions au commerçant ou prise en charge humaine par Caela, selon son choix.",
@@ -2205,6 +2211,7 @@ export default function HomeClient() {
                 { label: "Mentions légales", href: "/mentions-legales" },
                 { label: "CGV / CGU", href: "/cgv" },
                 { label: "Cookies", href: "/politique-de-cookies" },
+                { label: "Travailler avec un tiers Google", href: "https://support.google.com/business/answer/7163406?hl=fr" },
                 { label: "Support", href: "mailto:contact@caela.fr" },
               ].map(link => (
                 <a

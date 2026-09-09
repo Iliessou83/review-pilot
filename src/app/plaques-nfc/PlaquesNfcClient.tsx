@@ -46,15 +46,9 @@ function PlaqueMockup({ type }: { type: "acrylic" | "epoxy" | "pvc" }) {
           <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         </>
       )}
-      <div style={{ fontSize: "22px", position: "relative", zIndex: 1 }}>
-        <span style={{ fontWeight: 700, letterSpacing: "-1px" }}>
-          <span style={{ color: G.blue }}>G</span>
-          <span style={{ color: G.red }}>o</span>
-          <span style={{ color: G.yellow }}>o</span>
-          <span style={{ color: G.blue }}>g</span>
-          <span style={{ color: G.green }}>l</span>
-          <span style={{ color: G.red }}>e</span>
-        </span>
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+        <GDots size={6} />
+        <span style={{ color: c.text, fontSize: "16px", fontWeight: 800, letterSpacing: "0.08em" }}>CAELA</span>
       </div>
       <div style={{ fontSize: "9px", color: c.text, opacity: 0.7, textAlign: "center", lineHeight: 1.4, position: "relative", zIndex: 1, padding: "0 10px" }}>
         Posez votre téléphone
@@ -81,29 +75,29 @@ const PACKS = [
     name: "Solo",
     desc: "1 plaque NFC acrylique",
     price: 19,
-    features: ["Plaque acrylique ronde 9cm", "Puce NTAG213 programmée", "Lien Google Avis de votre fiche", "Livraison Colissimo 48h"],
+    features: ["Plaque acrylique ronde 9cm", "Puce NTAG213 programmée", "Lien d'avis de votre fiche", "Expédition suivie, délai confirmé"],
     color: G.blue,
     bg: "#E8F0FE",
     popular: false,
   },
   {
-    id: "etablissement",
-    name: "Établissement",
-    desc: "5 plaques — idéal restaurant/salon",
-    price: 79,
-    priceUnit: 15.80,
-    features: ["5 plaques acryliques rondes 9cm", "Puce NTAG213 programmée ×5", "1 lien différent possible par plaque", "Livraison Colissimo 48h", "Support prioritaire"],
+    id: "trio",
+    name: "Trio",
+    desc: "3 plaques — plusieurs points de contact",
+    price: 47,
+    priceUnit: 15.67,
+    features: ["3 plaques acryliques rondes 9cm", "Puce NTAG213 programmée ×3", "1 lien différent possible par plaque", "Expédition suivie, délai confirmé", "Support prioritaire"],
     color: G.green,
     bg: "#E6F4EA",
     popular: true,
   },
   {
-    id: "reseau",
-    name: "Réseau",
-    desc: "25 plaques — agences & franchises",
-    price: 299,
-    priceUnit: 11.96,
-    features: ["25 plaques acryliques", "25 liens Google configurés", "Emballage individuel par établissement", "Livraison express suivie", "Account manager dédié"],
+    id: "etablissement",
+    name: "Établissement",
+    desc: "5 plaques — restaurant, salon ou boutique",
+    price: 69,
+    priceUnit: 13.80,
+    features: ["5 plaques acryliques", "5 liens d'avis configurables", "Emballage individuel par point de contact", "Mode d'expédition confirmé avant paiement", "Interlocuteur dédié"],
     color: G.red,
     bg: "#FCE8E6",
     popular: false,
@@ -112,16 +106,16 @@ const PACKS = [
 
 const HOW = [
   { icon: "📦", step: "1", title: "Tu commandes", desc: "Choisis ton pack et indique le nom + adresse de chaque établissement." },
-  { icon: "🔗", step: "2", title: "On programme", desc: "On récupère ton lien Google Avis officiel et on programme chaque puce NFC sous 24h." },
-  { icon: "🚚", step: "3", title: "Tu reçois", desc: "Colissimo 48h. La plaque arrive prête à poser : pas d'appli, pas de config." },
-  { icon: "📱", step: "4", title: "Tes clients tapent", desc: "Un client pose son téléphone. Google Avis s'ouvre en moins de 2 secondes. Fini." },
+  { icon: "🔗", step: "2", title: "On programme", desc: "Après validation de la fiche et du visuel, on configure chaque puce avec le lien choisi." },
+  { icon: "🚚", step: "3", title: "Tu reçois", desc: "Le délai et le suivi d'expédition sont confirmés avant paiement. La plaque arrive configurée." },
+  { icon: "📱", step: "4", title: "Tes clients approchent leur téléphone", desc: "Le lien d'avis configuré s'ouvre sur le téléphone, sans application Caela à installer." },
 ];
 
 const FAQ = [
   { q: "Ça marche avec quel téléphone ?", r: "Tous les iPhones depuis le 7 (iOS 14+) et tous les Android depuis 2014. Aucune appli à installer." },
   { q: "Si je change de fiche Google, que se passe-t-il ?", r: "On reprogramme la plaque gratuitement. Envoyez un email à contact@caela.fr avec votre nouveau lien." },
   { q: "Puis-je mettre mon logo sur la plaque ?", r: "Oui, pour les commandes de 5 plaques minimum. Envoyez votre fichier AI ou PNG haute résolution, impression UV incluse. +5€/plaque." },
-  { q: "Quelle est la durée de vie d'une plaque ?", r: "La puce NFC est garantie 10 ans minimum. L'acrylique résiste à l'eau, aux chocs et aux UV. Durée réelle : illimitée." },
+  { q: "Quelle est la durée de vie d'une plaque ?", r: "Une puce NFC passive ne contient pas de batterie. Sa durée d'usage dépend surtout du support, de la pose et de l'exposition ; les conditions exactes de garantie seront indiquées sur le devis ou la commande." },
   { q: "Peut-on l'utiliser pour Facebook ou Instagram aussi ?", r: "Oui. Précise la plateforme lors de la commande (Google / Facebook / Instagram). Même prix." },
 ];
 
@@ -135,9 +129,10 @@ type FormState = {
 };
 
 export default function PlaquesNfcClient() {
-  const [form, setForm] = useState<FormState>({ name: "", email: "", phone: "", pack: "etablissement", etablissement: "", message: "" });
+  const [form, setForm] = useState<FormState>({ name: "", email: "", phone: "", pack: "trio", etablissement: "", message: "" });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeType, setActiveType] = useState<"acrylic" | "epoxy" | "pvc">("acrylic");
 
@@ -147,7 +142,7 @@ export default function PlaquesNfcClient() {
       label: "Acrylique",
       badge: "Notre choix",
       badgeColor: G.blue,
-      pros: ["Rigide 3-5mm", "Finition premium", "Impression UV vive", "Résiste 5 ans+"],
+      pros: ["Rigide 3-5mm", "Finition premium", "Impression UV vive", "Adapté à une pose intérieure"],
       cons: ["Plus épais"],
       best: "Plaque posée sur comptoir",
     },
@@ -156,7 +151,7 @@ export default function PlaquesNfcClient() {
       label: "Époxy",
       badge: "Luxe",
       badgeColor: G.green,
-      pros: ["Couche résine bombée", "100% anti-eau", "Toucher ultra haut de gamme", "Ne s'efface jamais"],
+      pros: ["Couche résine bombée", "Bonne protection contre les éclaboussures", "Toucher haut de gamme", "Surface protégée"],
       cons: ["Format carte (+3€)"],
       best: "Badge ou carte individuelle",
     },
@@ -175,10 +170,21 @@ export default function PlaquesNfcClient() {
     e.preventDefault();
     if (!form.name || !form.email || !form.etablissement) return;
     setSending(true);
-    // Simulate send — in production, wire to /api/nfc-order
-    await new Promise(r => setTimeout(r, 1200));
-    setSending(false);
-    setSent(true);
+    setSendError("");
+    try {
+      const response = await fetch("/api/nfc-orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "La demande n'a pas pu être envoyée.");
+      setSent(true);
+    } catch (error) {
+      setSendError(error instanceof Error ? error.message : "La demande n'a pas pu être envoyée.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -225,7 +231,7 @@ export default function PlaquesNfcClient() {
               </a>
             </div>
             <div style={{ display: "flex", gap: "24px", marginTop: "28px" }}>
-              {[{ n: "500+", l: "plaques livrées" }, { n: "48h", l: "délai livraison" }, { n: "10 ans", l: "garantie puce" }].map(s => (
+              {[{ n: "NFC", l: "sans batterie" }, { n: "Sur devis", l: "délai confirmé" }, { n: "France", l: "support local" }].map(s => (
                 <div key={s.l}>
                   <div style={{ fontSize: "20px", fontWeight: 800, color: "#202124" }}>{s.n}</div>
                   <div style={{ fontSize: "12px", color: "#80868B" }}>{s.l}</div>
@@ -248,8 +254,9 @@ export default function PlaquesNfcClient() {
                 position: "relative", zIndex: 2, overflow: "hidden",
               }}>
                 <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-                <div style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-1px", position: "relative", zIndex: 1 }}>
-                  <span style={{ color: G.blue }}>G</span><span style={{ color: G.red }}>o</span><span style={{ color: G.yellow }}>o</span><span style={{ color: G.blue }}>g</span><span style={{ color: G.green }}>l</span><span style={{ color: G.red }}>e</span>
+                <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
+                  <GDots size={8} />
+                  <span style={{ color: "#fff", fontSize: "21px", fontWeight: 800, letterSpacing: "0.1em" }}>CAELA</span>
                 </div>
                 <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)", textAlign: "center", lineHeight: 1.5, position: "relative", zIndex: 1 }}>
                   Posez votre<br />téléphone ici
@@ -268,7 +275,7 @@ export default function PlaquesNfcClient() {
                 fontSize: "11px", color: "#202124", fontWeight: 600, zIndex: 3,
                 whiteSpace: "nowrap",
               }}>
-                📱 Posez → Google s&apos;ouvre
+                📱 Approchez → le lien s&apos;ouvre
               </div>
               {/* Star bubble */}
               <div style={{
@@ -287,7 +294,7 @@ export default function PlaquesNfcClient() {
       {/* TRUST STRIP */}
       <div style={{ borderBottom: "1px solid #DADCE0", borderTop: "1px solid #DADCE0", padding: "14px 24px", background: "#F8F9FA" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(16px, 3vw, 48px)", flexWrap: "wrap" }}>
-          {["✅ Compatible iOS & Android", "⚡ Livraison 48h France", "🔒 Puce verrouillée à vie", "🎨 Impression UV premium", "📞 Support français"].map(t => (
+          {["✅ Compatible NFC récent", "🚚 Délai confirmé à la commande", "🔒 Lien configuré à la demande", "🎨 Impression personnalisable", "📞 Support français"].map(t => (
             <span key={t} style={{ fontSize: "12px", color: "#5F6368", fontWeight: 500, whiteSpace: "nowrap" }}>{t}</span>
           ))}
         </div>
@@ -458,7 +465,7 @@ export default function PlaquesNfcClient() {
             Encore plus fort avec Caela Réputation
           </h2>
           <p style={{ fontSize: "16px", color: "#5F6368", lineHeight: 1.7, margin: "0 0 32px" }}>
-            La plaque NFC amène le client sur Google. Caela Réputation vérifie les nouveaux avis chaque heure, répond automatiquement aux avis 4-5★ après détection et vous notifie avec 3 suggestions pour les avis 1-3★.
+            La plaque NFC ouvre le lien d&apos;avis choisi. Après autorisation Google et activation explicite par le commerçant, Caela Réputation peut détecter les nouveaux avis et appliquer le mode de réponse sélectionné.
           </p>
           <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
             <div style={{ background: "#fff", borderRadius: "12px", padding: "16px 24px", border: "1px solid #DADCE0", boxShadow: SHADOW_SM, fontSize: "14px", color: "#202124" }}>
@@ -466,7 +473,7 @@ export default function PlaquesNfcClient() {
             </div>
             <div style={{ fontSize: "20px", display: "flex", alignItems: "center", color: "#DADCE0" }}>→</div>
             <div style={{ background: "#fff", borderRadius: "12px", padding: "16px 24px", border: "1px solid #DADCE0", boxShadow: SHADOW_SM, fontSize: "14px", color: "#202124" }}>
-              ⭐⭐⭐⭐⭐ Caela Réputation répond dès la détection
+              ⭐⭐⭐⭐⭐ Caela applique vos réglages après détection
             </div>
           </div>
           <a href="/" style={{ display: "inline-block", padding: "14px 32px", background: G.blue, color: "#fff", borderRadius: "10px", textDecoration: "none", fontWeight: 700, fontSize: "15px", boxShadow: `0 4px 16px ${G.blue}40` }}>
@@ -511,7 +518,7 @@ export default function PlaquesNfcClient() {
               Votre commande
             </h2>
             <p style={{ fontSize: "15px", color: "#5F6368", margin: 0 }}>
-              On vous contacte dans les 4h pour confirmer et vous envoyer le lien de paiement.
+              Nous vous recontactons pour confirmer la faisabilité, le délai et vous envoyer le lien de paiement.
             </p>
           </div>
 
@@ -520,7 +527,7 @@ export default function PlaquesNfcClient() {
               <div style={{ fontSize: "48px", marginBottom: "16px" }}>✅</div>
               <h3 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 12px", color: "#202124" }}>Commande reçue !</h3>
               <p style={{ fontSize: "15px", color: "#5F6368", margin: "0 0 24px", lineHeight: 1.6 }}>
-                On revient vers vous sous 4h à <strong>{form.email}</strong> avec la confirmation et le lien de paiement sécurisé.
+                Nous reviendrons vers vous à <strong>{form.email}</strong> avec la confirmation, le délai et le lien de paiement sécurisé.
               </p>
               <a href="/" style={{ display: "inline-block", padding: "12px 28px", background: G.blue, color: "#fff", borderRadius: "10px", textDecoration: "none", fontWeight: 700, fontSize: "14px" }}>
                 Retour à l&apos;accueil
@@ -549,7 +556,7 @@ export default function PlaquesNfcClient() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
                 <div>
                   <label style={{ fontSize: "13px", fontWeight: 600, color: "#202124", display: "block", marginBottom: "6px" }}>Nom complet *</label>
                   <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required
@@ -613,8 +620,14 @@ export default function PlaquesNfcClient() {
                 {sending ? "Envoi en cours..." : "Envoyer ma commande →"}
               </button>
 
+              {sendError && (
+                <div role="alert" style={{ padding: "11px 13px", borderRadius: "8px", background: "#FFF1F3", border: "1px solid #F1B8C1", color: "#9F2639", fontSize: "13px" }}>
+                  {sendError} Vous pouvez aussi écrire à contact@caela.fr.
+                </div>
+              )}
+
               <p style={{ fontSize: "11px", color: "#80868B", textAlign: "center", margin: 0 }}>
-                Paiement sécurisé par lien Stripe. Aucun prélèvement avant confirmation.
+                En envoyant cette demande, vous acceptez que ces informations soient utilisées pour traiter votre commande, conformément à notre <a href="/politique-de-confidentialite" style={{ color: G.blue }}>politique de confidentialité</a>. Aucun prélèvement avant confirmation.
               </p>
             </form>
           )}

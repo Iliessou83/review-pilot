@@ -47,7 +47,7 @@ const GOOGLE_MESSAGES: Record<string, { text: string; ok: boolean }> = {
   unconfigured: { text: "La connexion Google n'est pas encore activée sur ce compte (clés à configurer).", ok: false },
 };
 
-export default function BusinessesClient({ businesses, googleStatus }: { businesses: BusinessWithStats[]; googleStatus?: string | null }) {
+export default function BusinessesClient({ businesses, googleStatus, isAdmin }: { businesses: BusinessWithStats[]; googleStatus?: string | null; isAdmin: boolean }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const googleMsg = googleStatus ? GOOGLE_MESSAGES[googleStatus] : null;
@@ -55,7 +55,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
   const [syncingId, setSyncingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    name: "", platform: "google" as "google" | "trustpilot",
+    name: "", platform: "trustpilot" as "google" | "trustpilot",
     platformId: "", platformToken: "", ownerEmail: "",
   });
 
@@ -71,7 +71,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
       });
       if (res.ok) {
         setShowForm(false);
-        setForm({ name: "", platform: "google", platformId: "", platformToken: "", ownerEmail: "" });
+        setForm({ name: "", platform: "trustpilot", platformId: "", platformToken: "", ownerEmail: "" });
         router.refresh();
       } else {
         const data = await res.json() as { error: string };
@@ -128,7 +128,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
             {businesses.length} établissement{businesses.length !== 1 ? "s" : ""} connecté{businesses.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <button
+        {isAdmin && <button
           onClick={() => setShowForm(!showForm)}
           style={{
             padding: "10px 20px",
@@ -141,7 +141,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
           }}
         >
           {showForm ? "Annuler" : "Ajouter manuellement"}
-        </button>
+        </button>}
       </div>
 
       {/* Retour de connexion Google */}
@@ -172,7 +172,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
           </p>
         </div>
         <a
-          href="/api/google/connect"
+          href="/businesses/google-consent"
           style={{
             display: "inline-flex", alignItems: "center", gap: 10, whiteSpace: "nowrap",
             padding: "12px 22px", background: "#fff", border: "1px solid #DADCE0",
@@ -185,8 +185,8 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
         </a>
       </div>
 
-      {/* Form */}
-      {showForm && (
+      {/* Ajout manuel réservé à l'équipe : les clients passent par OAuth. */}
+      {isAdmin && showForm && (
         <div style={{
           background: "#fff", border: `1px solid ${G.blue}30`,
           borderRadius: "12px", padding: "28px", marginBottom: "24px",
@@ -202,20 +202,7 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
             borderRadius: "8px", marginBottom: "20px",
             fontSize: "13px", color: G.blue, lineHeight: 1.5,
           }}>
-            <strong>Configuration Google Business Profile :</strong> vous aurez besoin de votre Place ID Google et
-            d&apos;un token OAuth obtenu via la Google Cloud Console. Pour trouver votre Place ID, tapez le nom de
-            votre établissement dans{" "}
-            <a
-              href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder"
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: G.blue, fontWeight: 600 }}
-            >
-              cet outil de recherche Google
-            </a>
-            . Ces deux champs demandent des connaissances techniques — si vous préférez, écrivez-nous à{" "}
-            <a href="mailto:support@caela.co" style={{ color: G.blue, fontWeight: 600 }}>support@caela.co</a> avec le
-            nom de votre établissement et on le rattache pour vous, gratuitement.
+            <strong>Outil interne uniquement :</strong> une fiche Google ne peut pas être ajoutée ici. Elle doit passer par le parcours OAuth ci-dessus afin d’enregistrer l’autorisation du commerçant. L’intégration Trustpilot reste elle aussi bloquée tant que la licence correspondante n’est pas validée.
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -236,7 +223,6 @@ export default function BusinessesClient({ businesses, googleStatus }: { busines
                     outline: "none", cursor: "pointer", fontFamily: "inherit",
                   }}
                 >
-                  <option value="google">Google Business Profile</option>
                   <option value="trustpilot">Trustpilot</option>
                 </select>
               </div>

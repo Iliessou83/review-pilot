@@ -55,9 +55,9 @@ export const businesses = pgTable("businesses", {
   lastContentReminderAt: timestamp("last_content_reminder_at"),
   // Signature réelle affichée en bas des réponses IA (ex: "Sophie, gérante").
   // Si vide, la réponse signe "L'équipe {name}" — jamais un prénom inventé
-  // non attribuable (voir audit "Avant Commercialisation" 2026-08-27, manque #1,
-  // renforcé par l'AI Act art. 50 entré en application le 2 août 2026 :
-  // tout contenu généré par IA doit être signalé comme tel).
+  // non attribuable (voir audit "Avant Commercialisation" 2026-08-27, manque #1).
+  // Les obligations de transparence IA dépendent du cas d'usage ; ne pas
+  // prétendre que toute réponse textuelle doit porter une étiquette identique.
   signatureName: text("signature_name"),
   // Profession réglementée (santé, droit, funéraire...) : désactive par défaut
   // la roue, le geste commercial, et force la validation humaine sur TOUS les
@@ -69,6 +69,11 @@ export const businesses = pgTable("businesses", {
   // Numéro du commerçant pour l'alerte SMS immédiate sur avis négatif
   // (manque #5 de l'audit) — dégrade proprement si vide ou si smsConfigured() est faux.
   ownerPhone: text("owner_phone"),
+  // Identifiant public aléatoire utilisé par le widget. Contrairement à l'id
+  // séquentiel du commerce, il ne permet pas d'énumérer les autres clients.
+  widgetPublicToken: text("widget_public_token").notNull().unique(),
+  widgetEnabled: boolean("widget_enabled").default(false).notNull(),
+  widgetAllowedOrigins: json("widget_allowed_origins").$type<string[]>().default([]).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -84,6 +89,34 @@ export const businessConsents = pgTable("business_consents", {
   scope: text("scope", { enum: ["manual", "positive_auto", "all_delegated"] }).notNull(),
   termsVersion: text("terms_version").notNull(),
   granted: boolean("granted").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Preuve séparée que la personne connectant Google affirme être propriétaire
+// ou gérant autorisé. Ce consentement donne accès à la fiche ; il n'active
+// aucune réponse automatique (mandat businessConsents distinct).
+export const googleAccessConsents = pgTable("google_access_consents", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  actorEmail: text("actor_email").notNull(),
+  termsVersion: text("terms_version").notNull(),
+  ownerOrManagerConfirmed: boolean("owner_or_manager_confirmed").notNull(),
+  oauthAccessGranted: boolean("oauth_access_granted").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Ticket OAuth éphémère côté serveur pour le cas multi-établissements. Le
+// navigateur ne reçoit qu'un secret aléatoire ; le refresh token reste chiffré
+// en base et disparaît après utilisation ou expiration.
+export const googleConnectionTickets = pgTable("google_connection_tickets", {
+  id: serial("id").primaryKey(),
+  tokenHash: text("token_hash").notNull().unique(),
+  actorEmail: text("actor_email").notNull(),
+  encryptedRefreshToken: text("encrypted_refresh_token").notNull(),
+  termsVersion: text("terms_version").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -157,8 +190,8 @@ export const reviewActivityEvents = pgTable("review_activity_events", {
   occurredAt: timestamp("occurred_at").defaultNow().notNull(),
 });
 
-// Demande de signalement d'avis faux/diffamatoire (19,90€/avis retiré,
-// satisfait ou remboursé). Formulaire guidé sur /signaler-avis — remplace
+// Demande de signalement d'avis faux/diffamatoire (19,90€/dossier soumis,
+// remboursé si Google refuse le retrait). Formulaire guidé sur /signaler-avis — remplace
 // le mailto direct pour qu'on sache dès la réception si on a déjà l'accès
 // GMB nécessaire ou s'il faut guider le client pour nous l'ajouter comme
 // Gérant. Traitement et facturation restent manuels côté Caela (voir SOP).
@@ -401,6 +434,7 @@ export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type BusinessConsent = typeof businessConsents.$inferSelect;
+export type GoogleAccessConsent = typeof googleAccessConsents.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type QnaStrategy = typeof qnaStrategies.$inferSelect;

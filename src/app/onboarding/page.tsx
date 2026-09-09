@@ -155,7 +155,7 @@ export default async function OnboardingPage({
             On peut lire et répondre à vos avis. On ne touche pas à vos horaires, photos ou informations de fiche.
           </p>
           <a
-            href="/api/google/connect"
+            href="/businesses/google-consent"
             style={{
               display: "inline-flex",
               alignItems: "center",

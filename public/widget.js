@@ -1,7 +1,7 @@
 /*!
  * Caela Réputation — widget d'avis embeddable.
  * Usage sur le site du commerçant :
- *   <div data-caela-widget="123"></div>
+ *   <div data-caela-widget="UUID-ALEATOIRE"></div>
  *   <script src="https://review-pilot-iota.vercel.app/widget.js" async></script>
  * Options sur le div : data-theme="light|dark", data-layout="grid|row", data-max="6".
  */
@@ -80,13 +80,13 @@
         html += '<div style="font-size:15px;letter-spacing:1px;margin-bottom:7px;">' + starsHtml(r.rating, gold) + "</div>";
         html += '<div style="font-size:13px;line-height:1.55;color:' + text + ';margin-bottom:10px;">' + esc(r.text) + "</div>";
         html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:' + muted + ';">';
-        html += "<span style=\"font-weight:600;\">" + esc(r.author) + "</span><span>" + esc(relDate(r.date)) + "</span></div>";
+        html += "<span style=\"font-weight:600;\">" + esc(r.author) + "</span><span>" + esc(r.platform) + " · " + esc(relDate(r.date)) + "</span></div>";
         html += "</div>";
       }
       html += "</div>";
     }
     // Pied
-    html += '<div style="margin-top:16px;text-align:right;font-size:11px;color:' + muted + ';">Avis vérifiés via <a href="' + BASE + '" target="_blank" rel="noopener" style="color:' + blue + ';text-decoration:none;">Caela Réputation</a></div>';
+    html += '<div style="margin-top:16px;font-size:11px;color:' + muted + ';display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><span>' + esc(data.selectionDisclosure || "Sélection d’avis récents") + '</span><a href="' + BASE + '" target="_blank" rel="noopener" style="color:' + blue + ';text-decoration:none;">Affiché par Caela Réputation</a></div>';
     html += "</div>";
 
     el.innerHTML = html;

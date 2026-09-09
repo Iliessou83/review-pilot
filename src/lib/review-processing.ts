@@ -50,6 +50,9 @@ async function postGoogleReply(reviewId: string, text: string, token: string): P
 }
 
 async function postTrustpilotReply(businessUnitId: string, reviewId: string, text: string, apiKey: string): Promise<void> {
+  if (process.env.ENABLE_TRUSTPILOT_INTEGRATION !== "true") {
+    throw new Error("Publication Trustpilot désactivée pendant la validation de la licence d’intégration");
+  }
   const res = await fetch(
     `https://api.trustpilot.com/v1/private/business-units/${businessUnitId}/reviews/${reviewId}/reply`,
     {
@@ -200,6 +203,7 @@ export async function processLowRatedReview(
   business: Business,
   precomputedRisk?: ReturnType<typeof assessReviewRisk>
 ): Promise<void> {
+  if (review.responded) return;
   const existing = await db
     .select({ id: pendingResponses.id })
     .from(pendingResponses)
@@ -236,7 +240,7 @@ export async function processLowRatedReview(
   const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   // En délégation totale, l'équipe Caela reprend les avis négatifs mais aussi
   // tout avis signalé comme sensible, même si sa note est élevée.
-  const managedByCaela = business.autoReplyNegative && (
+  const managedByCaela = process.env.ENABLE_CAELA_HUMAN_DELEGATION === "true" && business.autoReplyNegative && (
     review.rating <= 3 || risk.escalate || business.regulatedSector
   );
   const notificationEmail = managedByCaela

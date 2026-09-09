@@ -2,10 +2,26 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { businesses, businessConsents, type ProductFact } from "@/db/schema";
+import { businesses, businessConsents, googleAccessConsents, type ProductFact } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds, ownsBusiness } from "@/lib/scope";
-import { eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
+
+function normalizeWidgetOrigins(values: unknown): string[] | null {
+  if (!Array.isArray(values) || values.length > 5) return null;
+  const normalized: string[] = [];
+  for (const value of values) {
+    if (typeof value !== "string") return null;
+    try {
+      const url = new URL(value.trim());
+      if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+      normalized.push(url.origin.toLowerCase());
+    } catch {
+      return null;
+    }
+  }
+  return [...new Set(normalized)];
+}
 
 export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
@@ -21,8 +37,26 @@ export async function GET(request: NextRequest) {
       ? await db.select().from(businesses)
       : await db.select().from(businesses).where(inArray(businesses.id, ids));
 
+  const businessIds = allBusinesses.map((business) => business.id);
+  const [accessRows, mandateRows] = businessIds.length > 0
+    ? await Promise.all([
+        db.select().from(googleAccessConsents).where(inArray(googleAccessConsents.businessId, businessIds)).orderBy(desc(googleAccessConsents.createdAt)),
+        db.select().from(businessConsents).where(inArray(businessConsents.businessId, businessIds)).orderBy(desc(businessConsents.createdAt)),
+      ])
+    : [[], []];
+  const latestAccess = new Map<number, typeof accessRows[number]>();
+  const latestMandate = new Map<number, typeof mandateRows[number]>();
+  for (const row of accessRows) if (!latestAccess.has(row.businessId)) latestAccess.set(row.businessId, row);
+  for (const row of mandateRows) if (!latestMandate.has(row.businessId)) latestMandate.set(row.businessId, row);
+
   return NextResponse.json({
-    businesses: allBusinesses.map(b => ({
+    externalReviewWidgetAvailable: process.env.ENABLE_EXTERNAL_REVIEW_WIDGET === "true",
+    googleAutomationAvailable: process.env.ENABLE_GOOGLE_REVIEW_AUTOMATION === "true",
+    caelaHumanDelegationAvailable: process.env.ENABLE_CAELA_HUMAN_DELEGATION === "true",
+    businesses: allBusinesses.map(b => {
+      const access = latestAccess.get(b.id);
+      const mandate = latestMandate.get(b.id);
+      return ({
       id: b.id,
       name: b.name,
       platform: b.platform,
@@ -41,7 +75,23 @@ export async function GET(request: NextRequest) {
       brandTone: b.brandTone,
       tutoiement: b.tutoiement,
       ownerPhone: b.ownerPhone || "",
-    })),
+      widgetEnabled: b.widgetEnabled,
+      widgetAllowedOrigins: b.widgetAllowedOrigins || [],
+      widgetPublicToken: b.widgetPublicToken,
+      googleAccessConsent: access ? {
+        actorEmail: access.actorEmail,
+        termsVersion: access.termsVersion,
+        confirmedAt: access.createdAt,
+        granted: access.ownerOrManagerConfirmed && access.oauthAccessGranted,
+      } : null,
+      automationMandate: mandate ? {
+        actorEmail: mandate.actorEmail,
+        scope: mandate.scope,
+        granted: mandate.granted,
+        termsVersion: mandate.termsVersion,
+        changedAt: mandate.createdAt,
+      } : null,
+    });}),
   });
 }
 
@@ -66,6 +116,8 @@ export async function PUT(request: NextRequest) {
     tutoiement?: boolean;
     ownerPhone?: string;
     automationConsentAccepted?: boolean;
+    widgetEnabled?: boolean;
+    widgetAllowedOrigins?: string[];
   };
 
   try {
@@ -99,9 +151,12 @@ export async function PUT(request: NextRequest) {
   // deux champs sont modifiés dans le même appel.
   const [current] = await db
     .select({
+      platform: businesses.platform,
       regulatedSector: businesses.regulatedSector,
       autoReply5Star: businesses.autoReply5Star,
       autoReplyNegative: businesses.autoReplyNegative,
+      widgetEnabled: businesses.widgetEnabled,
+      widgetAllowedOrigins: businesses.widgetAllowedOrigins,
     })
     .from(businesses)
     .where(eq(businesses.id, businessId))
@@ -125,8 +180,46 @@ export async function PUT(request: NextRequest) {
   }
   const nextConsentScope = nextNegative ? "all_delegated" : nextPositive ? "positive_auto" : "manual";
   const consentChanged = nextConsentScope !== previousConsentScope;
+  if (consentChanged && nextConsentScope === "all_delegated" && process.env.ENABLE_CAELA_HUMAN_DELEGATION !== "true") {
+    return NextResponse.json({ error: "La prise en charge humaine des avis 1–3 étoiles s’active sur contrat, après validation de la capacité et du tarif avec Caela." }, { status: 403 });
+  }
+  if (consentChanged && nextConsentScope !== "manual" && current.platform === "google") {
+    if (process.env.ENABLE_GOOGLE_REVIEW_AUTOMATION !== "true") {
+      return NextResponse.json({ error: "L’automatisation Google restera désactivée jusqu’à la validation du projet API Google Business Profile." }, { status: 403 });
+    }
+    const [accessConsent] = await db
+      .select({
+        id: googleAccessConsents.id,
+        ownerOrManagerConfirmed: googleAccessConsents.ownerOrManagerConfirmed,
+        oauthAccessGranted: googleAccessConsents.oauthAccessGranted,
+      })
+      .from(googleAccessConsents)
+      .where(eq(googleAccessConsents.businessId, businessId))
+      .orderBy(desc(googleAccessConsents.createdAt))
+      .limit(1);
+    if (!accessConsent?.ownerOrManagerConfirmed || !accessConsent.oauthAccessGranted) {
+      return NextResponse.json({ error: "Reconnectez d'abord Google et confirmez que vous êtes propriétaire ou gérant autorisé de cette fiche." }, { status: 409 });
+    }
+  }
   if (consentChanged && nextConsentScope !== "manual" && !automationConsentAccepted) {
     return NextResponse.json({ error: "Cochez la case de mandat explicite avant d'activer les réponses déléguées." }, { status: 400 });
+  }
+
+  let normalizedWidgetOrigins: string[] | undefined;
+  if (fields.widgetAllowedOrigins !== undefined) {
+    const normalized = normalizeWidgetOrigins(fields.widgetAllowedOrigins);
+    if (!normalized) {
+      return NextResponse.json({ error: "Renseignez au maximum 5 origines valides, par exemple https://monsite.fr." }, { status: 400 });
+    }
+    normalizedWidgetOrigins = normalized;
+  }
+  const nextWidgetEnabled = fields.widgetEnabled ?? current.widgetEnabled;
+  if (nextWidgetEnabled && process.env.ENABLE_EXTERNAL_REVIEW_WIDGET !== "true") {
+    return NextResponse.json({ error: "Le widget externe reste désactivé pendant la validation des licences de plateforme." }, { status: 403 });
+  }
+  const effectiveWidgetOrigins = normalizedWidgetOrigins ?? current.widgetAllowedOrigins ?? [];
+  if (nextWidgetEnabled && effectiveWidgetOrigins.length === 0) {
+    return NextResponse.json({ error: "Ajoutez au moins le domaine du site autorisé avant d'activer le widget." }, { status: 400 });
   }
 
   const update: Partial<typeof businesses.$inferInsert> = {};
@@ -146,6 +239,8 @@ export async function PUT(request: NextRequest) {
   }
   if (fields.tutoiement !== undefined) update.tutoiement = fields.tutoiement;
   if (fields.ownerPhone !== undefined) update.ownerPhone = fields.ownerPhone.trim() || null;
+  if (fields.widgetEnabled !== undefined) update.widgetEnabled = fields.widgetEnabled;
+  if (normalizedWidgetOrigins !== undefined) update.widgetAllowedOrigins = normalizedWidgetOrigins;
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Aucun champ à mettre à jour" }, { status: 400 });

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { reviews, businesses } from "@/db/schema";
+import { reviews, businesses, reviewActivityEvents } from "@/db/schema";
 import { requireAuth } from "@/lib/auth";
 import { scopeFrom, ownedBusinessIds } from "@/lib/scope";
 import { eq, gte, lt, and, count, avg, sql, inArray } from "drizzle-orm";
@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
   }
   // Filtre commerce réutilisé sur chaque agrégat (undefined = admin, pas de filtre).
   const bizFilter = ids === "all" ? undefined : inArray(reviews.businessId, ids);
+  const activityFilter = ids === "all" ? undefined : inArray(reviewActivityEvents.businessId, ids);
 
   const now = new Date();
   const months: { label: string; start: Date; end: Date }[] = [];
@@ -57,21 +58,24 @@ export async function GET(request: NextRequest) {
     // Données mensuelles (12 mois)
     Promise.all(
       months.map(async (m) => {
-        const [res] = await db
-          .select({
-            total: count(),
+        const [contentRows, eventRows] = await Promise.all([
+          db.select({
             avgRating: avg(reviews.rating),
-            responded: sql<number>`SUM(CASE WHEN ${reviews.responded} THEN 1 ELSE 0 END)::int`,
             negative: sql<number>`SUM(CASE WHEN ${reviews.rating} <= 3 THEN 1 ELSE 0 END)::int`,
-          })
-          .from(reviews)
-          .where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end), bizFilter));
+          }).from(reviews).where(and(gte(reviews.publishedAt, m.start), lt(reviews.publishedAt, m.end), bizFilter)),
+          db.select({
+            detected: sql<number>`SUM(CASE WHEN ${reviewActivityEvents.eventType} = 'review_detected' THEN 1 ELSE 0 END)::int`,
+            responded: sql<number>`SUM(CASE WHEN ${reviewActivityEvents.eventType} = 'reply_published' THEN 1 ELSE 0 END)::int`,
+          }).from(reviewActivityEvents).where(and(gte(reviewActivityEvents.occurredAt, m.start), lt(reviewActivityEvents.occurredAt, m.end), activityFilter)),
+        ]);
+        const content = contentRows[0];
+        const events = eventRows[0];
         return {
           label: m.label,
-          total: res?.total || 0,
-          avgRating: parseFloat(String(res?.avgRating || "0")),
-          responded: Number(res?.responded) || 0,
-          negative: Number(res?.negative) || 0,
+          total: Number(events?.detected) || 0,
+          avgRating: parseFloat(String(content?.avgRating || "0")),
+          responded: Number(events?.responded) || 0,
+          negative: Number(content?.negative) || 0,
         };
       })
     ),

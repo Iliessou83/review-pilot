@@ -85,7 +85,7 @@ export default function SignalerAvisClient() {
         <div style={{ background: "#FCE8E6", border: `1px solid ${G.red}30`, borderRadius: "12px", padding: "18px 20px", margin: "16px 0 28px" }}>
           <h1 style={{ fontSize: "18px", fontWeight: 700, margin: "0 0 6px", color: "#202124" }}>🚫 Signaler un faux avis Google</h1>
           <p style={{ fontSize: "13px", color: "#5F6368", margin: 0, lineHeight: 1.6 }}>
-            19,90€ par avis retiré. Satisfait ou remboursé : si Google refuse, vous êtes intégralement remboursé.{" "}
+            19,90€ par dossier soumis. La décision appartient à Google ; si le retrait est refusé, la prestation est remboursée.{" "}
             <a href="/blog/faire-retirer-faux-avis-google" style={{ color: G.red, fontWeight: 600 }}>Comment ça marche →</a>
           </p>
         </div>
@@ -173,7 +173,7 @@ export default function SignalerAvisClient() {
                   <input style={inputStyle} value={gmbListingUrl} onChange={e => setGmbListingUrl(e.target.value)} placeholder="https://g.page/..." />
                 </Field>
               </div>
-              <p style={{ fontSize: "11.5px", color: "#80868B", margin: 0 }}>Vous pourrez le faire après avoir envoyé ce formulaire — on vous rappelle ces étapes dans notre réponse.</p>
+              <p style={{ fontSize: "11.5px", color: "#80868B", margin: 0 }}>Vous restez propriétaire ou copropriétaire de la fiche. Caela reçoit uniquement un rôle de gérant révocable. Vous pourrez le faire après ce formulaire ; nous rappellerons les étapes dans notre réponse.</p>
             </div>
           )}
         </div>

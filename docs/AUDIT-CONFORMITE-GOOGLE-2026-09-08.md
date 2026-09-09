@@ -6,6 +6,8 @@
 
 > Ce rapport est une analyse technique et documentaire, pas un avis juridique opposable. Personne ne peut garantir « 100 % légal » ni l'absence de litige. Pour la marque et les contrats, il faut une validation finale par un avocat français en propriété intellectuelle/numérique et, pour l'API, une confirmation écrite de Google.
 
+> **État après corrections du 9 septembre 2026 :** les constats ci-dessous décrivent le site au moment de l'audit initial. Le code a depuis reçu les garde-fous recommandés : identité visuelle Caela indépendante, double consentement non précoché, OAuth sans jeton exposé au navigateur, révocation journalisée, cache Google limité à 30 jours, métriques opérationnelles séparées, audit externe/Trustpilot/widget verrouillés, absence de remplacement des réponses Google existantes et automatisation Google coupée par défaut. Les blocages externes restent l'approbation du projet API/OAuth, la licence Trustpilot, les informations légales manquantes et la validation juridique finale. Le suivi à jour se trouve dans `docs/PLAN-AVANT-COMMERCIALISATION.md`.
+
 ## Verdict
 
 **Un bot de réponse n'est pas interdit en lui-même : Google documente expressément la réponse aux avis au moyen de jetons OAuth mis en cache. Caela ne doit toutefois pas ouvrir cette automatisation aux clients avant l'approbation de son projet API/OAuth et la validation de son modèle exact de mandat d'agence.**

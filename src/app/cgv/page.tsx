@@ -19,7 +19,7 @@ Représentée par Iliès Bourbouane
 Email : contact@caela.fr
 Site web : ${entity.siteUrl}
 
-Le service est hébergé par Vercel Inc. (infrastructure applicative), Supabase Inc. (base de données) et Oracle Cloud Infrastructure (automatisation). Pour plus de détails : voir nos Mentions légales.`,
+Le service est actuellement hébergé par Vercel Inc. (application et tâches planifiées) et Supabase Inc. (base de données). Pour plus de détails : voir nos Mentions légales.`,
   },
   {
     title: "2. Définitions",
@@ -36,10 +36,10 @@ Le service est hébergé par Vercel Inc. (infrastructure applicative), Supabase 
     title: "3. Objet du service",
     content: `Caela Réputation est une plateforme SaaS (Software as a Service) permettant aux professionnels de :
 
-— Centraliser et consulter leurs avis Google Business Profile et Trustpilot après synchronisation automatique, actuellement exécutée chaque heure via les APIs officielles
-— Générer automatiquement des réponses personnalisées aux avis positifs (4-5 étoiles) via l'IA Claude (Anthropic)
-— Recevoir par email des suggestions de réponse pour les avis négatifs (1-3 étoiles) et les valider en un clic
-— Accéder à des statistiques et analytics de réputation sur 12 mois
+— Centraliser temporairement les avis issus des intégrations de plateforme effectivement autorisées et activées
+— Préparer des réponses personnalisées et, uniquement après mandat exprès, publier automatiquement les réponses comprises dans le périmètre choisi
+— Faire contrôler humainement les avis 1-3 étoiles et les sujets sensibles, par le Client ou par l'équipe Caela selon le mandat choisi
+— Accéder à des indicateurs de service (volumes traités, délais et modes de validation), sans conserver le contenu Google au-delà de 30 jours
 — Gérer plusieurs établissements depuis un tableau de bord unique
 
 Le Service utilise l'API officielle Google My Business et l'intelligence artificielle Claude (Anthropic PBC). Caela Réputation est un outil indépendant, non affilié, non approuvé et non sponsorisé par Google LLC ou Trustpilot A/S.`,
@@ -49,21 +49,23 @@ Le Service utilise l'API officielle Google My Business et l'intelligence artific
     content: `4.1 PRÉREQUIS TECHNIQUES
 Pour accéder au Service, le Client doit disposer d'une fiche Google Business Profile valide et active dont il est l'administrateur vérifiable, d'une connexion internet et d'un navigateur récent.
 
-4.2 AUTORISATION OAUTH GOOGLE
-Le Client autorise Caela Réputation à accéder à sa fiche Google Business Profile via les mécanismes d'autorisation OAuth 2.0 fournis par Google. Cette autorisation peut être révoquée à tout moment depuis les paramètres Google du Client (myaccount.google.com). La révocation de l'autorisation suspend automatiquement les fonctionnalités liées à Google sans droit à remboursement.
+4.2 AUTORISATION OAUTH GOOGLE ET PROPRIÉTÉ
+Le Client confirme, par une case non précochée et une action positive, être propriétaire de la fiche ou gérant autorisé à mandater Caela. Le Client conserve à tout moment la propriété ou copropriété et le contrôle de sa fiche. L'accès OAuth autorise la connexion technique mais n'active pas les réponses automatiques : un second mandat exprès et horodaté est requis dans les Réglages. Ces autorisations peuvent être retirées à tout moment. Caela retire ses accès dans les délais applicables à la fin de la relation.
+
+Google Business Profile est un service Google disponible sans frais. Les montants facturés par Caela rémunèrent exclusivement l'accompagnement, la gestion et les outils Caela, et non l'accès à Google Business Profile.
 
 4.3 USAGES INTERDITS
 Le Client s'engage formellement à ne pas utiliser le Service pour :
 — Solliciter des avis en échange d'une contrepartie (interdit par les CGU Google et la réglementation DGCCRF)
 — Publier de faux avis ou des avis trompeurs, conformément à l'article L.121-4 du Code de la consommation
 — Manipuler les avis de concurrents
-— Toute activité contraire aux conditions d'utilisation de Google My Business API, de Trustpilot ou de la réglementation en vigueur
+— Toute activité contraire aux conditions des API Google Business Profile, de Trustpilot ou de la réglementation en vigueur
 — Utiliser le Service à des fins de spam, harcèlement ou atteinte à la réputation de tiers
 
 En cas de violation, Caela Agency se réserve le droit de suspendre immédiatement l'accès sans remboursement.
 
 4.4 RESPONSABILITÉ DES RÉPONSES PUBLIÉES
-Les réponses générées ou suggérées par l'IA sont des suggestions. Le Client reste seul responsable des réponses publiées en son nom sur Google ou Trustpilot, qu'elles aient été générées automatiquement (mode auto-réponse activé) ou validées manuellement. Caela Agency ne peut être tenu responsable du contenu des réponses approuvées ou automatiquement publiées par le Client.
+Le Client choisit le périmètre de délégation et fournit à Caela des informations exactes sur son activité. Caela demeure responsable de l'exécution de ses propres prestations et contrôles dans les limites prévues au contrat. Les contenus sensibles (notamment santé, sécurité, allergène, litige, accusation ou donnée personnelle) sont dirigés vers un contrôle humain. Aucun système automatisé ne garantit l'absence totale d'erreur ; le Client peut suspendre l'automatisation et révoquer le mandat à tout moment.
 
 4.5 DÉLÉGATION À DES COLLABORATEURS CAELA
 Le Client reconnaît et accepte que Caela Agency puisse faire intervenir, pour la gestion opérationnelle du Service prévue par son offre (réponses aux avis, optimisation de fiche, signalement d'avis), des salariés ou prestataires de Caela Agency. Ces intervenants accèdent à la fiche Google Business Profile du Client exclusivement via leur propre compte Google individuel, ajouté en tant que Gérant, jamais via un compte partagé ou les identifiants personnels du Client. Caela Agency demeure seule responsable envers le Client des actions de ses collaborateurs dans le cadre du Service, dans les limites fixées à l'article 8.`,
@@ -71,7 +73,7 @@ Le Client reconnaît et accepte que Caela Agency puisse faire intervenir, pour l
   {
     title: "5. Offres, tarifs et abonnement",
     content: `5.1 OFFRES
-Les plans tarifaires (Starter, Pro, Agence) sont décrits sur la page d'accueil du Service. Les caractéristiques et tarifs exacts de chaque plan sont ceux affichés au moment de la souscription.
+Les plans tarifaires (Starter, Solo, Pro, Studio et Agence) sont décrits sur le Service. Les caractéristiques et tarifs exacts de chaque plan sont ceux affichés au moment de la souscription. Aucun supplément d'usage n'est appliqué sans information préalable et acceptation expresse du Client.
 
 5.2 ESSAI GRATUIT AVEC CARTE BANCAIRE
 Une période d'essai gratuit de 14 jours est proposée. L'enregistrement d'une carte bancaire valide est requis dès la souscription, via notre prestataire Stripe. Aucune somme n'est débitée pendant l'essai.
@@ -112,7 +114,7 @@ En cas de résiliation en cours de période annuelle, aucun remboursement prorat
 Caela Agency s'engage à maintenir le Service disponible 99% du temps mensuel, hors maintenances planifiées et événements hors de son contrôle. Les maintenances planifiées sont annoncées par email au moins 24h à l'avance.
 
 7.2 DÉPENDANCES TIERCES
-Le fonctionnement du Service dépend de services tiers : l'API Google My Business, l'API Trustpilot, l'API Anthropic Claude et les services d'hébergement. Toute indisponibilité ou modification de ces services tiers peut affecter le Service sans que Caela Agency soit responsable ni tenu à remboursement. Caela Agency informera les Clients dans les meilleurs délais de toute perturbation significative.
+Le fonctionnement du Service dépend de services tiers : les API Google Business Profile, l'API Trustpilot, l'API Anthropic Claude et les services d'hébergement. Toute indisponibilité ou modification de ces services tiers peut affecter le Service sans que Caela Agency soit responsable ni tenu à remboursement. Caela Agency informera les Clients dans les meilleurs délais de toute perturbation significative.
 
 7.3 APPROBATION GOOGLE
 L'accès à l'API Google My Business est soumis à l'approbation de Google LLC. Tout changement de politique d'accès de Google peut affecter le Service sans que Caela Agency puisse en être tenu responsable.`,
@@ -144,7 +146,7 @@ L'accès à l'API Google My Business est soumis à l'approbation de Google LLC. 
     title: "10. Confidentialité et données personnelles",
     content: `Le traitement des données personnelles dans le cadre du Service est détaillé dans notre Politique de confidentialité, disponible à l'adresse /politique-de-confidentialite.
 
-Points clés : nous ne revendons aucune donnée, nous utilisons Anthropic (Claude) pour générer les réponses IA (les textes d'avis lui sont transmis mais ne sont pas conservés), et vous pouvez demander la suppression de vos données à tout moment à contact@caela.fr.`,
+Points clés : nous ne revendons aucune donnée, nous utilisons Anthropic (Claude) pour générer les réponses IA avec les garanties applicables au contrat API Caela, et vous pouvez demander la suppression de vos données à tout moment à contact@caela.fr.`,
   },
   {
     title: "11. Résiliation",
@@ -156,7 +158,7 @@ Points clés : nous ne revendons aucune donnée, nous utilisons Anthropic (Claud
 — Usage frauduleux ou illégal du Service
 — Injonction judiciaire
 
-11.3 En cas de résiliation ou suspension, les données opérationnelles du Client (établissements, avis importés et réponses) sont conservées jusqu'à 12 mois pour permettre une éventuelle réactivation ou l'export des données, puis supprimées automatiquement. Le compte de connexion et les données de facturation peuvent être conservés séparément lorsque la loi l'impose. Sur demande expresse du Client, la suppression peut intervenir immédiatement, sous réserve des obligations légales.
+11.3 Le contenu obtenu via l'API Google Business Profile (notamment auteur, note, texte, identifiant d'avis et copie de réponse) n'est conservé localement que temporairement, pendant 30 jours calendaires maximum à compter de la publication de l'avis, y compris pendant un abonnement actif. Sa purge dans Caela ne supprime rien de la fiche Google. Les indicateurs propres à Caela ne contenant pas le contenu des avis, ainsi que les réglages de l'établissement, peuvent être conservés pendant le contrat puis jusqu'à 12 mois après résiliation afin de permettre le suivi, l'export ou une réactivation, puis sont supprimés. Le compte de connexion et les données de facturation peuvent être conservés séparément lorsque la loi l'impose.
 
 11.4 Caela Agency se réserve le droit de mettre fin au Service dans son intégralité avec un préavis de 3 mois notifié par email. Dans ce cas, les sommes versées pour des périodes non encore entamées seront remboursées au prorata.`,
   },
@@ -169,7 +171,7 @@ Points clés : nous ne revendons aucune donnée, nous utilisons Anthropic (Claud
     content: `13.1 Les présentes CGV sont soumises au droit français.
 
 13.2 MÉDIATION (consommateurs)
-En cas de litige entre un consommateur et Caela Agency, et après tentative de résolution amiable par email à contact@caela.fr, le consommateur peut recourir gratuitement à un médiateur de la consommation, conformément aux articles L.616-1 et R.616-1 du Code de la consommation. Plateforme européenne de règlement en ligne des litiges : https://ec.europa.eu/consumers/odr
+En cas de litige entre un consommateur et Caela Agency, et après tentative de résolution amiable par email à contact@caela.fr, le consommateur peut recourir gratuitement au médiateur de la consommation auquel Caela aura effectivement adhéré. Ses nom, adresse et site doivent être renseignés ici avant toute offre à un consommateur : [MÉDIATEUR À COMPLÉTER].
 
 13.3 LITIGES PROFESSIONNELS (B2B)
 Pour les litiges entre professionnels, et à défaut de résolution amiable dans les 30 jours suivant la mise en demeure, les parties conviennent de la compétence exclusive des tribunaux compétents du ressort du siège social de Caela Agency (France).
@@ -182,7 +184,7 @@ Pour les litiges entre professionnels, et à défaut de résolution amiable dans
 
 Email : contact@caela.fr
 Objet : [CGV] Votre demande
-Délai de réponse garanti : 48h ouvrées
+Délai de réponse visé : 48h ouvrées
 
 Ces CGV ont été mises à jour en septembre 2026 et annulent et remplacent toutes versions antérieures.`,
   },

@@ -36,6 +36,7 @@ function Stars({ n, color }: { n: number; color?: string }) {
 }
 
 export default function AuditClient({ googleAuditEnabled, trustpilotAuditEnabled }: { googleAuditEnabled: boolean; trustpilotAuditEnabled: boolean }) {
+  const auditAvailable = googleAuditEnabled || trustpilotAuditEnabled;
   const [platform, setPlatform] = useState<Platform>(googleAuditEnabled ? "google" : "trustpilot");
   const [step, setStep] = useState<Step>("form");
 
@@ -177,13 +178,13 @@ export default function AuditClient({ googleAuditEnabled, trustpilotAuditEnabled
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "32px" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 14px", background: "#E8F0FE", borderRadius: "24px", fontSize: "12px", fontWeight: 600, color: G.blue, marginBottom: "16px" }}>
-              🔍 Audit gratuit — résultat en 30 secondes
+              {auditAvailable ? "🔍 Audit de réputation" : "🔒 Audit en validation"}
             </div>
             <h1 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, lineHeight: 1.15, color: "#202124", margin: "0 0 12px" }}>
               Votre réputation en ligne{" "}
-              <span style={{ color: accentColor }}>analysée gratuitement</span>
+              <span style={{ color: accentColor }}>{auditAvailable ? "analysée avec des données autorisées" : "sans score simulé"}</span>
             </h1>
-            <p style={{ fontSize: "15px", color: "#5F6368", margin: 0 }}>Gratuit. Sans inscription. Résultat immédiat + rapport par email.</p>
+            <p style={{ fontSize: "15px", color: "#5F6368", margin: 0 }}>{auditAvailable ? "Sans inscription. Résultat et rapport par email lorsque les sources sont disponibles." : "Aucune donnée externe n'est interrogée et aucun coût API n'est engagé pendant cette validation."}</p>
           </div>
 
           {/* Platform toggle */}

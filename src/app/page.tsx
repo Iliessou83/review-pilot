@@ -3,13 +3,12 @@ import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
   title: "Caela Réputation — Réponses automatiques aux avis Google par IA",
-  description: "L'IA surveille vos avis Google, répond automatiquement après détection aux 4-5★ et vous envoie 3 suggestions par email pour les avis négatifs. Un clic pour publier. Essai gratuit 14 jours.",
+  description: "Après autorisation et activation explicites, Caela détecte les avis Google, peut répondre aux 4-5★ et prépare des suggestions pour les avis sensibles. Essai gratuit 14 jours.",
 };
 
 // Balisage schema.org : décrit le produit (offres réelles alignées sur PLANS
 // dans legal.config.ts — Starter 49€/mois (39€/mois en annuel), Solo 69€,
-// Pro 149€/mois) pour que Google puisse afficher un extrait enrichi (prix,
-// note) dans les résultats.
+// Pro 149€/mois, Studio 299€/mois) pour décrire les offres disponibles.
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -17,13 +16,13 @@ const JSON_LD = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
-    "IA de gestion d'avis Google Business : réponses automatiques aux avis 4-5 étoiles, suggestions pour les avis négatifs, surveillance 24/7.",
+    "Gestion d'avis Google Business : détection planifiée, réponses 4-5 étoiles après mandat explicite et suggestions pour les avis sensibles.",
   offers: {
     "@type": "AggregateOffer",
     priceCurrency: "EUR",
     lowPrice: "39",
-    highPrice: "149",
-    offerCount: "3",
+    highPrice: "299",
+    offerCount: "4",
   },
   provider: {
     "@type": "Organization",

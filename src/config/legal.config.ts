@@ -90,8 +90,8 @@ export const hosting = {
 
 // ── 3. CONDITIONS D'ESSAI & FACTURATION (le cœur anti-problème) ──────────────
 // Modèle : essai gratuit AVEC carte bancaire obligatoire, prélèvement
-// automatique à la fin de l'essai SAUF résiliation. 100% légal à condition de
-// respecter les garde-fous ci-dessous (ils sont obligatoires, pas optionnels).
+  // automatique à la fin de l'essai SAUF résiliation. Ce parcours doit rester
+  // soumis à la validation des mentions légales et précontractuelles applicables.
 
 export const billing = {
   currency: "eur",
@@ -120,8 +120,8 @@ export const billing = {
     address: "À_RENSEIGNER",
   },
 
-  // Plateforme RLL européenne (obligatoire en lien sur le site B2C).
-  odrPlatform: "https://ec.europa.eu/consumers/odr",
+  // La plateforme européenne RLL a fermé le 20 juillet 2025 : ne pas
+  // réintroduire son ancien lien. Le médiateur de la consommation reste requis.
 } as const;
 
 // ── 4. OFFRES ────────────────────────────────────────────────────────────────
@@ -130,11 +130,9 @@ export const billing = {
 // On ne hardcode jamais un Price ID : il vit dans les env Vercel.
 // `maxBusinesses` = nombre d'établissements inclus (null = illimité).
 // `monthlyReviewQuota` = avis traités/mois inclus (null = illimité).
-// `overagePricePerReview` = supplément facturé par avis au-delà du quota
-// (null = pas de dépassement possible, soit illimité soit non applicable).
-// Décision produit (2026-07-19) : jamais de blocage sec au dépassement —
-// alerte à 90% du quota, puis service continu + petit supplément jusqu'au
-// renouvellement plutôt qu'un système de crédits à la carte.
+  // `overagePricePerReview` reste null tant qu'aucune facturation d'usage
+  // Stripe n'est implémentée et acceptée au checkout. Le dépassement déclenche
+  // une alerte et un contact commercial, jamais un supplément surprise.
 // Ces champs sont la source unique de vérité pour l'application des
 // limites (voir src/lib/plan-limits.ts) — cohérent avec les chiffres déjà
 // annoncés sur la page d'accueil (cartes plans + calculateur + comparatif).
@@ -149,7 +147,7 @@ export const plans = [
     quota: "Jusqu'à 30 avis/mois",
     maxBusinesses: 1,
     monthlyReviewQuota: 30,
-    overagePricePerReview: 1,
+    overagePricePerReview: null,
   },
   {
     id: "solo",
@@ -160,7 +158,7 @@ export const plans = [
     quota: "Jusqu'à 100 avis/mois",
     maxBusinesses: 1,
     monthlyReviewQuota: 100,
-    overagePricePerReview: 0.8,
+    overagePricePerReview: null,
   },
   {
     id: "pro",
@@ -171,7 +169,7 @@ export const plans = [
     quota: "Jusqu'à 300 avis/mois — 5 établissements",
     maxBusinesses: 5,
     monthlyReviewQuota: 300,
-    overagePricePerReview: 0.6,
+    overagePricePerReview: null,
   },
   {
     id: "studio",
@@ -179,9 +177,9 @@ export const plans = [
     priceMonthly: 299,
     priceEnv: "STRIPE_PRICE_STUDIO",
     annualPriceEnv: "STRIPE_PRICE_STUDIO_ANNUAL",
-    quota: "Avis illimités — 5 établissements",
+    quota: "Jusqu'à 1 000 avis/mois — 5 établissements",
     maxBusinesses: 5,
-    monthlyReviewQuota: null,
+    monthlyReviewQuota: 1000,
     overagePricePerReview: null,
   },
   {
@@ -190,9 +188,9 @@ export const plans = [
     priceMonthly: 449,
     priceEnv: "STRIPE_PRICE_AGENCE",
     annualPriceEnv: "STRIPE_PRICE_AGENCE_ANNUAL",
-    quota: "Avis illimités — établissements illimités",
+    quota: "Jusqu'à 3 000 avis/mois — établissements illimités",
     maxBusinesses: null,
-    monthlyReviewQuota: null,
+    monthlyReviewQuota: 3000,
     overagePricePerReview: null,
   },
 ] as const;

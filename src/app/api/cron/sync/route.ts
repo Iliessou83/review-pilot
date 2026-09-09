@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { cronAutorise, avecSignalement } from "@/lib/cronSignal";
 import { db } from "@/lib/db";
-import { businesses, reviews, reviewActivityEvents, loginAttempts } from "@/db/schema";
+import { businesses, reviews, reviewActivityEvents, loginAttempts, googleConnectionTickets } from "@/db/schema";
 import { eq, and, lt } from "drizzle-orm";
 import { processHighRatedReview, processLowRatedReview } from "@/lib/review-processing";
 import { ADMIN_EMAILS } from "@/lib/auth";
@@ -17,6 +17,7 @@ interface GoogleReview {
   starRating: string;
   comment?: string;
   createTime: string;
+  reviewReply?: { comment?: string; updateTime?: string };
 }
 
 interface TrustpilotReview {
@@ -32,39 +33,54 @@ const STAR_MAP: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FI
 async function syncGoogleReviews(business: typeof businesses.$inferSelect) {
   // platform_token = refresh_token OAuth → on génère un jeton d'accès frais.
   const access = await googleAccessToken(business);
-  const res = await fetch(
-    `https://mybusiness.googleapis.com/v4/${business.platformId}/reviews?pageSize=50`,
-    { headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" } }
-  );
-  if (!res.ok) throw new Error(`Google API ${res.status}`);
-  const data = await res.json() as { reviews?: GoogleReview[] };
   const created: (typeof reviews.$inferSelect)[] = [];
+  const retentionCutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  let pageToken = "";
+  let page = 0;
 
-  for (const gr of data.reviews ?? []) {
-    const existing = await db.select({ id: reviews.id }).from(reviews)
-      .where(and(eq(reviews.businessId, business.id), eq(reviews.platformReviewId, gr.name))).limit(1);
-    if (existing.length === 0) {
+  do {
+    const params = new URLSearchParams({ pageSize: "50", orderBy: "updateTime desc" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const res = await fetch(
+      `https://mybusiness.googleapis.com/v4/${business.platformId}/reviews?${params}`,
+      { headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" } }
+    );
+    if (!res.ok) throw new Error(`Google API ${res.status}`);
+    const data = await res.json() as { reviews?: GoogleReview[]; nextPageToken?: string };
+
+    for (const gr of data.reviews ?? []) {
+      if (new Date(gr.createTime).getTime() < retentionCutoff) continue;
       const [saved] = await db.insert(reviews).values({
         businessId: business.id, platformReviewId: gr.name,
         authorName: gr.reviewer.displayName,
         rating: STAR_MAP[gr.starRating] || 3,
         text: gr.comment || "",
         publishedAt: new Date(gr.createTime),
-        responded: false, platform: "google",
-      }).returning();
-      await db.insert(reviewActivityEvents).values({
-        businessId: business.id,
+        responded: Boolean(gr.reviewReply),
+        responseText: gr.reviewReply?.comment || null,
+        respondedAt: gr.reviewReply?.updateTime ? new Date(gr.reviewReply.updateTime) : null,
         platform: "google",
-        eventType: "review_detected",
-        handlingMode: "manual",
-      });
-      created.push(saved);
+      }).onConflictDoNothing().returning();
+      if (saved) {
+        await db.insert(reviewActivityEvents).values({
+          businessId: business.id,
+          platform: "google",
+          eventType: "review_detected",
+          handlingMode: "manual",
+        });
+        created.push(saved);
+      }
     }
-  }
+    pageToken = data.nextPageToken || "";
+    page++;
+  } while (pageToken && page < 10);
   return created;
 }
 
 async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
+  if (process.env.ENABLE_TRUSTPILOT_INTEGRATION !== "true") {
+    throw new Error("Trustpilot integration disabled pending licence validation");
+  }
   const res = await fetch(
     `https://api.trustpilot.com/v1/business-units/${business.platformId}/reviews?pageSize=50`,
     { headers: { apikey: decryptToken(business.platformToken) } }
@@ -74,16 +90,14 @@ async function syncTrustpilotReviews(business: typeof businesses.$inferSelect) {
   const created: (typeof reviews.$inferSelect)[] = [];
 
   for (const tr of data.reviews ?? []) {
-    const existing = await db.select({ id: reviews.id }).from(reviews)
-      .where(and(eq(reviews.businessId, business.id), eq(reviews.platformReviewId, tr.id))).limit(1);
-    if (existing.length === 0) {
-      const [saved] = await db.insert(reviews).values({
+    const [saved] = await db.insert(reviews).values({
         businessId: business.id, platformReviewId: tr.id,
         authorName: tr.consumer.displayName, rating: tr.stars,
         text: tr.text?.review || "",
         publishedAt: new Date(tr.createdAt),
         responded: false, platform: "trustpilot",
-      }).returning();
+      }).onConflictDoNothing().returning();
+    if (saved) {
       await db.insert(reviewActivityEvents).values({
         businessId: business.id,
         platform: "trustpilot",
@@ -113,6 +127,7 @@ async function runSync() {
   // Les compteurs anti-bruteforce sont temporaires. Leur purge évite de faire
   // grossir login_attempts indéfiniment, sans toucher aux données métier.
   await db.delete(loginAttempts).where(lt(loginAttempts.resetAt, new Date()));
+  await db.delete(googleConnectionTickets).where(lt(googleConnectionTickets.expiresAt, new Date()));
   const allBusinesses = await db.select().from(businesses);
   const results: Record<string, { synced: number; processed: number; errors: string[] }> = {};
 
@@ -126,8 +141,15 @@ async function runSync() {
       results[business.name].synced = newReviews.length;
 
       for (const review of newReviews) {
+        // Une réponse peut déjà exister sur Google avant la connexion à Caela.
+        // Elle n'est jamais remplacée et ne déclenche aucune suggestion.
+        if (review.responded) continue;
         try {
-          if (review.rating >= 4 && business.autoReply5Star) {
+          if (
+            review.rating >= 4 &&
+            business.autoReply5Star &&
+            (business.platform !== "google" || process.env.ENABLE_GOOGLE_REVIEW_AUTOMATION === "true")
+          ) {
             await processHighRatedReview(review, business);
           } else {
             await processLowRatedReview(review, business);

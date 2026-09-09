@@ -9,6 +9,7 @@ import { checkBusinessQuota } from "@/lib/plan-limits";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { encryptToken } from "@/lib/token-crypto";
 import { eq, inArray } from "drizzle-orm";
+import crypto from "node:crypto";
 
 export async function GET(request: NextRequest) {
   const session = await requireAuth(request);
@@ -36,6 +37,9 @@ export async function GET(request: NextRequest) {
       referredBy: businesses.referredBy,
       createdAt: businesses.createdAt,
       lastSyncedAt: businesses.lastSyncedAt,
+      widgetPublicToken: businesses.widgetPublicToken,
+      widgetEnabled: businesses.widgetEnabled,
+      widgetAllowedOrigins: businesses.widgetAllowedOrigins,
     };
     const base = db.select(cols).from(businesses);
     const all =
@@ -54,6 +58,9 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const isAdmin = session.role === "admin" || ADMIN_EMAILS.includes(session.email.toLowerCase());
+  if (!isAdmin) {
+    return NextResponse.json({ error: "Utilisez la connexion OAuth Google depuis votre espace client." }, { status: 403 });
+  }
 
   let body: Record<string, unknown>;
   try {
@@ -79,6 +86,12 @@ export async function POST(request: NextRequest) {
 
   if (platform !== "google" && platform !== "trustpilot") {
     return NextResponse.json({ error: "Invalid platform" }, { status: 400 });
+  }
+  if (platform === "google") {
+    return NextResponse.json({ error: "Une fiche Google doit être connectée par OAuth afin de recueillir l’autorisation du commerçant et de protéger ses jetons." }, { status: 400 });
+  }
+  if (process.env.ENABLE_TRUSTPILOT_INTEGRATION !== "true") {
+    return NextResponse.json({ error: "L’ajout Trustpilot est désactivé pendant la validation de la licence d’intégration." }, { status: 403 });
   }
 
   if (typeof ownerEmail === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
@@ -108,6 +121,7 @@ export async function POST(request: NextRequest) {
       // explicite du mandat et journalisation de cette acceptation.
       autoReply5Star: false,
       autoReplyNegative: false,
+      widgetPublicToken: crypto.randomUUID(),
     }).returning();
 
     // Fédération au cerveau Caela (par email).

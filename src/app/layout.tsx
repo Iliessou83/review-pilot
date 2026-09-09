@@ -6,7 +6,7 @@ import EnregistrerSW from "@/components/EnregistrerSW";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://review-pilot-iota.vercel.app"),
   title: "Caela Réputation — Gestion d'avis Google automatisée",
-  description: "IA spécialisée fiches Google Business. Réponses automatiques, optimisation de fiche, référencement local.",
+  description: "Gestion de fiches Google Business Profile : suivi des avis, réponses selon le mandat choisi et pilotage de la réputation locale.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",

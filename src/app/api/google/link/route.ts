@@ -1,12 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
-import { jwtVerify } from "jose";
-import { getSession, getJwtSecret } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { linkGoogleBusiness } from "@/lib/google-link";
+import { deleteGoogleConnectionTicket, readGoogleConnectionTicket } from "@/lib/google-connection-ticket";
+import { listAllLocations, refreshAccessToken } from "@/lib/google-oauth";
 
 // Rattache l'établissement Google choisi (écran multi-établissements).
-// Récupère le refresh_token dans le cookie signé g_link puis crée le commerce.
+// Récupère le refresh_token via le ticket serveur opaque référencé par g_link.
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,18 +15,9 @@ export async function POST(req: NextRequest) {
   const ticket = req.cookies.get("g_link")?.value;
   if (!ticket) return NextResponse.json({ error: "no_ticket" }, { status: 400 });
 
-  let email = "";
-  let refreshToken = "";
-  try {
-    const { payload } = await jwtVerify(ticket, getJwtSecret());
-    if (payload.purpose !== "g_link") return NextResponse.json({ error: "bad_ticket" }, { status: 400 });
-    email = String(payload.email || "").toLowerCase();
-    refreshToken = String(payload.refreshToken || "");
-  } catch {
-    return NextResponse.json({ error: "expired" }, { status: 400 });
-  }
-  if (email !== session.email.toLowerCase()) return NextResponse.json({ error: "mismatch" }, { status: 403 });
-  if (!refreshToken) return NextResponse.json({ error: "no_token" }, { status: 400 });
+  const email = session.email.toLowerCase();
+  const stored = await readGoogleConnectionTicket(ticket, email);
+  if (!stored) return NextResponse.json({ error: "expired" }, { status: 400 });
 
   let body: { locationPath?: string; title?: string };
   try {
@@ -34,14 +26,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
   const locationPath = String(body.locationPath || "");
-  const title = String(body.title || "Mon établissement");
   // Format attendu : "accounts/X/locations/Y".
   if (!/^accounts\/[^/]+\/locations\/[^/]+$/.test(locationPath)) {
     return NextResponse.json({ error: "bad_location" }, { status: 400 });
   }
 
-  const result = await linkGoogleBusiness({ email, locationPath, title, refreshToken });
+  // Ne jamais faire confiance au chemin ou au nom envoyés par le navigateur :
+  // la fiche doit réellement appartenir à la liste autorisée par ce jeton OAuth.
+  let authorizedLocation;
+  try {
+    const access = await refreshAccessToken(stored.refreshToken);
+    const locations = await listAllLocations(access);
+    authorizedLocation = locations.find((location) => location.path === locationPath);
+  } catch {
+    return NextResponse.json({ error: "google_api" }, { status: 502 });
+  }
+  if (!authorizedLocation) return NextResponse.json({ error: "unauthorized_location" }, { status: 403 });
+
+  const result = await linkGoogleBusiness({
+    email,
+    locationPath,
+    title: authorizedLocation.title,
+    refreshToken: stored.refreshToken,
+    accessTermsVersion: stored.termsVersion,
+  });
   if (!result.ok) return NextResponse.json({ error: result.message }, { status: 403 });
+
+  await deleteGoogleConnectionTicket(stored.id);
 
   const res = NextResponse.json({ ok: true, businessId: result.businessId, duplicate: result.duplicate });
   // Le ticket a servi : on le retire.

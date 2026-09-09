@@ -26,6 +26,12 @@ export default async function DashboardLayout({
       >
         {children}
       </main>
+      <footer style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 28px", color: "#6B7280", fontSize: 12, lineHeight: 1.5 }}>
+        Le commerçant reste propriétaire ou copropriétaire de sa fiche. Google Business Profile est disponible sans frais ; Caela facture uniquement ses services de gestion.{" "}
+        <a href="https://support.google.com/business/answer/7163406?hl=fr" target="_blank" rel="noopener noreferrer" style={{ color: "#2457C5" }}>
+          Informations Google : travailler avec un tiers
+        </a>
+      </footer>
       <ChatBot />
       <InstallerApp
         nomApp="Caela Réputation"

@@ -115,7 +115,7 @@ export default async function BillingPage() {
               {quotaStatus.status !== "ok" && (
                 <p style={{ fontSize: "12px", color: quotaStatus.status === "exceeded" ? G.red : G.yellow, margin: "8px 0 0", lineHeight: 1.5 }}>
                   {quotaStatus.status === "exceeded"
-                    ? `Quota dépassé — le service continue sans interruption${plan?.overagePricePerReview ? `, un supplément de ${plan.overagePricePerReview}€/avis s'applique jusqu'au renouvellement` : ""}.`
+                    ? "Volume inclus dépassé — le service continue temporairement sans supplément automatique. Contactez-nous pour adapter la formule si ce volume se répète."
                     : "Vous approchez de votre quota mensuel. Passez à un plan supérieur pour l'augmenter."}
                 </p>
               )}

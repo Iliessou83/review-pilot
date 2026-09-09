@@ -86,52 +86,63 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
   return data.access_token;
 }
 
-// Jeton Bearer à utiliser pour un commerce Google.
-// - OAuth (cas normal) : platform_token = refresh_token → on régénère un accès frais.
-// - Fallback legacy : si le refresh échoue (jeton d'accès collé à la main jadis),
-//   on retente avec la valeur brute pour ne rien casser.
+// Jeton Bearer à utiliser pour un commerce Google. platform_token contient
+// exclusivement un refresh_token OAuth chiffré. Aucun ancien jeton d'accès
+// saisi manuellement n'est réutilisé comme Bearer : ce contournement masquerait
+// une révocation et supprimerait la preuve d'autorisation du commerçant.
 export async function googleAccessToken(business: { platformToken: string }): Promise<string> {
+  if (!googleConfigured()) throw new Error("Google OAuth is not configured");
   const token = decryptToken(business.platformToken);
-  if (googleConfigured()) {
-    try {
-      return await refreshAccessToken(token);
-    } catch {
-      // On retombe sur la valeur brute (ancienne saisie manuelle).
-    }
-  }
-  return token;
+  return refreshAccessToken(token);
 }
 
 // Liste les comptes Business Profile accessibles (mybusinessaccountmanagement v1).
 async function listAccounts(accessToken: string): Promise<string[]> {
-  const res = await fetch(
-    "https://mybusinessaccountmanagement.googleapis.com/v1/accounts?pageSize=20",
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-  if (!res.ok) throw new Error(`Google accounts failed: ${res.status}`);
-  const data = (await res.json()) as { accounts?: { name: string }[] };
-  return (data.accounts || []).map((a) => a.name); // "accounts/123"
+  const accounts: string[] = [];
+  let pageToken = "";
+  do {
+    const params = new URLSearchParams({ pageSize: "20" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const res = await fetch(
+      `https://mybusinessaccountmanagement.googleapis.com/v1/accounts?${params}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!res.ok) throw new Error(`Google accounts failed: ${res.status}`);
+    const data = (await res.json()) as { accounts?: { name: string }[]; nextPageToken?: string };
+    accounts.push(...(data.accounts || []).map((a) => a.name));
+    pageToken = data.nextPageToken || "";
+  } while (pageToken);
+  return [...new Set(accounts)]; // "accounts/123"
 }
 
 // Liste les établissements d'un compte (mybusinessbusinessinformation v1).
 async function locationsOfAccount(accessToken: string, account: string): Promise<GoogleLocation[]> {
   const readMask = "name,title,storefrontAddress";
-  const url = `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?pageSize=100&readMask=${encodeURIComponent(readMask)}`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-  if (!res.ok) throw new Error(`Google locations failed: ${res.status}`);
-  const data = (await res.json()) as {
-    locations?: { name: string; title?: string; storefrontAddress?: { addressLines?: string[]; locality?: string } }[];
-  };
-  return (data.locations || []).map((loc) => {
-    const addr = loc.storefrontAddress;
-    const address = [addr?.addressLines?.join(" "), addr?.locality].filter(Boolean).join(", ");
-    return {
-      // L'API avis v4 attend le chemin complet "accounts/X/locations/Y".
-      path: `${account}/${loc.name}`,
-      title: loc.title || "Mon établissement",
-      address,
+  const locations: GoogleLocation[] = [];
+  let pageToken = "";
+  do {
+    const params = new URLSearchParams({ pageSize: "100", readMask });
+    if (pageToken) params.set("pageToken", pageToken);
+    const url = `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?${params}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!res.ok) throw new Error(`Google locations failed: ${res.status}`);
+    const data = (await res.json()) as {
+      locations?: { name: string; title?: string; storefrontAddress?: { addressLines?: string[]; locality?: string } }[];
+      nextPageToken?: string;
     };
-  });
+    locations.push(...(data.locations || []).map((loc) => {
+      const addr = loc.storefrontAddress;
+      const address = [addr?.addressLines?.join(" "), addr?.locality].filter(Boolean).join(", ");
+      return {
+        // L'API avis v4 attend le chemin complet "accounts/X/locations/Y".
+        path: `${account}/${loc.name}`,
+        title: loc.title || "Mon établissement",
+        address,
+      };
+    }));
+    pageToken = data.nextPageToken || "";
+  } while (pageToken);
+  return locations;
 }
 
 // Tous les établissements que ce compte Google peut gérer.
@@ -145,5 +156,5 @@ export async function listAllLocations(accessToken: string): Promise<GoogleLocat
       // Un compte sans droit de lecture ne bloque pas les autres.
     }
   }
-  return all;
+  return [...new Map(all.map((location) => [location.path, location])).values()];
 }

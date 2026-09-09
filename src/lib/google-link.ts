@@ -1,11 +1,12 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { businesses } from "@/db/schema";
+import { businesses, googleAccessConsents } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { checkBusinessQuota } from "@/lib/plan-limits";
 import { ADMIN_EMAILS } from "@/lib/auth";
 import { pushHubEvent } from "@/lib/hubEvent";
 import { encryptToken } from "@/lib/token-crypto";
+import crypto from "node:crypto";
 
 export type LinkResult =
   | { ok: true; businessId: number; duplicate: boolean }
@@ -19,6 +20,7 @@ export async function linkGoogleBusiness(params: {
   locationPath: string; // "accounts/X/locations/Y"
   title: string;
   refreshToken: string;
+  accessTermsVersion: string;
 }): Promise<LinkResult> {
   const email = params.email.toLowerCase().trim();
 
@@ -31,10 +33,19 @@ export async function linkGoogleBusiness(params: {
     .where(and(eq(businesses.platformId, params.locationPath), eq(businesses.ownerEmail, email)))
     .limit(1);
   if (existing) {
-    await db
-      .update(businesses)
-      .set({ platformToken: encryptToken(params.refreshToken.slice(0, 1000)) })
-      .where(eq(businesses.id, existing.id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(businesses)
+        .set({ platformToken: encryptToken(params.refreshToken.slice(0, 1000)) })
+        .where(eq(businesses.id, existing.id));
+      await tx.insert(googleAccessConsents).values({
+        businessId: existing.id,
+        actorEmail: email,
+        termsVersion: params.accessTermsVersion,
+        ownerOrManagerConfirmed: true,
+        oauthAccessGranted: true,
+      });
+    });
     return { ok: true, businessId: existing.id, duplicate: true };
   }
 
@@ -49,19 +60,31 @@ export async function linkGoogleBusiness(params: {
     }
   }
 
-  const [created] = await db
-    .insert(businesses)
-    .values({
-      name: params.title.slice(0, 255),
-      platform: "google",
-      platformId: params.locationPath.slice(0, 500),
-      platformToken: encryptToken(params.refreshToken.slice(0, 1000)),
-      ownerEmail: email,
-      // Le commerçant choisira ensuite son niveau de délégation dans les
-      // paramètres. Aucun automatisme n'est pré-coché à la connexion OAuth.
-      autoReply5Star: false,
-    })
-    .returning({ id: businesses.id });
+  const created = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(businesses)
+      .values({
+        name: params.title.slice(0, 255),
+        platform: "google",
+        platformId: params.locationPath.slice(0, 500),
+        platformToken: encryptToken(params.refreshToken.slice(0, 1000)),
+        ownerEmail: email,
+        // Le commerçant choisira ensuite son niveau de délégation dans les
+        // paramètres. Aucun automatisme n'est pré-coché à la connexion OAuth.
+        autoReply5Star: false,
+        autoReplyNegative: false,
+        widgetPublicToken: crypto.randomUUID(),
+      })
+      .returning({ id: businesses.id });
+    await tx.insert(googleAccessConsents).values({
+      businessId: row.id,
+      actorEmail: email,
+      termsVersion: params.accessTermsVersion,
+      ownerOrManagerConfirmed: true,
+      oauthAccessGranted: true,
+    });
+    return row;
+  });
 
   // Fédération au cerveau Caela : rattache l'établissement au compte (par email).
   await pushHubEvent({

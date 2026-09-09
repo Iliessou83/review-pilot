@@ -12,14 +12,7 @@ interface Entry {
 // In-memory store — works across concurrent requests on Fluid Compute
 // (single instance). Acceptable for an MVP; swap for Upstash Redis when scaling.
 const store = new Map<string, Entry>();
-
-// Periodically prune expired entries to prevent unbounded growth
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now > entry.resetAt) store.delete(key);
-  }
-}, 60_000);
+let callsSincePrune = 0;
 
 /**
  * Returns true if the request is within the allowed limit.
@@ -27,6 +20,15 @@ setInterval(() => {
  */
 export function rateLimit(key: string, limit: number, windowMs: number): boolean {
   const now = Date.now();
+  // Une Function Vercel est éphémère : aucun timer de fond. Le nettoyage
+  // opportuniste reste borné et le vrai verrou partagé demeure PostgreSQL.
+  callsSincePrune++;
+  if (callsSincePrune >= 100) {
+    for (const [storedKey, storedEntry] of store) {
+      if (now > storedEntry.resetAt) store.delete(storedKey);
+    }
+    callsSincePrune = 0;
+  }
   const entry = store.get(key);
 
   if (!entry || now > entry.resetAt) {
